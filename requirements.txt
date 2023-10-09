@@ -1,0 +1,14 @@
+# WEB
+## https://fastapi.tiangolo.com/
+fastapi[all]>=0.103.2
+uvicorn[standard]>=0.23.2
+
+# CLI
+## https://typer.tiangolo.com/
+typer[all]>=0.9.0
+## https://rich.readthedocs.io/
+rich>=13.6.0
+
+# 工具
+json5>=0.9.14
+minio>=7.1.17
