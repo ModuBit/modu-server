@@ -1,5 +1,5 @@
 """
-Copyright 2023 Maner·Fan
+Copyright 2024 Maner·Fan
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,27 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from .register import register
 
-import uvicorn
-from typing import Union
-
-from fastapi import FastAPI
-
-app = FastAPI()
-
-
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
-
-
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: Union[str, None] = None):
-    """
-    这里是注释
-    """
-    return {"item_id": item_id, "q": q}
-
-
-if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+__all__ = [
+    "register",
+]
