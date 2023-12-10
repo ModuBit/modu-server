@@ -14,14 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from . import main
+from .vector_repository_container import VectorContainer
 
 __all__ = [
-    'main',
+    'VectorContainer',
 ]
-
-__version__ = '0.0.1'
-__author__ = 'Maner·Fan'
-__author_email__ = 'manerfan@163.com'
-__license__ = 'Apache License 2.0'
-__copyright__ = 'Copyright 2024 Maner·Fan'

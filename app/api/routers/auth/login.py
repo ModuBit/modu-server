@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+    https://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,27 +14,33 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from dependency_injector.wiring import inject, Provide
 from fastapi import APIRouter, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 
-from dependency_injector.wiring import inject, Provide
 from app_container import AppContainer
-from services.account import AccountService
+from services import AccountService
 
 router = APIRouter()
 
 
-@router.post("/login")
+@router.post('/login')
 @inject
 def login(
-    form_data: OAuth2PasswordRequestForm = Depends(),
-    accountService: AccountService = Depends(
-        Provide[AppContainer.serviceContainer.accountContainer.accountService]
-    ),
+        form_data: OAuth2PasswordRequestForm = Depends(),
+        account_service: AccountService = Depends(
+            Provide[AppContainer.service_container.account_service]
+        ),
 ):
-    return accountService.authenticate(form_data.username, form_data.password)
+    """
+    登录
+    :param form_data: 登录提交的参数
+    :param account_service: 账号服务
+    :return:
+    """
+    return account_service.authenticate(form_data.username, form_data.password)
 
 
-@router.get("/logout")
+@router.get('/logout')
 def logout():
     return

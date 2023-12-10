@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+    https://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,7 +15,9 @@ limitations under the License.
 """
 
 from dependency_injector import containers, providers
-from . import account
+
+from repositories import DataContainer, OssContainer, VectorContainer
+from .account.account_service import AccountService
 
 
 class ServiceContainer(containers.DeclarativeContainer):
@@ -25,7 +27,12 @@ class ServiceContainer(containers.DeclarativeContainer):
 
     config = providers.Configuration()
 
+    data_container: DataContainer = providers.DependenciesContainer()
+    oss_container: OssContainer = providers.DependenciesContainer()
+    vector_container: VectorContainer = providers.DependenciesContainer()
+
     # 账号容器
-    accountContainer: account.AccountServiceContainer = providers.Container(
-        account.AccountServiceContainer,
+    account_service: AccountService = providers.Singleton(
+        AccountService,
+        account_repository=data_container.account_repository
     )

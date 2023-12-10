@@ -5,31 +5,36 @@ fastapi[all]>=0.103.2
 ## uvicorn[standard]>=0.23.2
 
 ## https://github.com/andrew-d/python-multipart/
-python-multipart>=0.0.6
+# python-multipart>=0.0.6
 
 ## https://python-jose.readthedocs.io/
-python-jose[cryptography]>=3.3.0
+# python-jose[cryptography]>=3.3.0
 
 ## https://github.com/sysid/sse-starlette/
-sse-starlette>=1.6.5
+# sse-starlette>=1.6.5
 
 # DB
 
-## https://docs.sqlalchemy.org/en/20/
-SQLAlchemy>=2.0.22
-## https://alembic.sqlalchemy.org/en/latest/
-alembic>=1.12.0
+## [ORM](https://docs.sqlalchemy.org/en/20/)
+SQLAlchemy>=2.0.23
+## [PostgreSQL Adapter](https://www.psycopg.org/)
+psycopg2-binary>=2.9.9
+## [数据库版本管理](https://alembic.sqlalchemy.org/en/latest/)
+alembic>=1.13.0
 
 # 工具
 
-## https://passlib.readthedocs.io/
+## [DI](https://python-dependency-injector.ets-labs.org/)
+dependency-injector>=4.0,<5.0
+
+## [密码库](https://passlib.readthedocs.io/)
 passlib[bcrypt]>=1.7.4
 
+## [yaml处理](https://pyyaml.org/)
+pyyaml>=6.0.1
+
 ## https://loguru.readthedocs.io/en/stable/
-loguru>=0.7.2
+# loguru>=0.7.2
 
-json5>=0.9.14
-minio>=7.1.17
-
-## https://python-dependency-injector.ets-labs.org/
-dependency-injector>=4.0,<5.0
+# json5>=0.9.14
+# minio>=7.1.17

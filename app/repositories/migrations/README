@@ -1,0 +1,12 @@
+Generic single-database configuration.
+
+## 初始化
+```bash
+alembic init migrations
+```
+
+## 创建迁移脚本
+```bash
+alembic revision -m "description"
+```
+

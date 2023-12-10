@@ -14,14 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from . import main
+from dependency_injector import containers, providers
 
-__all__ = [
-    'main',
-]
 
-__version__ = '0.0.1'
-__author__ = 'Maner·Fan'
-__author_email__ = 'manerfan@163.com'
-__license__ = 'Apache License 2.0'
-__copyright__ = 'Copyright 2024 Maner·Fan'
+class OssContainer(containers.DeclarativeContainer):
+    """
+    OSS容器
+    """
+
+    config = providers.Configuration()

@@ -14,14 +14,23 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from . import main
+from dataclasses import dataclass
 
-__all__ = [
-    'main',
-]
+from utils.dataclass_tolerant import tolerant_dataclass
 
-__version__ = '0.0.1'
-__author__ = 'Maner·Fan'
-__author_email__ = 'manerfan@163.com'
-__license__ = 'Apache License 2.0'
-__copyright__ = 'Copyright 2024 Maner·Fan'
+
+@tolerant_dataclass
+@dataclass
+class Account:
+    """
+    账号
+
+    Attributes:
+        name: 账号名
+        email: 邮箱
+        password: 密码
+    """
+
+    name: str
+    email: str
+    password: str

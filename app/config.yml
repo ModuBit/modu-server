@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 # 
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 # 
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,18 +16,35 @@
 app:
   title: Cube Chat | Speek FREELY with Me!
   description: Think as you think and Reach as you reach | 想你所想及你所及
-  summary: 
+  summary:
   version: '0.0.1'
-  terms_of_service: 
+  terms_of_service:
   contact:
-      name: Maner·Fan
-      url: https://github.com/manerfan
-      email: manerfan@163.com
+    name: Maner·Fan
+    url: https://github.com/manerfan
+    email: manerfan@163.com
   license_info:
-      name: Apache 2.0
-      url: http://www.apache.org/licenses/LICENSE-2.0
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
 
 # 服务配置
 server:
   host: ${SERVER_HOST:0.0.0.0}
   port: ${SERVER_PORT:8000}
+
+repository:
+  # data
+  data:
+    type: postgres
+    postgres:
+      host: ${POSTGRES_HOST:localhost}
+      port: ${POSTGRES_PORT:5432}
+      database: ${POSTGRES_DATABASE:cube_chat}
+      username: ${POSTGRES_USERNAME:cube_chat}
+      password: ${POSTGRES_PASSWORD:cube_chat}
+  # oss
+  oss:
+    type: aliyun
+  # vector
+  vector:
+    type: postgres

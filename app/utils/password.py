@@ -14,14 +14,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from . import main
+from passlib.context import CryptContext
 
-__all__ = [
-    'main',
-]
+pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
-__version__ = '0.0.1'
-__author__ = 'Maner·Fan'
-__author_email__ = 'manerfan@163.com'
-__license__ = 'Apache License 2.0'
-__copyright__ = 'Copyright 2024 Maner·Fan'
+
+def hash_password(password: str) -> str:
+    """
+    密码加密
+    :param password: 密码
+    :return: HASH后的密码
+    """
+    return pwd_context.hash(password)
+
+
+def verify_password(password: str, password_hash: str) -> bool:
+    """
+    密码验证
+    :param password: 密码
+    :param password_hash: HASH后的密码
+    :return: True / False
+    """
+    return pwd_context.verify(password, password_hash)

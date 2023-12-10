@@ -14,14 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from . import main
+from fastapi import APIRouter
 
-__all__ = [
-    'main',
-]
+router = APIRouter()
 
-__version__ = '0.0.1'
-__author__ = 'Maner·Fan'
-__author_email__ = 'manerfan@163.com'
-__license__ = 'Apache License 2.0'
-__copyright__ = 'Copyright 2024 Maner·Fan'
+
+@router.get('/me')
+def me():
+    return {'name': 'Maner·Fan'}

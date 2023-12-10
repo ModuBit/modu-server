@@ -14,14 +14,24 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from . import main
+from abc import ABC, abstractmethod
+from contextlib import AbstractContextManager
+from typing import Callable
 
-__all__ = [
-    'main',
-]
+from sqlalchemy.orm import Session
 
-__version__ = '0.0.1'
-__author__ = 'Maner·Fan'
-__author_email__ = 'manerfan@163.com'
-__license__ = 'Apache License 2.0'
-__copyright__ = 'Copyright 2024 Maner·Fan'
+from .account_models import Account
+
+
+class AccountRepository(ABC):
+    def __init__(self, session_factory: Callable[..., AbstractContextManager[Session]]):
+        self._session_factory = session_factory
+
+    @abstractmethod
+    def find_one_by_email(self, email: str) -> Account:
+        """
+        通过email查找账号
+        :param email: 邮箱
+        :return: 账号
+        """
+        pass
