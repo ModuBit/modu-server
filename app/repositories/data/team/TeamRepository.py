@@ -13,46 +13,36 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-
-from abc import ABC, abstractmethod
+from abc import ABC
 from contextlib import AbstractContextManager
 from typing import Callable
 
 from sqlalchemy.orm import Session
 
-from .account_models import Account
+from repositories.data.team.team_models import Team, TeamMemberRole
 
 
-class AccountRepository(ABC):
+class TeamRepository(ABC):
     """
-    账号数据存储的定义
+    团队数据存储的定义
     """
 
     def __init__(self, session_factory: Callable[..., AbstractContextManager[Session]]):
         self._session_factory = session_factory
 
-    @abstractmethod
-    def find_one_by_email(self, email: str) -> Account:
+    def create(self, team: Team):
         """
-        通过email查找账号
-        :param email: 邮箱
-        :return: 账号
+        创建团队
+        :param team: 团队
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
-    @abstractmethod
-    def create(self, account: Account) -> Account:
+    def add_team_membership(self, team_uid: str, member_uid: str, role: TeamMemberRole):
         """
-        创建账号
-        :param account:
+        添加团队成员
+        :param team_uid: 团队UID
+        :param member_uid: 成员UID
+        :param role: 成员角色
         :return:
         """
-        raise NotImplementedError()
-
-    @abstractmethod
-    def count_all(self) -> int:
-        """
-        统计所有账号
-        :return: 账号数量
-        """
-        raise NotImplementedError()
+        raise NotImplementedError

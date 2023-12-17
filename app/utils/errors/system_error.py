@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-__all__ = [
-    'errors',
-    'auth',
-    'dataclass',
-]
+from utils.errors.base_error import BaseServiceError
+
+
+class InitializeError(BaseServiceError):
+    pass

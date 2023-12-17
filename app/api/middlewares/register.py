@@ -14,8 +14,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-__all__ = [
-    'errors',
-    'auth',
-    'dataclass',
-]
+from fastapi import FastAPI
+from fastapi.middleware.gzip import GZipMiddleware
+
+from . import json_response
+
+
+def register(app: FastAPI):
+    """
+    注册中间件
+    :param app:  FastAPI
+    """
+    app.add_middleware(GZipMiddleware, minimum_size=1024)
+    json_response.register(app)

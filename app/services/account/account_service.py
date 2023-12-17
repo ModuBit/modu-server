@@ -16,8 +16,9 @@ limitations under the License.
 
 from repositories.data.account import AccountRepository
 from repositories.data.account.account_models import Account
+from utils import auth
+from utils.auth import hash_password
 from utils.errors.account_error import AccountLoginError
-from utils import password as password_util
 
 
 class AccountService:
@@ -25,8 +26,15 @@ class AccountService:
     账号服务
     """
 
-    def __init__(self, account_repository: AccountRepository):
+    def __init__(self, account_repository: AccountRepository, jwt_config: dict):
         self._account_repository = account_repository
+        self._jwt_config = jwt_config
+
+    def register(self, account: Account):
+        # 创建账号
+        self._account_repository.create(Account(**account.__dict__, password=hash_password(account.password)))
+
+        # 创建团队
 
     def authenticate(self, email: str, password: str) -> Account:
         """
@@ -41,8 +49,38 @@ class AccountService:
         if not account:
             raise AccountLoginError(message='用户名或密码错误')
 
-        if not password_util.verify_password(password, account.password):
+        if not auth.verify_password(password, account.password):
             raise AccountLoginError(message='用户名或密码错误')
 
         # TODO 需要移除敏感信息
         return account
+
+    def account_token_encode(self, account: Account) -> str:
+        """
+        账号 → token
+        :param account: 账号信息
+        :return: token
+        """
+        return auth.jose_encode(account.__dict__,
+                                self._jwt_config.get('secret'),
+                                self._jwt_config.get('algorithm'),
+                                self._jwt_config.get('expire_minutes'))
+
+    def account_token_decode(self, token: str) -> Account:
+        """
+        token → 账号
+        :param token: token
+        :return: 账号
+        """
+        return auth.jose_decode(token,
+                                self._jwt_config.get('secret'),
+                                self._jwt_config.get('algorithm'))
+
+    def account_token_verify(self, token: str):
+        """
+        验证token
+        :param token: token
+        """
+        auth.jose_decode(token,
+                         self._jwt_config.get('secret'),
+                         self._jwt_config.get('algorithm'))

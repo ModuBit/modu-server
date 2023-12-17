@@ -7,9 +7,6 @@ fastapi[all]>=0.103.2
 ## https://github.com/andrew-d/python-multipart/
 # python-multipart>=0.0.6
 
-## https://python-jose.readthedocs.io/
-# python-jose[cryptography]>=3.3.0
-
 ## https://github.com/sysid/sse-starlette/
 # sse-starlette>=1.6.5
 
@@ -22,6 +19,22 @@ psycopg2-binary>=2.9.9
 ## [数据库版本管理](https://alembic.sqlalchemy.org/en/latest/)
 alembic>=1.13.0
 
+# 缓存
+
+## [Memory](https://github.com/Yiling-J/theine)
+theine>=0.4.1
+## [Redis](https://aioredis.readthedocs.io/en/latest/)
+aioredis>=2.0.1
+
+# Storage
+
+## [Aliyun Oss](https://help.aliyun.com/zh/oss/developer-reference/installation-14)
+## sudo yum install python-devel
+oss2>=2.18.3
+
+## [Minio](https://github.com/minio/minio)
+# minio>=7.1.17
+
 # 工具
 
 ## [DI](https://python-dependency-injector.ets-labs.org/)
@@ -30,11 +43,14 @@ dependency-injector>=4.0,<5.0
 ## [密码库](https://passlib.readthedocs.io/)
 passlib[bcrypt]>=1.7.4
 
+## [JWT](https://python-jose.readthedocs.io/)
+python-jose[cryptography]>=3.3.0
+
 ## [yaml处理](https://pyyaml.org/)
 pyyaml>=6.0.1
 
+## [uuid](https://python-ulid.readthedocs.io/en/latest/)
+python-ulid>=2.2.0
+
 ## https://loguru.readthedocs.io/en/stable/
 # loguru>=0.7.2
-
-# json5>=0.9.14
-# minio>=7.1.17

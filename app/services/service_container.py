@@ -18,6 +18,8 @@ from dependency_injector import containers, providers
 
 from repositories import DataContainer, OssContainer, VectorContainer
 from .account.account_service import AccountService
+from .init.init_service import InitService
+from .team.team_service import TeamService
 
 
 class ServiceContainer(containers.DeclarativeContainer):
@@ -31,8 +33,22 @@ class ServiceContainer(containers.DeclarativeContainer):
     oss_container: OssContainer = providers.DependenciesContainer()
     vector_container: VectorContainer = providers.DependenciesContainer()
 
-    # 账号容器
+    # 初始化服务
+    init_service: InitService = providers.Singleton(
+        InitService,
+        account_repository=data_container.account_repository,
+        team_repository=data_container.team_repository
+    )
+
+    # 账号服务
     account_service: AccountService = providers.Singleton(
         AccountService,
-        account_repository=data_container.account_repository
+        account_repository=data_container.account_repository,
+        jwt_config=config.security.jwt,
+    )
+
+    # 团队服务
+    team_service: TeamService = providers.Singleton(
+        TeamService,
+        team_repository=data_container.team_repository
     )

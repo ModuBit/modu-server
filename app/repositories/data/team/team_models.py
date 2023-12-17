@@ -19,37 +19,65 @@ from dataclasses import dataclass
 from utils.dataclass import tolerant
 
 
-class AccountStatus(str, enum.Enum):
+@tolerant
+@dataclass
+class Team:
     """
-    用户状态
+    团队
     """
 
-    # 待激活
+    # 团队ID
+    uid: str
+    # 创建人
+    creator_uid: str
+    # 团队名称
+    name: str
+    # 团队简介
+    description: str | None
+    # 是否个人团队
+    is_personal: bool
+    # 是否删除
+    is_deleted: bool
+
+
+class TeamMemberStatus(str, enum.Enum):
+    """
+    团队成员状态
+    """
+
+    # 待确认
     PENDING = 'pending'
     # 已激活
     ACTIVE = 'active'
-    # 已禁用
-    BANNED = 'banned'
     # 已注销
     CLOSED = 'closed'
 
 
-@tolerant
-@dataclass
-class Account:
+class TeamMemberRole(str, enum.Enum):
     """
-    账号
+    团队成员角色
     """
 
-    # 账号ID
-    uid: str | None
-    # 账号名称
-    name: str
-    # 账号邮箱
-    email: str
-    # 账号密码
-    password: str | None
-    # 账号头像
-    avatar: str | None
-    # 账号状态
-    status: AccountStatus
+    # owner
+    OWNER = 'owner'
+    # 管理员
+    ADMIN = 'admin'
+    # 成员
+    MEMBER = 'member'
+
+
+@tolerant
+@dataclass
+class TeamMembership:
+    """
+    团队成员
+    """
+
+    # 团队ID
+    team_uid: str
+    # 成员ID
+    member_uid: str
+    # 成员角色
+    member_role: TeamMemberRole
+    # 成员状态
+    member_status: TeamMemberStatus

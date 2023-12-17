@@ -13,15 +13,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-
 import logging
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.exceptions import RequestValidationError
+from sqlalchemy.exc import OperationalError
 from starlette.responses import JSONResponse
 
 from utils.errors.base_error import BaseServiceError
-from . import auth
+from . import auth, init
+from ..dependencies.principal import token_verify
 
 log = logging.getLogger()
 
@@ -32,10 +33,14 @@ def register(app: FastAPI):
     :param app:  FastAPI
     """
 
-    exception_handler(app)
+    app.include_router(init.setup.router, prefix='/api',
+                       tags=['init | 初始化'])
 
-    app.include_router(auth.login.router, prefix='/api', tags=['auth | 认证'])
-    app.include_router(auth.users.router, prefix='/api/user', tags=['user | 用户'])
+    app.include_router(auth.login.router, prefix='/api',
+                       tags=['auth | 认证'])
+    app.include_router(auth.users.router, prefix='/api/user',
+                       dependencies=[Depends(token_verify)],
+                       tags=['user | 用户'])
 
 
 def exception_handler(app: FastAPI):
@@ -46,15 +51,32 @@ def exception_handler(app: FastAPI):
 
     @app.exception_handler(RequestValidationError)
     async def validation_exception_handler(request, exc: RequestValidationError):
+        """
+        参数验证异常
+        """
         log.warning('RequestValidationError %s, %s', exc.__class__, str(exc))
-        return JSONResponse(str(exc), status_code=400)
+        return JSONResponse(exc.errors(), status_code=422)
 
     @app.exception_handler(BaseServiceError)
     async def service_exception_handler(request, exc: BaseServiceError):
+        """
+        业务异常
+        """
         log.warning('ServiceError %s, %s', exc.__class__, exc.message)
         return JSONResponse({'message': exc.message}, status_code=exc.status_code)
 
+    @app.exception_handler(OperationalError)
+    async def sql_exception_handler(request, exc: OperationalError):
+        """
+        SQL数据库异常
+        """
+        log.exception('SQLError 服务异常 %s', str(exc))
+        return JSONResponse({'message': '服务异常，请稍候重试'}, status_code=500)
+
     @app.exception_handler(Exception)
     async def common_exception_handler(request, exc: Exception):
-        log.exception('ExceptionError %s', str(exc))
-        return JSONResponse({'message': str(exc)}, status_code=500)
+        """
+        其他系统异常
+        """
+        log.exception('ExceptionError 服务异常 %s', str(exc))
+        return JSONResponse({'message': '服务异常，请稍候重试'}, status_code=500)

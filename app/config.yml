@@ -32,19 +32,31 @@ server:
   host: ${SERVER_HOST:0.0.0.0}
   port: ${SERVER_PORT:8000}
 
+# 数据仓库配置
 repository:
   # data
   data:
-    type: postgres
+    type: ${DATA_TYPE:postgres}
     postgres:
       host: ${POSTGRES_HOST:localhost}
       port: ${POSTGRES_PORT:5432}
       database: ${POSTGRES_DATABASE:cube_chat}
       username: ${POSTGRES_USERNAME:cube_chat}
       password: ${POSTGRES_PASSWORD:cube_chat}
-  # oss
-  oss:
-    type: aliyun
+  # storage
+  storage:
+    type: ${STORAGE_TYPE:local}
   # vector
   vector:
-    type: postgres
+    type: ${VECTOR_TYPE:faiss}
+  # cache
+  cache:
+    type: ${CACHE_TYPE:memory}
+
+# 安全设置
+security:
+  jwt:
+    # openssl rand -hex 32
+    secret: ${JWT_SK:793539f7301c380d6ebb002ffae34eccdb04faae6716b5f7bd1a56c3e04853a1}
+    algorithm: HS256
+    expire_minutes: ${JWT_EXPIRE_MINUTES:2880}

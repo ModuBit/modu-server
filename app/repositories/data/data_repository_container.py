@@ -18,7 +18,9 @@ from dependency_injector import containers, providers
 
 from .account.AccountRepository import AccountRepository
 from .account.AccountRepositoryPostgres import AccountRepositoryPostgres
-from .data_base_pg import PgDatabase
+from .data_base_postgres import PostgresDatabase
+from .team.TeamRepository import TeamRepository
+from .team.TeamRepositoryPostgres import TeamRepositoryPostgres
 
 
 class DataContainer(containers.DeclarativeContainer):
@@ -28,8 +30,9 @@ class DataContainer(containers.DeclarativeContainer):
 
     config = providers.Configuration()
 
-    db_pg = providers.Singleton(
-        PgDatabase,
+    # 数据库 PostgreSQL
+    db_postgres = providers.Singleton(
+        PostgresDatabase,
         host=config.repository.data.postgres.host,
         port=config.repository.data.postgres.port,
         database=config.repository.data.postgres.database,
@@ -40,5 +43,11 @@ class DataContainer(containers.DeclarativeContainer):
     # 账号
     account_repository: AccountRepository = providers.Selector(
         config.repository.data.type,
-        postgres=providers.Singleton(AccountRepositoryPostgres, session_factory=db_pg.provided.session)
+        postgres=providers.Singleton(AccountRepositoryPostgres, session_factory=db_postgres.provided.session)
+    )
+
+    # 团队
+    team_repository: TeamRepository = providers.Selector(
+        config.repository.data.type,
+        postgres=providers.Singleton(TeamRepositoryPostgres, session_factory=db_postgres.provided.session)
     )

@@ -13,27 +13,45 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+
+import datetime
 import json
 import logging
 from contextlib import contextmanager, AbstractContextManager
 from typing import Callable
 
-from sqlalchemy import text, DateTime, UUID, create_engine, QueuePool
+from sqlalchemy import text, DateTime, UUID, create_engine, QueuePool, String, TypeDecorator, SmallInteger
+from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, scoped_session, sessionmaker, Session
 from sqlalchemy.sql.ddl import CreateTable
-from sqlalchemy.dialects import postgresql
+from ulid import ULID
 
 log = logging.getLogger()
 
 
-class PgBaseModel(DeclarativeBase):
+def uid_generator() -> str:
+    return str(ULID())
+
+
+class PostgresBasePO(DeclarativeBase):
+    """
+    PostgreSQL通用模型
+    """
+
+    # 主键ID
     id: Mapped[str] = mapped_column(UUID, primary_key=True,
                                     server_default=text('uuid_generate_v4()'),
                                     comment='主键ID')
-    created_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True), nullable=False,
+    # 全局ID
+    uid: Mapped[str] = mapped_column(String(32), nullable=False,
+                                     default=uid_generator,
+                                     comment='UID')
+    # 创建时间
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False,
                                                  server_default=text('CURRENT_TIMESTAMP(0)'),
                                                  comment='创建时间')
-    updated_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True), nullable=False,
+    # 更新时间
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False,
                                                  server_default=text('CURRENT_TIMESTAMP(0)'),
                                                  onupdate=text('CURRENT_TIMESTAMP(0)'),
                                                  comment='更新时间')
@@ -51,10 +69,36 @@ class PgBaseModel(DeclarativeBase):
         return CreateTable(self.__table__).compile(dialect=postgresql.dialect()).string
 
 
-class PgDatabase:
+class SmallIntBool(TypeDecorator):
+    """
+    定义 bool 与 smallint 之间的映射
+    """
+
+    impl = SmallInteger
+
+    cache_ok = False
+
+    def process_bind_param(self, value, dialect):
+        """
+        Convert Python bool to database int
+        """
+        return 1 if value else 0
+
+    def process_result_value(self, value, dialect):
+        """
+        Convert database int to Python bool
+        """
+        return value != 0
+
+
+class PostgresDatabase:
+    """
+    PostgreSQL连接
+    """
+
     def __init__(self, host: str, port: int, database: str, username: str, password: str):
         self._engine = create_engine(
-            f"postgresql+psycopg2://{username}:{password}@{host}:{port}/{database}",
+            f'postgresql+psycopg2://{username}:{password}@{host}:{port}/{database}',
             json_serializer=lambda obj: json.dumps(obj, ensure_ascii=False),
             # 指定连接池类
             poolclass=QueuePool,

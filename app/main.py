@@ -22,7 +22,8 @@ import yaml
 from fastapi import FastAPI
 
 import app_container
-from api.routers import register
+from api.middlewares import register as middlewares_register
+from api.routers import register as routers_register
 
 # 日志配置
 with open('logging.yml', 'r') as f:
@@ -54,16 +55,16 @@ def create_app() -> FastAPI:
     :return: FastAPI实例
     """
 
-    # 初始化Container容器
+    # 初始化容器
     container = app_container.AppContainer()
+    # 初始化资源
     container.init_resources()
+    # 注入依赖
+    container.wire(packages=['api', 'services', 'repositories', 'utils'])
 
     # 创建FastAPI实例
-    fast_app = FastAPI(**container.config()['app'], lifespan=lifespan)
+    fast_app = FastAPI(**container.config.get('app'), lifespan=lifespan)
     fast_app.container = container
-
-    # 注入依赖
-    container.wire(packages=['api', 'services', 'repositories'])
 
     return fast_app
 
@@ -72,20 +73,23 @@ def create_app() -> FastAPI:
 app = create_app()
 
 # 注册路由
-register.register(app)
+routers_register.register(app)
 
 # 注册异常处理
-register.exception_handler(app)
+routers_register.exception_handler(app)
+
+# 注册中间件
+middlewares_register.register(app)
 
 if __name__ == '__main__':
     """
     本地开发使用 python main.py
     生产请使用 Gunicorn 进行部署
     """
-    server_config = app.container.config()['server']
+    server_config = app.container.config.get('server')
     uvicorn.run(
         'main:app',
         reload=True,
-        host=server_config['host'],
-        port=server_config['port'],
+        host=server_config.get('host'),
+        port=server_config.get('port'),
     )

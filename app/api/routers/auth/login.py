@@ -30,15 +30,19 @@ def login(
         form_data: OAuth2PasswordRequestForm = Depends(),
         account_service: AccountService = Depends(
             Provide[AppContainer.service_container.account_service]
-        ),
+        )
 ):
     """
     登录
     :param form_data: 登录提交的参数
     :param account_service: 账号服务
-    :return:
     """
-    return account_service.authenticate(form_data.username, form_data.password)
+    account = account_service.authenticate(form_data.username, form_data.password)
+    access_token = account_service.account_token_encode(account)
+    return {
+        "access_token": access_token,
+        "token_type": "bearer"
+    }
 
 
 @router.get('/logout')
