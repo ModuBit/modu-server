@@ -21,7 +21,7 @@ from sqlalchemy.exc import OperationalError
 from starlette.responses import JSONResponse
 
 from utils.errors.base_error import BaseServiceError
-from . import auth, init
+from . import auth, system
 from ..dependencies.principal import token_verify
 
 log = logging.getLogger()
@@ -33,8 +33,11 @@ def register(app: FastAPI):
     :param app:  FastAPI
     """
 
-    app.include_router(init.setup.router, prefix='/api',
+    app.include_router(system.setup.router, prefix='/api',
                        tags=['init | 初始化'])
+
+    app.include_router(system.system.router, prefix='/api',
+                       tags=['info | 系统信息'])
 
     app.include_router(auth.login.router, prefix='/api',
                        tags=['auth | 认证'])
@@ -63,7 +66,7 @@ def exception_handler(app: FastAPI):
         业务异常
         """
         log.warning('ServiceError %s, %s', exc.__class__, exc.message)
-        return JSONResponse({'message': exc.message}, status_code=exc.status_code)
+        return JSONResponse({'message': exc.message, 'show_type': exc.show_type, 'target': exc.target}, status_code=exc.status_code)
 
     @app.exception_handler(OperationalError)
     async def sql_exception_handler(request, exc: OperationalError):

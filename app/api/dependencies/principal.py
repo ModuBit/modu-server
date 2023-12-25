@@ -21,6 +21,7 @@ from fastapi.security import OAuth2PasswordBearer
 from app_container import AppContainer
 from repositories.data.account.account_models import Account
 from utils.errors.account_error import UnauthorizedError
+from utils.errors.base_error import ErrorShowType
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/api/login')
 
@@ -37,7 +38,7 @@ async def current_account(
     """
     account = account_service.account_token_decode(token)
     if account is None:
-        raise UnauthorizedError('Invalid Token')
+        raise UnauthorizedError(message='Invalid Token', show_type=ErrorShowType.SILENT)
     return account
 
 

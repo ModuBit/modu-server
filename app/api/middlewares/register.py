@@ -16,6 +16,7 @@ limitations under the License.
 
 from fastapi import FastAPI
 from fastapi.middleware.gzip import GZipMiddleware
+from starlette.middleware.cors import CORSMiddleware
 
 from . import json_response
 
@@ -26,4 +27,11 @@ def register(app: FastAPI):
     :param app:  FastAPI
     """
     app.add_middleware(GZipMiddleware, minimum_size=1024)
+    app.add_middleware(
+        CORSMiddleware,
+        allow_credentials=True,
+        allow_origins=app.container.config.get('server.cors.allowed_origins'),
+        allow_methods=app.container.config.get('server.cors.allowed_methods'),
+        allow_headers=app.container.config.get('server.cors.allowed_headers'),
+    )
     json_response.register(app)

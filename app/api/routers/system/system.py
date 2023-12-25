@@ -14,6 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-__all__ = [
-    'setup',
-]
+from dependency_injector.wiring import inject, Provide
+from fastapi import APIRouter, Depends
+
+from app_container import AppContainer
+
+router = APIRouter()
+
+
+@router.get('/system')
+@inject
+def system(config: dict = Depends(Provide[AppContainer.config])):
+    return config.get('app')

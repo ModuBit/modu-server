@@ -18,7 +18,7 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel, EmailStr, constr
 
 from app_container import AppContainer
-from services.init.init_service import InitService
+from services.system.init_service import InitService
 
 router = APIRouter()
 
@@ -35,15 +35,15 @@ class InitializeCmd(BaseModel):
 @router.get('/setup')
 @inject
 def initialized_status(
-        init_service: InitService = Depends(
-            Provide[AppContainer.service_container.init_service]
+        init_system: InitService = Depends(
+            Provide[AppContainer.service_container.init_system]
         )
 ):
     """
     获取初始化信息
-    :param init_service: 初始化服务
+    :param init_system: 初始化服务
     """
-    return init_service.is_initialized()
+    return init_system.is_initialized()
 
 
 @router.post('/setup')
@@ -51,7 +51,7 @@ def initialized_status(
 def initialize(
         init_data: InitializeCmd,
         init_service: InitService = Depends(
-            Provide[AppContainer.service_container.init_service]
+            Provide[AppContainer.service_container.init_system]
         )
 ):
     """

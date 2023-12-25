@@ -18,7 +18,7 @@ from dependency_injector import containers, providers
 
 from repositories import DataContainer, OssContainer, VectorContainer
 from .account.account_service import AccountService
-from .init.init_service import InitService
+from .system.init_service import InitService
 from .team.team_service import TeamService
 
 
@@ -34,7 +34,7 @@ class ServiceContainer(containers.DeclarativeContainer):
     vector_container: VectorContainer = providers.DependenciesContainer()
 
     # 初始化服务
-    init_service: InitService = providers.Singleton(
+    init_system: InitService = providers.Singleton(
         InitService,
         account_repository=data_container.account_repository,
         team_repository=data_container.team_repository
