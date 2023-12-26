@@ -34,8 +34,6 @@ class AccountService:
         # 创建账号
         self._account_repository.create(Account(**account.__dict__, password=hash_password(account.password)))
 
-        # 创建团队
-
     def authenticate(self, email: str, password: str) -> Account:
         """
         账号认证

@@ -17,6 +17,7 @@ limitations under the License.
 from dependency_injector.wiring import Provide, inject
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
+from starlette.status import HTTP_401_UNAUTHORIZED
 
 from app_container import AppContainer
 from repositories.data.account.account_models import Account
@@ -38,7 +39,9 @@ async def current_account(
     """
     account = account_service.account_token_decode(token)
     if account is None:
-        raise UnauthorizedError(message='Invalid Token', show_type=ErrorShowType.SILENT)
+        raise UnauthorizedError(message='Invalid Token',
+                                show_type=ErrorShowType.SILENT,
+                                status_code=HTTP_401_UNAUTHORIZED)
     return account
 
 

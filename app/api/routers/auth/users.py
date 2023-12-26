@@ -13,14 +13,29 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+
 from fastapi import APIRouter, Depends
+from pydantic import BaseModel
 
 from api.dependencies.principal import current_account
-from repositories.data.account.account_models import Account
+from repositories.data.account.account_models import Account, AccountStatus
 
 router = APIRouter()
 
 
-@router.get('/me')
+class AccountDTO(BaseModel):
+    # 账号ID
+    uid: str
+    # 账号名称
+    name: str
+    # 账号邮箱
+    email: str
+    # 账号头像
+    avatar: str | None
+    # 账号状态
+    status: AccountStatus
+
+
+@router.get(path='/me', response_model=AccountDTO)
 def me(current_user: Account = Depends(current_account)):
     return current_user
