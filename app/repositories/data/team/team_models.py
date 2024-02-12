@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+
 import enum
 from dataclasses import dataclass
 
@@ -36,6 +37,8 @@ class Team:
     description: str | None
     # 是否个人团队
     is_personal: bool
+    # 初始向量
+    iv: bytes
     # 是否删除
     is_deleted: bool
 

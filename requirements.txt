@@ -1,56 +1,82 @@
 # WEB
 
 ## https://fastapi.tiangolo.com/
-fastapi[all]>=0.103.2
-## uvicorn[standard]>=0.23.2
+fastapi[all]~=0.103.2
+## uvicorn[standard]~=0.23.2
 
 ## https://github.com/andrew-d/python-multipart/
-# python-multipart>=0.0.6
+# python-multipart~=0.0.6
 
 ## https://github.com/sysid/sse-starlette/
-# sse-starlette>=1.6.5
+# sse-starlette~=1.6.5
 
 # DB
 
 ## [ORM](https://docs.sqlalchemy.org/en/20/)
-SQLAlchemy>=2.0.23
+SQLAlchemy~=2.0.23
 ## [PostgreSQL Adapter](https://www.psycopg.org/)
-psycopg2-binary>=2.9.9
+psycopg2-binary~=2.9.9
 ## [数据库版本管理](https://alembic.sqlalchemy.org/en/latest/)
-alembic>=1.13.0
+alembic~=1.13.0
 
 # 缓存
 
 ## [Memory](https://github.com/Yiling-J/theine)
-theine>=0.4.1
+theine~=0.4.1
 ## [Redis](https://aioredis.readthedocs.io/en/latest/)
-aioredis>=2.0.1
+aioredis~=2.0.1
 
 # Storage
 
 ## [Aliyun Oss](https://help.aliyun.com/zh/oss/developer-reference/installation-14)
 ## sudo yum install python-devel
-oss2>=2.18.3
+oss2~=2.18.3
 
 ## [Minio](https://github.com/minio/minio)
-# minio>=7.1.17
+# minio~=7.1.17
 
 # 工具
 
 ## [DI](https://python-dependency-injector.ets-labs.org/)
-dependency-injector>=4.0,<5.0
+dependency-injector~=4.0
 
-## [密码库](https://passlib.readthedocs.io/)
-passlib[bcrypt]>=1.7.4
+## [密码库passlib](https://passlib.readthedocs.io/)
+passlib[bcrypt]~=1.7.4
+## [密码库cryptography](https://cryptography.io/)
+cryptography~=41.0.3
 
 ## [JWT](https://python-jose.readthedocs.io/)
-python-jose[cryptography]>=3.3.0
+python-jose[cryptography]~=3.3.0
 
 ## [yaml处理](https://pyyaml.org/)
-pyyaml>=6.0.1
+pyyaml~=6.0.1
 
 ## [uuid](https://python-ulid.readthedocs.io/en/latest/)
-python-ulid>=2.2.0
+python-ulid~=2.2.0
 
 ## https://loguru.readthedocs.io/en/stable/
-# loguru>=0.7.2
+# loguru~=0.7.2
+
+## [Eventbus Blinker](https://blinker.readthedocs.io/)
+# blinker~=1.7.0
+
+# LLM
+
+## [LangChain](https://python.langchain.com/docs)
+## include langchain langsmith langchain-core langchain-community
+langchain~=0.0.352
+
+## [OpenAI]
+openai~=1.6.1
+
+# 测试
+
+## [pytest](https://docs.pytest.org/en/latest/)
+pytest~=7.4.3
+
+## [pytest-html](https://pytest-html.readthedocs.io/en/latest/)
+## add arguments: --html=/some-dir/some-file.html
+pytest-html~=4.1.1
+
+## [httpx](https://www.python-httpx.org/)
+httpx~=0.25.2

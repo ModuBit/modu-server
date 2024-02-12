@@ -13,13 +13,21 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+
+import os
+
 from sqlalchemy import PrimaryKeyConstraint, String, text, Enum
 from sqlalchemy.orm import Mapped, mapped_column
 
-from repositories.data.data_base_postgres import PostgresBasePO, SmallIntBool
+from repositories.data.data_base_postgres import PostgresBasePO
 from repositories.data.team.TeamRepository import TeamRepository
 from repositories.data.team.team_models import TeamMemberStatus, TeamMemberRole, Team
+from repositories.data.type_decorator import Bool2SmallInt
 from utils.errors.team_error import TeamCreationError
+
+
+def _iv_generator() -> bytes:
+    return os.urandom(16)
 
 
 class TeamRepositoryPostgres(TeamRepository):
@@ -61,10 +69,12 @@ class TeamPO(PostgresBasePO):
     creator_uid: Mapped[str] = mapped_column(String(32), nullable=False, comment='创建者uid')
     name: Mapped[str] = mapped_column(String(64), nullable=False, comment='团队名称')
     description: Mapped[str] = mapped_column(String(512), nullable=True, comment='团队描述')
-    is_personal: Mapped[bool] = mapped_column(SmallIntBool, nullable=False,
+    is_personal: Mapped[bool] = mapped_column(Bool2SmallInt, nullable=False,
                                               server_default=text('0'),
                                               comment='是否为个人团队')
-    is_deleted: Mapped[bool] = mapped_column(SmallIntBool, nullable=False,
+    iv: Mapped[bytes] = mapped_column(String(32), nullable=False,
+                                      default=_iv_generator, comment='初始向量')
+    is_deleted: Mapped[bool] = mapped_column(Bool2SmallInt, nullable=False,
                                              server_default=text('0'),
                                              comment='是否已删除')
 

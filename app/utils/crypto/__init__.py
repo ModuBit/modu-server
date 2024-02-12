@@ -14,12 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from utils.errors.base_error import BaseServiceError
-
-
-class AccountLoginError(BaseServiceError):
-    pass
-
-
-class UnauthorizedError(BaseServiceError):
-    pass
+__all__ = [
+    'aes'
+]

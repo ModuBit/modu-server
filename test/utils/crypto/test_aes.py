@@ -14,12 +14,24 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from utils.errors.base_error import BaseServiceError
+import base64
+import os
+
+from utils.crypto import aes
 
 
-class AccountLoginError(BaseServiceError):
-    pass
+def test_aes():
+    _iv = os.urandom(16)
+
+    encrypted = aes.encrypt(b'123456', _iv, 'Hello Maner·Fan'.encode('utf-8'))
+    decrypted = aes.decrypt(b'123456', _iv, encrypted)
+    assert decrypted == 'Hello Maner·Fan'.encode('utf-8')
 
 
-class UnauthorizedError(BaseServiceError):
-    pass
+def test_urandom_16():
+    for _ in range(16):
+        _iv = os.urandom(16)
+        assert len(_iv) == 16
+
+        _b64 = base64.b64encode(_iv).decode("utf-8")
+        assert len(_b64) == 24

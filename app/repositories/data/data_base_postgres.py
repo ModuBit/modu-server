@@ -20,7 +20,7 @@ import logging
 from contextlib import contextmanager, AbstractContextManager
 from typing import Callable
 
-from sqlalchemy import text, DateTime, UUID, create_engine, QueuePool, String, TypeDecorator, SmallInteger
+from sqlalchemy import text, DateTime, UUID, create_engine, QueuePool, String
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, scoped_session, sessionmaker, Session
 from sqlalchemy.sql.ddl import CreateTable
@@ -29,7 +29,7 @@ from ulid import ULID
 log = logging.getLogger()
 
 
-def uid_generator() -> str:
+def _uid_generator() -> str:
     return str(ULID())
 
 
@@ -44,7 +44,7 @@ class PostgresBasePO(DeclarativeBase):
                                     comment='主键ID')
     # 全局ID
     uid: Mapped[str] = mapped_column(String(32), nullable=False,
-                                     default=uid_generator,
+                                     default=_uid_generator,
                                      comment='UID')
     # 创建时间
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False,
@@ -67,28 +67,6 @@ class PostgresBasePO(DeclarativeBase):
         将ORM模型的实例转换为SQL语句
         """
         return CreateTable(self.__table__).compile(dialect=postgresql.dialect()).string
-
-
-class SmallIntBool(TypeDecorator):
-    """
-    定义 bool 与 smallint 之间的映射
-    """
-
-    impl = SmallInteger
-
-    cache_ok = False
-
-    def process_bind_param(self, value, dialect):
-        """
-        Convert Python bool to database int
-        """
-        return 1 if value else 0
-
-    def process_result_value(self, value, dialect):
-        """
-        Convert database int to Python bool
-        """
-        return value != 0
 
 
 class PostgresDatabase:

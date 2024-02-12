@@ -15,6 +15,7 @@ limitations under the License.
 """
 
 from datetime import datetime, timedelta
+from typing import Union
 
 from jose import jwt, ExpiredSignatureError, JWTError
 from passlib.context import CryptContext
@@ -43,7 +44,7 @@ def verify_password(password: str, password_hash: str) -> bool:
     return pwd_context.verify(password, password_hash)
 
 
-def jose_encode(payload: dict, secret: str, algorithm: str, expires_minutes: int):
+def jose_encode(payload: dict, secret: str, algorithm: str, expires_minutes: Union[int, float]):
     """
     jose 令牌
     :param payload: 负载
@@ -72,4 +73,4 @@ def jose_decode(token: str, secret: str, algorithm: str):
     except ExpiredSignatureError:
         raise UnauthorizedError('Token has expired.')
     except JWTError:
-        raise UnauthorizedError('Invalid Token')
+        raise UnauthorizedError('Invalid Token.')
