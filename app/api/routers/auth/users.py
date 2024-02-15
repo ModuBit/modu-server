@@ -15,6 +15,7 @@ limitations under the License.
 """
 
 from fastapi import APIRouter, Depends
+from loguru import logger
 from pydantic import BaseModel
 
 from api.dependencies.principal import current_account
@@ -36,6 +37,7 @@ class AccountDTO(BaseModel):
     status: AccountStatus
 
 
+@logger.catch()
 @router.get(path='/me', response_model=AccountDTO)
 def me(current_user: Account = Depends(current_account)):
     return current_user

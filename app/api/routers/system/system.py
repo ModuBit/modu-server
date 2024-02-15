@@ -16,12 +16,14 @@ limitations under the License.
 
 from dependency_injector.wiring import inject, Provide
 from fastapi import APIRouter, Depends
+from loguru import logger
 
 from app_container import AppContainer
 
 router = APIRouter()
 
 
+@logger.catch()
 @router.get('/system')
 @inject
 def system(config: dict = Depends(Provide[AppContainer.config])):

@@ -14,8 +14,8 @@
 
 # 应用信息
 app:
-  title: Cube Chat | Speek FREELY with Me!
-  description: Think as you think and Reach as you reach | 想你所想及你所及
+  title: Cube Chat | Speak FREELY with Me!
+  description: Empower Your Ideas, Expand Your Reach. | 想你所想及你所及
   summary:
   version: '0.0.1'
   terms_of_service:
@@ -67,3 +67,25 @@ security:
     secret: ${JWT_SK:793539f7301c380d6ebb002ffae34eccdb04faae6716b5f7bd1a56c3e04853a1}
     algorithm: HS256
     expire_minutes: ${JWT_EXPIRE_MINUTES:2880}
+
+# 日志配置
+# 更多配置参数见 https://loguru.readthedocs.io/en/stable/api/logger.html#loguru._logger.Logger.add
+logs:
+  # 日志文件
+  sink: logs/app.log
+  # 输出格式
+  format: '<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> | <level>{message}</level> <red>{exception}</red>'
+  # 输出级别
+  level: INFO
+  # 日志分割
+  rotation: '500 MB'
+  # 保留日志文件个数
+  retention: 10
+  # 压缩格式
+  compression: zip
+  # 异常跟踪是否应显示变量值以简化调试
+  diagnose: ${LOGS_DIAGNOSIS:False}
+  # 要记录的消息是否应在到达 sink 之前首先通过多进程安全队列
+  enqueue: True
+  # 是否应自动捕获 sink 处理日志消息时发生的错误
+  catch: True

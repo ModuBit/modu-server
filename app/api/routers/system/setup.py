@@ -16,6 +16,7 @@ limitations under the License.
 
 from dependency_injector.wiring import inject, Provide
 from fastapi import APIRouter, Depends
+from loguru import logger
 from pydantic import BaseModel, EmailStr, constr
 
 from app_container import AppContainer
@@ -33,11 +34,12 @@ class InitializeCmd(BaseModel):
     password: constr(min_length=6, max_length=32, strip_whitespace=True, pattern=r'^[a-zA-Z][a-zA-Z0-9_!@#$%&*]{5,31}$')
 
 
+@logger.catch()
 @router.get('/setup')
 @inject
 def initialized_status(
         init_system: InitService = Depends(
-            Provide[AppContainer.service_container.init_system]
+            Provide[AppContainer.service_container.system_container.init_system]
         )
 ):
     """
@@ -47,12 +49,13 @@ def initialized_status(
     return init_system.is_initialized()
 
 
+@logger.catch()
 @router.post('/setup')
 @inject
 def initialize(
         init_data: InitializeCmd,
         init_service: InitService = Depends(
-            Provide[AppContainer.service_container.init_system]
+            Provide[AppContainer.service_container.system_container.init_system]
         )
 ):
     """

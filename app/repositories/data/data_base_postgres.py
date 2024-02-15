@@ -16,17 +16,15 @@ limitations under the License.
 
 import datetime
 import json
-import logging
 from contextlib import contextmanager, AbstractContextManager
 from typing import Callable
 
+from loguru import logger
 from sqlalchemy import text, DateTime, UUID, create_engine, QueuePool, String
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, scoped_session, sessionmaker, Session
 from sqlalchemy.sql.ddl import CreateTable
 from ulid import ULID
-
-log = logging.getLogger()
 
 
 def _uid_generator() -> str:
@@ -103,7 +101,7 @@ class PostgresDatabase:
         try:
             yield session
         except Exception:
-            log.exception("Session rollback because of exception")
+            logger.exception("Session rollback because of exception")
             session.rollback()
             raise
         finally:

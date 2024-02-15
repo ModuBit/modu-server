@@ -27,7 +27,7 @@ handlers:
     level: INFO
     formatter: default
     encoding: utf8
-    filename: ~/logs/cube-chat/app.log
+    filename: logs/app.log
     maxBytes: 104857600
     backupCount: 10
 root:

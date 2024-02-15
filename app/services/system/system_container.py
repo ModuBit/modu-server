@@ -17,10 +17,12 @@ limitations under the License.
 from dependency_injector import containers, providers
 
 from repositories import DataContainer, OssContainer, VectorContainer
-from .system import SystemContainer
+from .account_service import AccountService
+from .init_service import InitService
+from .team_service import TeamService
 
 
-class ServiceContainer(containers.DeclarativeContainer):
+class SystemContainer(containers.DeclarativeContainer):
     """
     服务容器
     """
@@ -31,11 +33,22 @@ class ServiceContainer(containers.DeclarativeContainer):
     oss_container: OssContainer = providers.DependenciesContainer()
     vector_container: VectorContainer = providers.DependenciesContainer()
 
-    # 系统容器
-    system_container: SystemContainer = providers.Container(
-        SystemContainer,
-        config=config,
-        data_container=data_container,
-        oss_container=oss_container,
-        vector_container=vector_container,
+    # 初始化服务
+    init_system: InitService = providers.Singleton(
+        InitService,
+        account_repository=data_container.account_repository,
+        team_repository=data_container.team_repository
+    )
+
+    # 账号服务
+    account_service: AccountService = providers.Singleton(
+        AccountService,
+        account_repository=data_container.account_repository,
+        jwt_config=config.security.jwt,
+    )
+
+    # 团队服务
+    team_service: TeamService = providers.Singleton(
+        TeamService,
+        team_repository=data_container.team_repository
     )

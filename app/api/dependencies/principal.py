@@ -30,7 +30,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/api/login')
 @inject
 async def current_account(
         token: str = Depends(oauth2_scheme),
-        account_service=Depends(Provide[AppContainer.service_container.account_service])) -> Account:
+        account_service=Depends(Provide[AppContainer.service_container.system_container.account_service])) -> Account:
     """
     获取当前登录用户账号
     :param token: token
@@ -48,7 +48,7 @@ async def current_account(
 @inject
 async def token_verify(
         token: str = Depends(oauth2_scheme),
-        account_service=Depends(Provide[AppContainer.service_container.account_service])):
+        account_service=Depends(Provide[AppContainer.service_container.system_container.account_service])):
     """
     验证token
     :param token: token

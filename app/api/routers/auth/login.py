@@ -17,19 +17,21 @@ limitations under the License.
 from dependency_injector.wiring import inject, Provide
 from fastapi import APIRouter, Depends
 from fastapi.security import OAuth2PasswordRequestForm
+from loguru import logger
 
 from app_container import AppContainer
-from services import AccountService
+from services.system import AccountService
 
 router = APIRouter()
 
 
+@logger.catch()
 @router.post('/login')
 @inject
 def login(
         form_data: OAuth2PasswordRequestForm = Depends(),
         account_service: AccountService = Depends(
-            Provide[AppContainer.service_container.account_service]
+            Provide[AppContainer.service_container.system_container.account_service]
         )
 ):
     """
@@ -45,6 +47,7 @@ def login(
     }
 
 
+@logger.catch()
 @router.get('/logout')
 def logout():
     return

@@ -14,21 +14,22 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import logging.config
 from contextlib import asynccontextmanager
 
 import uvicorn
-import yaml
 from fastapi import FastAPI
+from loguru import logger
 
 import app_container
 from api.middlewares import register as middlewares_register
 from api.routers import register as routers_register
 
-# 日志配置
-with open('logging.yml', 'r') as f:
-    config = yaml.safe_load(f)
-    logging.config.dictConfig(config)
+
+def log_config(config: dict):
+    """
+    日志配置
+    """
+    logger.add(**config)
 
 
 @asynccontextmanager
@@ -71,6 +72,9 @@ def create_app() -> FastAPI:
 
 # 创建应用
 app = create_app()
+
+# 配置日志
+log_config(app.container.config.get('logs'))
 
 # 注册路由
 routers_register.register(app)

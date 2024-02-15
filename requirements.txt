@@ -55,7 +55,7 @@ pyyaml~=6.0.1
 python-ulid~=2.2.0
 
 ## https://loguru.readthedocs.io/en/stable/
-# loguru~=0.7.2
+loguru~=0.7.2
 
 ## [Eventbus Blinker](https://blinker.readthedocs.io/)
 # blinker~=1.7.0
