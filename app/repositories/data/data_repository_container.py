@@ -16,11 +16,9 @@ limitations under the License.
 
 from dependency_injector import containers, providers
 
-from .account.AccountRepository import AccountRepository
-from .account.AccountRepositoryPostgres import AccountRepositoryPostgres
+from .account import AccountRepository, AccountRepositoryPostgres
 from .data_base_postgres import PostgresDatabase
-from .team.TeamRepository import TeamRepository
-from .team.TeamRepositoryPostgres import TeamRepositoryPostgres
+from .team import TeamRepository, TeamRepositoryPostgres
 
 
 class DataContainer(containers.DeclarativeContainer):

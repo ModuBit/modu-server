@@ -16,7 +16,7 @@ limitations under the License.
 
 from dependency_injector import containers, providers
 
-from repositories import DataContainer, OssContainer, VectorContainer
+from repositories import DataContainer, StorageContainer, VectorContainer
 from .account_service import AccountService
 from .init_service import InitService
 from .team_service import TeamService
@@ -30,7 +30,7 @@ class SystemContainer(containers.DeclarativeContainer):
     config = providers.Configuration()
 
     data_container: DataContainer = providers.DependenciesContainer()
-    oss_container: OssContainer = providers.DependenciesContainer()
+    storage_container: StorageContainer = providers.DependenciesContainer()
     vector_container: VectorContainer = providers.DependenciesContainer()
 
     # 初始化服务

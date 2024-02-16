@@ -14,8 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from .oss_repository_container import OssContainer
+from .loguru_config import loguru_config
+from .opentelemetry_config import ot_config, ot_instrument_loguru
 
 __all__ = [
-    'OssContainer',
+    loguru_config,
+    ot_config,
+    ot_instrument_loguru,
 ]

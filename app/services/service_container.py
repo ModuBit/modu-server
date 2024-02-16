@@ -16,7 +16,8 @@ limitations under the License.
 
 from dependency_injector import containers, providers
 
-from repositories import DataContainer, OssContainer, VectorContainer
+from repositories import DataContainer, StorageContainer, VectorContainer
+from .llm.llm_container import LLMContainer
 from .system import SystemContainer
 
 
@@ -28,7 +29,7 @@ class ServiceContainer(containers.DeclarativeContainer):
     config = providers.Configuration()
 
     data_container: DataContainer = providers.DependenciesContainer()
-    oss_container: OssContainer = providers.DependenciesContainer()
+    storage_container: StorageContainer = providers.DependenciesContainer()
     vector_container: VectorContainer = providers.DependenciesContainer()
 
     # 系统容器
@@ -36,6 +37,12 @@ class ServiceContainer(containers.DeclarativeContainer):
         SystemContainer,
         config=config,
         data_container=data_container,
-        oss_container=oss_container,
+        storage_container=storage_container,
         vector_container=vector_container,
+    )
+
+    # LLM容器
+    llm_container: LLMContainer = providers.Container(
+        LLMContainer,
+        config=config,
     )

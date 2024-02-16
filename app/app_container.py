@@ -39,6 +39,6 @@ class AppContainer(containers.DeclarativeContainer):
         services.ServiceContainer,
         config=config,
         data_container=repository_container.data_container,
-        oss_container=repository_container.oss_container,
+        storage_container=repository_container.storage_container,
         vector_container=repository_container.vector_container,
     )

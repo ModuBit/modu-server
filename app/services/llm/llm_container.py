@@ -14,14 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from .data.data_repository_container import DataContainer
-from .storage.storage_repository_container import StorageContainer
-from .repository_container import RepositoryContainer
-from .vector.vector_repository_container import VectorContainer
+from dependency_injector import containers, providers
 
-__all__ = [
-    'RepositoryContainer',
-    'DataContainer',
-    'StorageContainer',
-    'VectorContainer',
-]
+
+class LLMContainer(containers.DeclarativeContainer):
+    """
+    llm 容器
+    """
+    
+    config = providers.Configuration()

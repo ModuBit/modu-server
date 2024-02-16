@@ -20,7 +20,7 @@ from sqlalchemy import PrimaryKeyConstraint, String, text, Enum
 from sqlalchemy.orm import Mapped, mapped_column
 
 from repositories.data.data_base_postgres import PostgresBasePO
-from repositories.data.team.TeamRepository import TeamRepository
+from repositories.data.team import TeamRepository
 from repositories.data.team.team_models import TeamMemberStatus, TeamMemberRole, Team
 from repositories.data.type_decorator import Bool2SmallInt
 from utils.errors.team_error import TeamCreationError

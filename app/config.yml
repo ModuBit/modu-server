@@ -69,16 +69,16 @@ security:
     expire_minutes: ${JWT_EXPIRE_MINUTES:2880}
 
 # 日志配置
-# 更多配置参数见 https://loguru.readthedocs.io/en/stable/api/logger.html#loguru._logger.Logger.add
-logs:
+# 更多配置参数 https://loguru.readthedocs.io/en/stable/api/logger.html#loguru._logger.Logger.add
+loguru:
   # 日志文件
-  sink: logs/app.log
+  sink: 'logs/app.log'
   # 输出格式
-  format: '<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> | <level>{message}</level> <red>{exception}</red>'
+  format: '<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{line}</cyan> | <cyan>{extra[ot_trace_id]}</cyan>:<cyan>{extra[ot_span_id]}</cyan>:<cyan>{extra[ot_service_name]}</cyan> | <level>{message}</level> <red>{exception}</red>'
   # 输出级别
   level: INFO
   # 日志分割
-  rotation: '500 MB'
+  rotation: '100 MB'
   # 保留日志文件个数
   retention: 10
   # 压缩格式

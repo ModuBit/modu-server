@@ -14,14 +14,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from .data.data_repository_container import DataContainer
-from .storage.storage_repository_container import StorageContainer
-from .repository_container import RepositoryContainer
-from .vector.vector_repository_container import VectorContainer
+import sys
 
-__all__ = [
-    'RepositoryContainer',
-    'DataContainer',
-    'StorageContainer',
-    'VectorContainer',
-]
+from loguru import logger
+
+
+def loguru_config(config: dict):
+    """
+    日志配置
+    """
+    # 先移除自动生成的配置
+    logger.remove()
+    # 再添加新配置
+    logger.add(**config)
+    logger.add(sys.stdout, format=config['format'])

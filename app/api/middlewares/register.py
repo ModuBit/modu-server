@@ -18,7 +18,7 @@ from fastapi import FastAPI
 from fastapi.middleware.gzip import GZipMiddleware
 from starlette.middleware.cors import CORSMiddleware
 
-from . import json_response
+from . import response
 
 
 def register(app: FastAPI):
@@ -27,6 +27,7 @@ def register(app: FastAPI):
     :param app:  FastAPI
     """
     app.add_middleware(GZipMiddleware, minimum_size=1024)
+    response.register(app)
     app.add_middleware(
         CORSMiddleware,
         allow_credentials=True,
@@ -34,4 +35,3 @@ def register(app: FastAPI):
         allow_methods=app.container.config.get('server.cors.allowed_methods'),
         allow_headers=app.container.config.get('server.cors.allowed_headers'),
     )
-    json_response.register(app)

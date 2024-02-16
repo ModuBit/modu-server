@@ -14,10 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from .account.AccountRepository import AccountRepository
 from .data_repository_container import DataContainer
 
 __all__ = [
     'DataContainer',
-    'AccountRepository',
 ]

@@ -15,9 +15,9 @@ limitations under the License.
 """
 
 from fastapi import FastAPI, Depends
-from fastapi.exceptions import RequestValidationError
+from fastapi.exceptions import ValidationException
 from loguru import logger
-from sqlalchemy.exc import OperationalError
+from sqlalchemy.exc import DBAPIError
 from starlette.responses import JSONResponse
 
 from utils.errors.base_error import BaseServiceError
@@ -50,8 +50,8 @@ def exception_handler(app: FastAPI):
     :param app:  FastAPI
     """
 
-    @app.exception_handler(RequestValidationError)
-    async def validation_exception_handler(request, exc: RequestValidationError):
+    @app.exception_handler(ValidationException)
+    async def validation_exception_handler(request, exc: ValidationException):
         """
         参数验证异常
         """
@@ -67,8 +67,8 @@ def exception_handler(app: FastAPI):
         return JSONResponse({'message': exc.message, 'show_type': exc.show_type, 'target': exc.target},
                             status_code=exc.status_code)
 
-    @app.exception_handler(OperationalError)
-    async def sql_exception_handler(request, exc: OperationalError):
+    @app.exception_handler(DBAPIError)
+    async def sql_exception_handler(request, exc: DBAPIError):
         """
         SQL数据库异常
         """

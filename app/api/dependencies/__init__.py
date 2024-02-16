@@ -15,5 +15,6 @@ limitations under the License.
 """
 
 __all__ = [
-    'principal'
+    'principal',
+    'ot_bind'
 ]

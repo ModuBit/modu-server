@@ -14,12 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from dependency_injector import containers, providers
+from .storage_repository_container import StorageContainer
 
-
-class OssContainer(containers.DeclarativeContainer):
-    """
-    OSS容器
-    """
-
-    config = providers.Configuration()
+__all__ = [
+    'StorageContainer',
+]

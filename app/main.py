@@ -18,18 +18,11 @@ from contextlib import asynccontextmanager
 
 import uvicorn
 from fastapi import FastAPI
-from loguru import logger
 
 import app_container
 from api.middlewares import register as middlewares_register
 from api.routers import register as routers_register
-
-
-def log_config(config: dict):
-    """
-    日志配置
-    """
-    logger.add(**config)
+from config import loguru_config, ot_config, ot_instrument_loguru
 
 
 @asynccontextmanager
@@ -74,7 +67,13 @@ def create_app() -> FastAPI:
 app = create_app()
 
 # 配置日志
-log_config(app.container.config.get('logs'))
+loguru_config(app.container.config.get('loguru'))
+
+# 配置OT
+ot_config(app)
+
+# OT trace 配置到日志
+ot_instrument_loguru()
 
 # 注册路由
 routers_register.register(app)

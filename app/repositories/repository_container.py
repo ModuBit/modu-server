@@ -16,7 +16,7 @@ limitations under the License.
 
 from dependency_injector import containers, providers
 
-from . import data, oss, vector
+from . import data, storage, vector
 
 
 class RepositoryContainer(containers.DeclarativeContainer):
@@ -32,9 +32,9 @@ class RepositoryContainer(containers.DeclarativeContainer):
         config=config,
     )
 
-    # oss
-    oss_container: oss.OssContainer = providers.Container(
-        oss.OssContainer,
+    # storage
+    storage_container: storage.StorageContainer = providers.Container(
+        storage.StorageContainer,
         config=config,
     )
 

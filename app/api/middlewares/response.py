@@ -18,29 +18,35 @@ import json
 import time
 
 from fastapi import FastAPI, Request
-from starlette.responses import JSONResponse
+from loguru import logger
+from starlette.responses import JSONResponse, Response
+
+
+def _log(request: Request, response: Response, process_time: float):
+    logger.info(f'{request.client.host} {request.method} {request.url} {response.status_code} {process_time:.2f}ms')
 
 
 def register(app: FastAPI):
     @app.middleware('http')
     async def json_response(request: Request, call_next):
         """
-        对于 application-json的响应进行统一响应包装
+        对于 application-json 的响应进行统一响应包装
         :param request: 请求
         :param call_next: 下一个处理器
         :return: {
             success: True,
             code: 200,
-            content: ''
+            content: dict | literal value
         }
         """
 
         start_time = time.time()
         response = await call_next(request)
         process_time = (time.time() - start_time) * 1000
-        response.headers["X-Process-Time"] = str(process_time)
+        response.headers["X-Process-Time"] = f"{process_time:.2f}"
 
         if request.url.path.endswith('.json') or request.url.path.endswith('.txt'):
+            _log(request=request, response=response, process_time=process_time)
             return response
 
         # 判断request accept 是否为 application/json，包装response的body内容
@@ -51,6 +57,7 @@ def register(app: FastAPI):
                 original_body += chunk
 
             if not original_body:
+                _log(request=request, response=response, process_time=process_time)
                 return response
 
             modified_body = {
@@ -59,11 +66,13 @@ def register(app: FastAPI):
                 'content': json.loads(original_body),
             }
 
-            modified_headers = {name: value for name, value in response.headers.items() if
-                                name.lower() != 'content-length'}
+            modified_headers = {
+                name: value for name, value in response.headers.items() if name.lower() != 'content-length'
+            }
 
             response = JSONResponse(content=modified_body,
                                     status_code=response.status_code,
                                     headers=modified_headers)
 
+        _log(request=request, response=response, process_time=process_time)
         return response

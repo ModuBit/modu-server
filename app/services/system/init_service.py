@@ -16,7 +16,7 @@ limitations under the License.
 
 from repositories.data.account.AccountRepository import AccountRepository
 from repositories.data.account.account_models import Account, AccountStatus
-from repositories.data.team.TeamRepository import TeamRepository
+from repositories.data.team import TeamRepository
 from repositories.data.team.team_models import Team
 from utils.auth import hash_password
 from utils.errors.base_error import ErrorShowType

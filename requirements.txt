@@ -60,6 +60,13 @@ loguru~=0.7.2
 ## [Eventbus Blinker](https://blinker.readthedocs.io/)
 # blinker~=1.7.0
 
+## [opentelemetry](https://opentelemetry.io/docs/languages/python/getting-started/)
+## [ot-fastapi](https://github.com/open-telemetry/opentelemetry-python-contrib/tree/main/instrumentation/opentelemetry-instrumentation-fastapi)
+opentelemetry-api~=1.22.0
+opentelemetry-sdk~=1.22.0
+opentelemetry-instrumentation~=0.43b0
+opentelemetry-instrumentation-fastapi~=0.43b0
+
 # LLM
 
 ## [LangChain](https://python.langchain.com/docs)
