@@ -13,17 +13,3 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-
-from .account import AccountRepository
-from .data_repository_container import get_repository, get_database
-from .database import Database
-from .team import TeamRepository
-
-database: Database = get_database()
-account_repository: AccountRepository = get_repository('account')
-team_repository: TeamRepository = get_repository('team')
-
-__all__ = [
-    account_repository,
-    team_repository,
-]

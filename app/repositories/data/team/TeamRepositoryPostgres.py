@@ -17,17 +17,14 @@ limitations under the License.
 import os
 
 from sqlalchemy import PrimaryKeyConstraint, String, text, Enum
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, Session
 
-from repositories.data.data_base_postgres import PostgresBasePO
+from repositories.data.database import with_session, BasePO
+from repositories.data.database_postgres import PostgresBasePO
 from repositories.data.team import TeamRepository
-from repositories.data.team.team_models import TeamMemberStatus, TeamMemberRole, Team
-from repositories.data.type_decorator import Bool2SmallInt
+from repositories.data.team.team_models import TeamMemberStatus, TeamMemberRole, Team, TeamMembership
+from repositories.data.type_decorator import Bool2SmallInt, Bytes2String
 from utils.errors.team_error import TeamCreationError
-
-
-def _iv_generator() -> bytes:
-    return os.urandom(16)
 
 
 class TeamRepositoryPostgres(TeamRepository):
@@ -35,25 +32,27 @@ class TeamRepositoryPostgres(TeamRepository):
     团队数据存储的PostgreSQL实现
     """
 
-    def create(self, team: Team):
-        with self._session_factory() as session:
-            team_po = TeamPO(**team.__dict__)
-            session.add(team_po)
-            session.commit()
-            session.add(TeamMembershipPO(team_uid=team_po.uid,
-                                         member_uid=team.creator_uid,
-                                         member_role=TeamMemberRole.OWNER,
-                                         member_status=TeamMemberStatus.ACTIVE))
-            session.commit()
+    @with_session
+    def create(self, team: Team, session: Session) -> Team:
+        team_po = TeamPO(**team.__dict__)
+        team_po.uid = BasePO.uid_generate()
+        session.add(team_po)
+        session.add(TeamMembershipPO(team_uid=team_po.uid,
+                                     member_uid=team.creator_uid,
+                                     member_role=TeamMemberRole.OWNER,
+                                     member_status=TeamMemberStatus.ACTIVE))
+        team.uid = team_po.uid
+        return team
 
-    def add_team_membership(self, team_uid: str, member_uid: str, role: TeamMemberRole):
+    @with_session
+    def add_team_membership(self, team_uid: str, member_uid: str, role: TeamMemberRole, session: Session) -> TeamMembership:
         if role == TeamMemberRole.OWNER:
             raise TeamCreationError(message='无法添加为团队OWNER')
 
-        with self._session_factory() as session:
-            session.add(TeamMembershipPO(team_uid=team_uid, member_uid=member_uid,
-                                         role=role, status=TeamMemberStatus.PENDING))
-            session.commit()
+        membership_po = TeamMembershipPO(team_uid=team_uid, member_uid=member_uid,
+                                         role=role, status=TeamMemberStatus.PENDING)
+        session.add(membership_po)
+        return TeamMembership(**membership_po.as_dict())
 
 
 class TeamPO(PostgresBasePO):
@@ -72,8 +71,8 @@ class TeamPO(PostgresBasePO):
     is_personal: Mapped[bool] = mapped_column(Bool2SmallInt, nullable=False,
                                               server_default=text('0'),
                                               comment='是否为个人团队')
-    iv: Mapped[bytes] = mapped_column(String(32), nullable=False,
-                                      default=_iv_generator, comment='初始向量')
+    iv: Mapped[bytes] = mapped_column(Bytes2String, nullable=False,
+                                      default=lambda _: os.urandom(16), comment='初始向量')
     is_deleted: Mapped[bool] = mapped_column(Bool2SmallInt, nullable=False,
                                              server_default=text('0'),
                                              comment='是否已删除')

@@ -19,9 +19,9 @@ from contextlib import asynccontextmanager
 import uvicorn
 from fastapi import FastAPI
 
-import app_container
 from api.middlewares import register as middlewares_register
 from api.routers import register as routers_register
+from config import app_config
 from config import loguru_config, ot_config, ot_instrument_loguru
 
 
@@ -39,26 +39,18 @@ async def lifespan(fast_app: FastAPI):
 
     # shutdown
     # 应用关闭之前
-    fast_app.container.shutdown_resources()
+    pass
 
 
 def create_app() -> FastAPI:
     """
-    初始化Container容器
     创建FastAPI实例
     :return: FastAPI实例
     """
 
-    # 初始化容器
-    container = app_container.AppContainer()
-    # 初始化资源
-    container.init_resources()
-    # 注入依赖
-    container.wire(packages=['api', 'services', 'repositories', 'utils'])
-
     # 创建FastAPI实例
-    fast_app = FastAPI(**container.config.get('app'), lifespan=lifespan)
-    fast_app.container = container
+    fast_app = FastAPI(**app_config.get('app', {}), lifespan=lifespan)
+    fast_app.config = app_config
 
     return fast_app
 
@@ -67,7 +59,7 @@ def create_app() -> FastAPI:
 app = create_app()
 
 # 配置日志
-loguru_config(app.container.config.get('loguru'))
+loguru_config(app_config.get('loguru'))
 
 # 配置OT
 ot_config(app)
@@ -89,10 +81,10 @@ if __name__ == '__main__':
     本地开发使用 python main.py
     生产请使用 Gunicorn 进行部署
     """
-    server_config = app.container.config.get('server')
+    server_config = app_config.get('server', {})
     uvicorn.run(
         'main:app',
         reload=True,
-        host=server_config.get('host'),
-        port=server_config.get('port'),
+        host=server_config.get('host', '0.0.0.0'),
+        port=server_config.get('port', 8080),
     )

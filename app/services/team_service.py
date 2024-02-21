@@ -14,14 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from .account_service import AccountService
-from .init_service import InitService
-from .system_container import SystemContainer
-from .team_service import TeamService
+from repositories.data import team_repository
+from repositories.data.team.team_models import Team, TeamMemberRole
 
-__all__ = [
-    'SystemContainer',
-    'InitService',
-    'AccountService',
-    'TeamService'
-]
+
+def create(team: Team):
+    team_repository.create(team)
+
+
+def add_team_membership(team_uid: str, member_uid: str, role: TeamMemberRole):
+    team_repository.add_team_membership(
+        team_uid, member_uid,
+        TeamMemberRole.MEMBER if role == TeamMemberRole.OWNER else role)

@@ -16,8 +16,11 @@ limitations under the License.
 
 import enum
 from dataclasses import dataclass
+from typing import Optional
 
-from utils.dataclass import tolerant
+from pydantic import BaseModel
+
+from utils.reflect.dataclass import tolerant
 
 
 class AccountStatus(str, enum.Enum):
@@ -25,32 +28,30 @@ class AccountStatus(str, enum.Enum):
     用户状态
     """
 
-    # 待激活
     PENDING = 'pending'
-    # 已激活
+    """待激活"""
     ACTIVE = 'active'
-    # 已禁用
+    """已激活"""
     BANNED = 'banned'
-    # 已注销
+    """已禁用"""
     CLOSED = 'closed'
+    """已注销"""
 
 
-@tolerant
-@dataclass
-class Account:
+class Account(BaseModel):
     """
     账号
     """
 
-    # 账号ID
-    uid: str | None
-    # 账号名称
+    uid: Optional[str] = None
+    """账号ID"""
     name: str
-    # 账号邮箱
+    """账号名称"""
     email: str
-    # 账号密码
-    password: str | None
-    # 账号头像
-    avatar: str | None
-    # 账号状态
+    """账号邮箱"""
+    password: Optional[str] = None
+    """账号密码"""
+    avatar: Optional[str] = None
+    """账号头像"""
     status: AccountStatus
+    """账号状态"""

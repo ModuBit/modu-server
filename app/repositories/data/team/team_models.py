@@ -15,32 +15,30 @@ limitations under the License.
 """
 
 import enum
-from dataclasses import dataclass
+from typing import Optional
 
-from utils.dataclass import tolerant
+from pydantic import BaseModel, Field
 
 
-@tolerant
-@dataclass
-class Team:
+class Team(BaseModel):
     """
     团队
     """
 
-    # 团队ID
-    uid: str
-    # 创建人
+    uid: Optional[str] = None
+    """团队ID"""
     creator_uid: str
-    # 团队名称
+    """创建人"""
     name: str
-    # 团队简介
-    description: str | None
-    # 是否个人团队
+    """团队名称"""
+    description: Optional[str] = None
+    """团队简介"""
     is_personal: bool
-    # 初始向量
-    iv: bytes
-    # 是否删除
-    is_deleted: bool
+    """是否个人团队"""
+    iv: Optional[bytes] = None
+    """初始向量"""
+    is_deleted: bool = Field(default=False)
+    """是否删除"""
 
 
 class TeamMemberStatus(str, enum.Enum):
@@ -48,12 +46,12 @@ class TeamMemberStatus(str, enum.Enum):
     团队成员状态
     """
 
-    # 待确认
     PENDING = 'pending'
-    # 已激活
+    """待确认"""
     ACTIVE = 'active'
-    # 已注销
+    """已激活"""
     CLOSED = 'closed'
+    """已注销"""
 
 
 class TeamMemberRole(str, enum.Enum):
@@ -61,26 +59,24 @@ class TeamMemberRole(str, enum.Enum):
     团队成员角色
     """
 
-    # owner
     OWNER = 'owner'
-    # 管理员
+    """owner"""
     ADMIN = 'admin'
-    # 成员
+    """管理员"""
     MEMBER = 'member'
+    """成员"""
 
 
-@tolerant
-@dataclass
-class TeamMembership:
+class TeamMembership(BaseModel):
     """
     团队成员
     """
 
-    # 团队ID
     team_uid: str
-    # 成员ID
+    """团队ID"""
     member_uid: str
-    # 成员角色
+    """成员ID"""
     member_role: TeamMemberRole
-    # 成员状态
+    """成员角色"""
     member_status: TeamMemberStatus
+    """成员状态"""

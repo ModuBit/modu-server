@@ -1,11 +1,11 @@
 # WEB
 
 ## https://fastapi.tiangolo.com/
-fastapi[all]~=0.103.2
+fastapi[all]~=0.109.2
 ## uvicorn[standard]~=0.23.2
 
 ## https://github.com/andrew-d/python-multipart/
-# python-multipart~=0.0.6
+# python-multipart~=0.0.9
 
 ## https://github.com/sysid/sse-starlette/
 # sse-starlette~=1.6.5
@@ -38,12 +38,12 @@ oss2~=2.18.3
 # 工具
 
 ## [DI](https://python-dependency-injector.ets-labs.org/)
-dependency-injector~=4.0
+# dependency-injector~=4.0
 
 ## [密码库passlib](https://passlib.readthedocs.io/)
 passlib[bcrypt]~=1.7.4
 ## [密码库cryptography](https://cryptography.io/)
-cryptography~=41.0.3
+cryptography~=42.0.4
 
 ## [JWT](https://python-jose.readthedocs.io/)
 python-jose[cryptography]~=3.3.0

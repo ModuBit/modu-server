@@ -14,12 +14,42 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from dependency_injector import containers, providers
+from typing import Optional
+
+from pydantic import BaseModel
 
 
-class LLMContainer(containers.DeclarativeContainer):
+class I18nOption(BaseModel):
     """
-    llm 容器
+    国际化
     """
-    
-    config = providers.Configuration()
+    default: str
+    en_us: Optional[str] = None
+    zh_cn: Optional[str] = None
+
+
+class IconOption(BaseModel):
+    """
+    图标
+    """
+
+    class Icon(BaseModel):
+        """
+        图标
+        """
+        default: str
+        en_us: Optional[str] = None
+        zh_cn: Optional[str] = None
+
+    small: Icon
+    large: Icon
+
+
+class HelpOption(BaseModel):
+    """
+    帮助
+    """
+    title: I18nOption
+    """标题"""
+    url: str
+    """链接"""

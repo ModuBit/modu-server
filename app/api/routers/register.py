@@ -21,7 +21,8 @@ from sqlalchemy.exc import DBAPIError
 from starlette.responses import JSONResponse
 
 from utils.errors.base_error import BaseServiceError
-from . import auth, system
+from .auth import login, users
+from .system import setup, system
 from ..dependencies.principal import token_verify
 
 
@@ -31,15 +32,16 @@ def register(app: FastAPI):
     :param app:  FastAPI
     """
 
-    app.include_router(system.setup.router, prefix='/api',
+    app.include_router(setup.router, prefix='/api',
                        tags=['init | 初始化'])
 
-    app.include_router(system.system.router, prefix='/api',
+    app.include_router(system.router, prefix='/api',
                        tags=['info | 系统信息'])
 
-    app.include_router(auth.login.router, prefix='/api',
+    app.include_router(login.router, prefix='/api',
                        tags=['auth | 认证'])
-    app.include_router(auth.users.router, prefix='/api/user',
+
+    app.include_router(users.router, prefix='/api/user',
                        dependencies=[Depends(token_verify)],
                        tags=['user | 用户'])
 

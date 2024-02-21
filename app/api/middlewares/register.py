@@ -18,6 +18,8 @@ from fastapi import FastAPI
 from fastapi.middleware.gzip import GZipMiddleware
 from starlette.middleware.cors import CORSMiddleware
 
+from config import app_config
+from utils.dictionary import dict_get
 from . import response
 
 
@@ -31,7 +33,7 @@ def register(app: FastAPI):
     app.add_middleware(
         CORSMiddleware,
         allow_credentials=True,
-        allow_origins=app.container.config.get('server.cors.allowed_origins'),
-        allow_methods=app.container.config.get('server.cors.allowed_methods'),
-        allow_headers=app.container.config.get('server.cors.allowed_headers'),
+        allow_origins=dict_get(app_config, 'server.cors.allowed_origins', ['*']),
+        allow_methods=dict_get(app_config, 'server.cors.allowed_methods', ['*']),
+        allow_headers=dict_get(app_config, 'server.cors.allowed_headers', ['*']),
     )

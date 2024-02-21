@@ -14,17 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from dependency_injector.wiring import inject, Provide
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 from loguru import logger
 
-from app_container import AppContainer
+from config import app_config
 
 router = APIRouter()
 
 
 @logger.catch()
 @router.get('/system')
-@inject
-def system(config: dict = Depends(Provide[AppContainer.config])):
-    return config.get('app')
+def system():
+    return app_config.get('app', {})

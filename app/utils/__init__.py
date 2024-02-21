@@ -16,6 +16,8 @@ limitations under the License.
 
 __all__ = [
     'errors',
+    'crypto',
+    'reflect',
     'auth',
-    'dataclass',
+    'dictionary'
 ]

@@ -14,45 +14,47 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from abc import ABC, abstractmethod
-from contextlib import AbstractContextManager
-from typing import Callable
+from abc import abstractmethod
 
 from sqlalchemy.orm import Session
 
 from .account_models import Account
+from ..database import Repository, Database
 
 
-class AccountRepository(ABC):
+class AccountRepository(Repository):
     """
     账号数据存储的定义
     """
 
-    def __init__(self, session_factory: Callable[..., AbstractContextManager[Session]]):
-        self._session_factory = session_factory
+    def __init__(self, database: Database):
+        Repository.__init__(self, database)
 
     @abstractmethod
-    def find_one_by_email(self, email: str) -> Account:
+    def find_one_by_email(self, email: str, session: Session) -> Account:
         """
         通过email查找账号
         :param email: 邮箱
+        :param session: Session
         :return: 账号
         """
         raise NotImplementedError()
 
     @abstractmethod
-    def create(self, account: Account) -> Account:
+    def create(self, account: Account, session: Session) -> Account:
         """
         创建账号
-        :param account:
+        :param account: 账号
+        :param session: Session
         :return:
         """
         raise NotImplementedError()
 
     @abstractmethod
-    def count_all(self) -> int:
+    def count_all(self, session: Session) -> int:
         """
         统计所有账号
+        :param session: Session
         :return: 账号数量
         """
         raise NotImplementedError()

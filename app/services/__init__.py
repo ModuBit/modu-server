@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from .service_container import ServiceContainer
-
 __all__ = [
-    'ServiceContainer'
+    'init_service',
+    'account_service',
+    'team_service',
 ]

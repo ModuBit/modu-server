@@ -14,23 +14,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from dependency_injector.wiring import Provide, inject
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 from starlette.status import HTTP_401_UNAUTHORIZED
 
-from app_container import AppContainer
 from repositories.data.account.account_models import Account
+from services import account_service
 from utils.errors.account_error import UnauthorizedError
 from utils.errors.base_error import ErrorShowType
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/api/login')
 
 
-@inject
-async def current_account(
-        token: str = Depends(oauth2_scheme),
-        account_service=Depends(Provide[AppContainer.service_container.system_container.account_service])) -> Account:
+async def current_account(token: str = Depends(oauth2_scheme)) -> Account:
     """
     获取当前登录用户账号
     :param token: token
@@ -45,10 +41,7 @@ async def current_account(
     return account
 
 
-@inject
-async def token_verify(
-        token: str = Depends(oauth2_scheme),
-        account_service=Depends(Provide[AppContainer.service_container.system_container.account_service])):
+async def token_verify(token: str = Depends(oauth2_scheme)):
     """
     验证token
     :param token: token

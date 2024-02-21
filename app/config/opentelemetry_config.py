@@ -38,7 +38,7 @@ def ot_config(fast_app: FastAPI):
     # 初始化TracerProvider
     trace.set_tracer_provider(TracerProvider())
 
-    # 创建一个控制台导出器并配置它以在TracerProvider上
+    # 创建一个导出器并配置在TracerProvider上
     tracer_provider = trace.get_tracer_provider()
     span_processor = BatchSpanProcessor(InMemorySpanExporter())
     tracer_provider.add_span_processor(span_processor)

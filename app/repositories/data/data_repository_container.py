@@ -14,38 +14,75 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from dependency_injector import containers, providers
+from typing import Optional, TypeVar, Callable, Dict
 
+from config import app_config
+from utils.dictionary import dict_get
 from .account import AccountRepository, AccountRepositoryPostgres
-from .data_base_postgres import PostgresDatabase
+from .database import Database
+from .database_postgres import PostgresDatabase
 from .team import TeamRepository, TeamRepositoryPostgres
 
+RepositoryInstance = TypeVar('RepositoryInstance')
 
-class DataContainer(containers.DeclarativeContainer):
+_database: Optional[Database] = None
+_database_mapping = {
+    'postgres': PostgresDatabase,
+}
+
+_account_repository: Optional[AccountRepository] = None
+_account_repository_mapping = {
+    'postgres': AccountRepositoryPostgres,
+}
+
+_team_repository: Optional[TeamRepository] = None
+_team_repository_mapping = {
+    'postgres': TeamRepositoryPostgres,
+}
+
+
+def get_database() -> Database:
     """
-    数据容器
+    根据配置中的数据库类型创建并返回一个Database实例。
+
+    :return: Database实例
+    :raises ValueError: 如果数据库类型不受支持
     """
 
-    config = providers.Configuration()
+    global _database
 
-    # 数据库 PostgreSQL
-    db_postgres = providers.Singleton(
-        PostgresDatabase,
-        host=config.repository.data.postgres.host,
-        port=config.repository.data.postgres.port,
-        database=config.repository.data.postgres.database,
-        username=config.repository.data.postgres.username,
-        password=config.repository.data.postgres.password,
-    )
+    if _database:
+        return _database
 
-    # 账号
-    account_repository: AccountRepository = providers.Selector(
-        config.repository.data.type,
-        postgres=providers.Singleton(AccountRepositoryPostgres, session_factory=db_postgres.provided.session)
-    )
+    database_type = dict_get(app_config, 'repository.data.type')
+    if database_type not in _database_mapping:
+        raise ValueError(f"Unsupported database type: {database_type}")
 
-    # 团队
-    team_repository: TeamRepository = providers.Selector(
-        config.repository.data.type,
-        postgres=providers.Singleton(TeamRepositoryPostgres, session_factory=db_postgres.provided.session)
-    )
+    config = dict_get(app_config, f"repository.data.{database_type}")
+    _database = _database_mapping[database_type](**config)
+
+    return _database
+
+
+def get_repository(repository_name: str) -> RepositoryInstance:
+    """
+    根据配置中的数据库类型创建对应的Repository实例
+
+    :param repository_name: Repository实例名
+    :raises ValueError: 如果数据库类型不受支持
+    """
+
+    global_repository_name = f"_{repository_name}_repository"
+    global_repository_mapping: Dict[str, Callable[..., RepositoryInstance]] \
+        = globals()[f"{global_repository_name}_mapping"]
+
+    if globals()[global_repository_name]:
+        return globals()[global_repository_name]
+
+    database_type = dict_get(app_config, 'repository.data.type')
+    if database_type not in global_repository_mapping:
+        raise ValueError(f"Unsupported database type: {database_type}")
+
+    repository_instance = global_repository_mapping[database_type](get_database())
+    globals()[global_repository_name] = repository_instance
+    return repository_instance

@@ -14,12 +14,33 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from dependency_injector import containers, providers
+from typing import Optional
+
+from pydantic import BaseModel
+
+from .commons import I18nOption, IconOption, HelpOption
+from .form import FormSchema
 
 
-class VectorContainer(containers.DeclarativeContainer):
+class Provider(BaseModel):
     """
-    向量容器
+    LLM供应商
     """
 
-    config = providers.Configuration()
+    key: str
+    """标识"""
+
+    name: I18nOption
+    """名称"""
+
+    description: Optional[I18nOption] = None
+    """描述"""
+
+    icon: Optional[IconOption] = None
+    """图标"""
+
+    help: Optional[HelpOption] = None
+    """帮助"""
+
+    credential_schemas: Optional[list[FormSchema]] = None
+    """凭证"""

@@ -14,36 +14,39 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from abc import ABC
-from contextlib import AbstractContextManager
-from typing import Callable
+from abc import abstractmethod
 
 from sqlalchemy.orm import Session
 
-from repositories.data.team.team_models import Team, TeamMemberRole
+from .team_models import Team, TeamMemberRole, TeamMembership
+from ..database import Repository, Database
 
 
-class TeamRepository(ABC):
+class TeamRepository(Repository):
     """
     团队数据存储的定义
     """
 
-    def __init__(self, session_factory: Callable[..., AbstractContextManager[Session]]):
-        self._session_factory = session_factory
+    def __init__(self, database: Database):
+        Repository.__init__(self, database)
 
-    def create(self, team: Team):
+    @abstractmethod
+    def create(self, team: Team, session: Session) -> Team:
         """
         创建团队
         :param team: 团队
+        :param session: Session
         """
         raise NotImplementedError
 
-    def add_team_membership(self, team_uid: str, member_uid: str, role: TeamMemberRole):
+    @abstractmethod
+    def add_team_membership(self, team_uid: str, member_uid: str, role: TeamMemberRole,
+                            session: Session) -> TeamMembership:
         """
         添加团队成员
         :param team_uid: 团队UID
         :param member_uid: 成员UID
         :param role: 成员角色
-        :return:
+        :param session: Session
         """
         raise NotImplementedError

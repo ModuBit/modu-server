@@ -14,13 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from dependency_injector.wiring import inject, Provide
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 from loguru import logger
 from pydantic import BaseModel, EmailStr, constr
 
-from app_container import AppContainer
-from services.system.init_service import InitService
+from services import init_service
 
 router = APIRouter()
 
@@ -36,32 +34,19 @@ class InitializeCmd(BaseModel):
 
 @logger.catch()
 @router.get('/setup')
-@inject
-def initialized_status(
-        init_system: InitService = Depends(
-            Provide[AppContainer.service_container.system_container.init_system]
-        )
-):
+def initialized_status():
     """
     获取初始化信息
-    :param init_system: 初始化服务
     """
-    return init_system.is_initialized()
+    return init_service.is_initialized()
 
 
 @logger.catch()
 @router.post('/setup')
-@inject
-def initialize(
-        init_data: InitializeCmd,
-        init_service: InitService = Depends(
-            Provide[AppContainer.service_container.system_container.init_system]
-        )
-):
+def initialize(init_data: InitializeCmd):
     """
     初始化
     :param init_data: 初始化数据
-    :param init_service: 初始化服务
     """
     init_service.initialize(**init_data.model_dump())
     return True

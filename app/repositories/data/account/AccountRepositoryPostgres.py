@@ -15,12 +15,13 @@ limitations under the License.
 """
 
 from sqlalchemy import PrimaryKeyConstraint, String, Enum, text
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, Session
 
-from repositories.data.data_base_postgres import PostgresBasePO
+from repositories.data.database_postgres import PostgresBasePO
 from utils.errors.account_error import AccountLoginError
 from .AccountRepository import AccountRepository
 from .account_models import Account, AccountStatus
+from ..database import with_session, BasePO
 
 
 class AccountRepositoryPostgres(AccountRepository):
@@ -28,21 +29,25 @@ class AccountRepositoryPostgres(AccountRepository):
     账号数据存储的PostgreSQL实现
     """
 
-    def find_one_by_email(self, email: str) -> Account:
-        with self._session_factory() as session:
-            account_model = session.query(AccountPO).filter(AccountPO.email == email).first()
-            if not account_model:
-                raise AccountLoginError(message='邮箱或密码错误')
-            return Account(**account_model.as_dict())
+    @with_session
+    def find_one_by_email(self, email: str, session: Session) -> Account:
+        account_model = session.query(AccountPO).filter(AccountPO.email == email).first()
+        if not account_model:
+            raise AccountLoginError(message='邮箱或密码错误')
+        return Account(**account_model.as_dict())
 
-    def create(self, account: Account) -> None:
-        with self._session_factory() as session:
-            session.add(AccountPO(**account.__dict__))
-            session.commit()
+    @with_session
+    def create(self, account: Account, session: Session) -> Account:
+        account_po = AccountPO(**account.__dict__)
+        account_po.uid = BasePO.uid_generate()
+        session.add(account_po)
 
-    def count_all(self) -> int:
-        with self._session_factory() as session:
-            return session.query(AccountPO).count()
+        account.uid = account_po.uid
+        return account
+
+    @with_session
+    def count_all(self, session: Session) -> int:
+        return session.query(AccountPO).count()
 
 
 class AccountPO(PostgresBasePO):

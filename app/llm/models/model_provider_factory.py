@@ -14,12 +14,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from dependency_injector import containers, providers
+from services.llm.models.entities.provider import Provider
 
 
-class StorageContainer(containers.DeclarativeContainer):
+class ModelProviderFactory:
     """
-    OSS容器
+    LLM模型工厂
     """
 
-    config = providers.Configuration()
+    def __init__(self):
+        pass
+
+    def _get_all_providers(self) -> list[Provider]:
+        """
+        获取所有的Provider
+        :return: Provider
+        """
+        pass
