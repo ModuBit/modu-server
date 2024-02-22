@@ -1,0 +1,31 @@
+key: openai
+name:
+  default: OpenAI
+description:
+  default: OpenAI
+icon:
+  small:
+    default: icon_small.svg
+  large:
+    default: icon_large.svg
+help:
+  title:
+    default: 从 OpenAI 获取 API Key
+    en_us: Get your API Key from OpenAI
+  url: https://platform.openai.com/account/api-keys
+credential_schemas:
+  - data_index: openai_api_key
+    value_type: password
+    title:
+      default: API Key
+    tooltip:
+      default: OpenAI API Key
+    field_props:
+      placeholder:
+        default: 在此输入您的 API Key
+        en_us: Enter your API Key
+    rules:
+      required: True
+      message:
+        default: 请输入 OpenAI API Key
+        en_us: Please enter your OpenAI API Key

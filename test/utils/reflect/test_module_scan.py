@@ -14,10 +14,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from services.llm.models.entities.provider import Provider
+from llm.models.providers.__base.model_provider import ModelProvider
+from llm.models.providers.openai.openai import OpenAIProvider
+
 from utils.reflect.module_scan import load_classes
 
 
 def test_load_classes():
-    load_classes('services.llm.models.providers', Provider, True, 1)
-    pass
+    model_provider_classes = load_classes('llm.models.providers', ModelProvider, True, 1)
+    assert len(model_provider_classes) > 0
+    assert any(model_provider_class == OpenAIProvider for model_provider_class in model_provider_classes)
+
+    model_provider_instances = [model_provider_class() for model_provider_class in model_provider_classes]
+    assert len(model_provider_instances) > 0
+    assert all(
+        isinstance(model_provider_instance, ModelProvider) for model_provider_instance in model_provider_instances)
+    assert any(
+        isinstance(model_provider_instance, OpenAIProvider) for model_provider_instance in model_provider_instances)

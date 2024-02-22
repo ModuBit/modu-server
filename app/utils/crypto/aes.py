@@ -61,7 +61,6 @@ def decrypt(key_material: bytes, iv: bytes, cipher_bytes: bytes) -> bytes:
     """
     解密
     :param key_material: 密钥
-    :param salt: 盐值
     :param iv: 初始向量
     :param cipher_bytes: 待解密字节
     :return: 解密后字节

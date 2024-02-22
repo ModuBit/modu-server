@@ -66,7 +66,7 @@ def safe_load(file_path):
         return yaml.load(f, Loader=yaml.SafeLoader)
 
 
-def load(file_path):
+def full_load(file_path):
     """
     支持使用 ${ENV_VAR_NAME:default}
     see yaml.load
