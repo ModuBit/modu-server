@@ -14,11 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from llm.models.providers.__base.model_provider import ModelProvider
+from llm.model.entities.provider import ModelProvider
 
 
-class TongYiProvider(ModelProvider):
+class ZhiPuProvider(ModelProvider):
     """
-    通义千问
+    智普清言
     """
     pass

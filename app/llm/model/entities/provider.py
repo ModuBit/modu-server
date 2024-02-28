@@ -13,14 +13,39 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-
 from abc import ABC
 from importlib.resources import read_text
 from typing import Optional
 
 import yaml
+from pydantic import BaseModel
 
-from llm.models.entities.provider import ProviderSchema
+from .commons import I18nOption, IconOption, HelpOption
+from .form import FormSchema
+
+
+class ProviderSchema(BaseModel):
+    """
+    LLM供应商
+    """
+
+    key: str
+    """标识"""
+
+    name: I18nOption
+    """名称"""
+
+    description: Optional[I18nOption] = None
+    """描述"""
+
+    icon: Optional[IconOption] = None
+    """图标"""
+
+    help: Optional[HelpOption] = None
+    """帮助"""
+
+    credential_schemas: Optional[list[FormSchema]] = None
+    """凭证"""
 
 
 class ModelProvider(ABC):
@@ -40,8 +65,9 @@ class ModelProvider(ABC):
             return self._provider_schema
 
         module = self.__class__.__module__
-        name = module.split('.')[-1]
-        schema_data = yaml.safe_load(read_text(module, f"{name}.yml"))
+        parent_module = '.'.join(module.split('.')[:-1])
+        name = parent_module.split('.')[-1]
+        schema_data = yaml.safe_load(read_text(parent_module, f"{name}.yml"))
         provider_schema = ProviderSchema(**schema_data)
         self._provider_schema = provider_schema
 

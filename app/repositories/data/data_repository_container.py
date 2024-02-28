@@ -17,6 +17,7 @@ limitations under the License.
 from typing import Optional, TypeVar, Callable, Dict
 
 from config import app_config
+from utils.lifespan import register_pre_destroy_executor
 from utils.dictionary import dict_get
 from .account import AccountRepository, AccountRepositoryPostgres
 from .database import Database
@@ -60,6 +61,8 @@ def get_database() -> Database:
 
     config = dict_get(app_config, f"repository.data.{database_type}")
     _database = _database_mapping[database_type](**config)
+
+    register_pre_destroy_executor(_database.close)
 
     return _database
 

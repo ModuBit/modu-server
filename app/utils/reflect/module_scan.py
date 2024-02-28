@@ -16,13 +16,13 @@ limitations under the License.
 
 import importlib
 import pkgutil
-from typing import TypeVar, Type, List
+from typing import TypeVar, Type
 
 T = TypeVar('T')
 
 
 def load_classes(package_name: str, cls_type: Type[T],
-                 recursive: bool = False, max_depth: int = -1) -> List[Type[T]]:
+                 recursive: bool = False, max_depth: int = -1) -> list[Type[T]]:
     """
     扫描指定包，并加载模块中指定类
     :param package_name: 需要扫描的包含
@@ -35,7 +35,7 @@ def load_classes(package_name: str, cls_type: Type[T],
 
 
 def _load_classes(package_name: str, cls_type: Type[T],
-                  recursive: bool = False, max_depth: int = -1, current_depth: int = 0, ) -> List[Type[T]]:
+                  recursive: bool = False, max_depth: int = -1, current_depth: int = 0, ) -> list[Type[T]]:
     """
     扫描指定包，并加载模块中指定类
     :param package_name: 需要扫描的包含
@@ -46,7 +46,7 @@ def _load_classes(package_name: str, cls_type: Type[T],
     :return: 扫描到的指定类
     """
 
-    cls_types: List[Type[T]] = []
+    cls_types: list[Type[T]] = []
 
     # 加载包
     package = importlib.import_module(package_name)

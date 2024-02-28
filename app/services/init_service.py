@@ -42,6 +42,7 @@ def initialize(name: str, email: str, password: str):
             message='已初始化，请直接登录', status_code=409,
             show_type=ErrorShowType.REDIRECT, target='/login', )
 
+    # 显式使用session（存在多个写动作，保证事务一致性）
     with database.session() as session:
         # 创建账号
         account = account_repository.create(

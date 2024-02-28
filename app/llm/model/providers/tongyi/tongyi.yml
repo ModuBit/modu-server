@@ -1,0 +1,33 @@
+key: openai
+name:
+  default: 通义千问
+  en_us: TONGYI
+description:
+  default: 通义千问
+icon:
+  small:
+    default: icon_s_en.png
+  large:
+    default: icon_l_zh.png
+    en_us: icon_l_en.png
+help:
+  title:
+    default: 从 阿里云 获取 API Key
+    en_us: Get your API key from AliCloud
+  url: https://dashscope.console.aliyun.com/api-key_management
+credential_schemas:
+  - data_index: dashscope_api_key
+    value_type: password
+    title:
+      default: API Key
+    tooltip:
+      default: 通义千问 API Key
+    field_props:
+      placeholder:
+        default: 在此输入您的 API Key
+        en_us: Enter your API Key
+    rules:
+      required: True
+      message:
+        default: 请输入 通义千问 API Key
+        en_us: Please enter your TONGYI API Key

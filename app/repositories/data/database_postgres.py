@@ -17,6 +17,7 @@ limitations under the License.
 import datetime
 import json
 
+from loguru import logger
 from sqlalchemy import text, DateTime, UUID, create_engine, QueuePool, String
 from sqlalchemy.orm import Mapped, mapped_column, scoped_session, sessionmaker, Session
 
@@ -29,6 +30,10 @@ class PostgresDatabase(Database):
     """
 
     def __init__(self, host: str, port: int, database: str, username: str, password: str):
+        self._host = host
+        self._port = port
+        self._database = database
+
         self._engine = create_engine(
             f'postgresql+psycopg2://{username}:{password}@{host}:{port}/{database}',
             json_serializer=lambda obj: json.dumps(obj, ensure_ascii=False),
@@ -50,6 +55,15 @@ class PostgresDatabase(Database):
                 bind=self._engine,
             ),
         )
+        logger.info('=== create postgresql({}) {}:{}/{} ===', id(self), host, port, database)
+
+    def close(self):
+        logger.info('=== close postgresql({}) {}:{}/{} ===', id(self), self._host, self._port, self._database)
+        self._session_factory.remove()
+        self._engine.dispose()
+
+    def __del__(self):
+        self.close()
 
     def get_session(self) -> Session:
         return self._session_factory()

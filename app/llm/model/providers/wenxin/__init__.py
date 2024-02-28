@@ -13,18 +13,3 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-
-from types import MappingProxyType
-
-from utils.config_loader import safe_load
-from .loguru_config import loguru_config
-from .opentelemetry_config import ot_config, ot_instrument_loguru
-
-app_config = MappingProxyType(safe_load('config.yml'))
-
-__all__ = [
-    app_config,
-    loguru_config,
-    ot_config,
-    ot_instrument_loguru,
-]
