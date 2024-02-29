@@ -15,12 +15,8 @@ limitations under the License.
 """
 
 import enum
-from dataclasses import dataclass
-from typing import Optional
 
 from pydantic import BaseModel
-
-from utils.reflect.dataclass import tolerant
 
 
 class AccountStatus(str, enum.Enum):
@@ -43,15 +39,15 @@ class Account(BaseModel):
     账号
     """
 
-    uid: Optional[str] = None
+    uid: str | None = None
     """账号ID"""
     name: str
     """账号名称"""
     email: str
     """账号邮箱"""
-    password: Optional[str] = None
+    password: str | None = None
     """账号密码"""
-    avatar: Optional[str] = None
+    avatar: str | None = None
     """账号头像"""
     status: AccountStatus
     """账号状态"""

@@ -24,8 +24,6 @@ from config import loguru_config, ot_config, ot_instrument_loguru
 from utils import lifespan
 from utils.banner import banner_print
 
-banner_print('./banner.txt', app_config)
-
 
 def create_app() -> FastAPI:
     """
@@ -40,17 +38,20 @@ def create_app() -> FastAPI:
     return fast_app
 
 
+# 打印banner
+banner_print('./banner.txt', app_config)
+
 # 配置日志
 loguru_config(app_config.get('loguru'))
+
+# OT trace 配置到日志
+ot_instrument_loguru()
 
 # 创建应用
 app = create_app()
 
 # 配置OT
 ot_config(app)
-
-# OT trace 配置到日志
-ot_instrument_loguru()
 
 # 注册路由
 routers_register.register(app)

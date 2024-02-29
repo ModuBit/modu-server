@@ -13,9 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+
 from abc import ABC
 from importlib.resources import read_text
-from typing import Optional
 
 import yaml
 from pydantic import BaseModel
@@ -35,16 +35,16 @@ class ProviderSchema(BaseModel):
     name: I18nOption
     """名称"""
 
-    description: Optional[I18nOption] = None
+    description: I18nOption | None = None
     """描述"""
 
-    icon: Optional[IconOption] = None
+    icon: IconOption | None = None
     """图标"""
 
-    help: Optional[HelpOption] = None
+    help: HelpOption | None = None
     """帮助"""
 
-    credential_schemas: Optional[list[FormSchema]] = None
+    credential_schemas: list[FormSchema] | None = None
     """凭证"""
 
 
@@ -53,7 +53,7 @@ class ModelProvider(ABC):
     模型提供商
     """
 
-    _provider_schema: Optional[ProviderSchema] = None
+    _provider_schema: ProviderSchema | None = None
     """供应商元数据定义"""
 
     def get_provider_schema(self) -> ProviderSchema:

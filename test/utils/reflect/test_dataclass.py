@@ -15,7 +15,6 @@ limitations under the License.
 """
 
 from dataclasses import dataclass
-from typing import List, Optional
 
 from utils.reflect.dataclass import tolerant
 
@@ -25,7 +24,7 @@ from utils.reflect.dataclass import tolerant
 class DataClassTest:
     v_int: int | None
     v_str: str | None
-    v_list: Optional[List[str]]
+    v_list: list[str] | None
 
 
 def test_tolerant():

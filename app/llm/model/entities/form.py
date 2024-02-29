@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-from typing import Optional, Dict
+from collections.abc import Mapping
 
 from pydantic import BaseModel
 
@@ -24,16 +24,16 @@ class FormFieldRule(BaseModel):
     required: bool = False
     """是否必须"""
 
-    min: Optional[int] = None
+    min: int | None = None
     """最小"""
 
-    max: Optional[int] = None
+    max: int | None = None
     """最大"""
 
-    pattern: Optional[str] = None
+    pattern: str | None = None
     """正则规则"""
 
-    message: Optional[I18nOption] = None
+    message: I18nOption | None = None
     """规则消息"""
 
 
@@ -41,7 +41,7 @@ class FormFieldValueEnum(BaseModel):
     text: I18nOption
     """值展示文本"""
 
-    status: Optional[str] = None
+    status: str | None = None
     """状态"""
 
     disabled: bool = False
@@ -61,17 +61,17 @@ class FormSchema(BaseModel):
     value_type: str
     """数据的渲渲染方式，字段类型"""
 
-    value_enum: Optional[Dict[str, FormFieldValueEnum]] = None
+    value_enum: Mapping[str, FormFieldValueEnum | None] = None
     """select radio 等组件的选项"""
 
-    field_props: Optional[Dict[str, object]] = None
+    field_props: Mapping[str, object | None] = None
     """对应组件 fieldProps 属性"""
 
-    title: Optional[I18nOption] = None
+    title: I18nOption | None = None
     """标题的内容，在 form 中是 label"""
 
-    tooltip: Optional[I18nOption] = None
+    tooltip: I18nOption | None = None
     """会在 title 旁边展示一个 icon，鼠标浮动之后展示"""
 
-    rules: Optional[FormFieldRule] = None
+    rules: FormFieldRule | None = None
     """规则"""

@@ -14,11 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from typing import Optional, TypeVar, Callable, Dict
+from typing import TypeVar
 
 from config import app_config
-from utils.lifespan import register_pre_destroy_executor
 from utils.dictionary import dict_get
+from utils.lifespan import register_pre_destroy_executor
 from .account import AccountRepository, AccountRepositoryPostgres
 from .database import Database
 from .database_postgres import PostgresDatabase
@@ -26,17 +26,17 @@ from .team import TeamRepository, TeamRepositoryPostgres
 
 RepositoryInstance = TypeVar('RepositoryInstance')
 
-_database: Optional[Database] = None
+_database: Database | None = None
 _database_mapping = {
     'postgres': PostgresDatabase,
 }
 
-_account_repository: Optional[AccountRepository] = None
+_account_repository: AccountRepository | None = None
 _account_repository_mapping = {
     'postgres': AccountRepositoryPostgres,
 }
 
-_team_repository: Optional[TeamRepository] = None
+_team_repository: TeamRepository | None = None
 _team_repository_mapping = {
     'postgres': TeamRepositoryPostgres,
 }
@@ -76,8 +76,7 @@ def get_repository(repository_name: str) -> RepositoryInstance:
     """
 
     global_repository_name = f"_{repository_name}_repository"
-    global_repository_mapping: Dict[str, Callable[..., RepositoryInstance]] \
-        = globals()[f"{global_repository_name}_mapping"]
+    global_repository_mapping = globals()[f"{global_repository_name}_mapping"]
 
     if globals()[global_repository_name]:
         return globals()[global_repository_name]

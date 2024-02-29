@@ -15,7 +15,6 @@ limitations under the License.
 """
 
 import enum
-from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -25,17 +24,17 @@ class Team(BaseModel):
     团队
     """
 
-    uid: Optional[str] = None
+    uid: str | None = None
     """团队ID"""
     creator_uid: str
     """创建人"""
     name: str
     """团队名称"""
-    description: Optional[str] = None
+    description: str | None = None
     """团队简介"""
     is_personal: bool
     """是否个人团队"""
-    iv: Optional[bytes] = None
+    iv: bytes | None = None
     """初始向量"""
     is_deleted: bool = Field(default=False)
     """是否删除"""

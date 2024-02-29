@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import functools
 import os
 
 from sqlalchemy import PrimaryKeyConstraint, String, text, Enum
@@ -45,7 +46,8 @@ class TeamRepositoryPostgres(TeamRepository):
         return team
 
     @with_session
-    def add_team_membership(self, team_uid: str, member_uid: str, role: TeamMemberRole, session: Session) -> TeamMembership:
+    def add_team_membership(self, team_uid: str, member_uid: str, role: TeamMemberRole,
+                            session: Session) -> TeamMembership:
         if role == TeamMemberRole.OWNER:
             raise TeamCreationError(message='无法添加为团队OWNER')
 
@@ -72,7 +74,7 @@ class TeamPO(PostgresBasePO):
                                               server_default=text('0'),
                                               comment='是否为个人团队')
     iv: Mapped[bytes] = mapped_column(Bytes2String, nullable=False,
-                                      default=lambda _: os.urandom(16), comment='初始向量')
+                                      default=functools.partial(os.urandom, 16), comment='初始向量')
     is_deleted: Mapped[bool] = mapped_column(Bool2SmallInt, nullable=False,
                                              server_default=text('0'),
                                              comment='是否已删除')

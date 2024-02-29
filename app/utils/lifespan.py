@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+
 from contextlib import asynccontextmanager
 from typing import Callable
 
@@ -20,7 +21,6 @@ from fastapi import FastAPI
 from loguru import logger
 
 _pre_destroy_executors: list[Callable[[], None]] = []
-
 
 def register_pre_destroy_executor(executor: Callable[[], None]):
     """

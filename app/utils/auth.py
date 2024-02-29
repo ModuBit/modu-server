@@ -15,7 +15,6 @@ limitations under the License.
 """
 
 from datetime import datetime, timedelta
-from typing import Union
 
 from jose import jwt, ExpiredSignatureError, JWTError
 from passlib.context import CryptContext
@@ -44,7 +43,7 @@ def verify_password(password: str, password_hash: str) -> bool:
     return pwd_context.verify(password, password_hash)
 
 
-def jose_encode(payload: dict, secret: str, algorithm: str, expires_minutes: Union[int, float]):
+def jose_encode(payload: dict, secret: str, algorithm: str, expires_minutes: float):
     """
     jose 令牌
     :param payload: 负载

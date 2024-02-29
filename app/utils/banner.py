@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-
+import functools
 import os
 import re
 
@@ -25,7 +25,7 @@ from utils.dictionary import dict_get
 _env_var_pattern = re.compile(r'\$\{([^:}]+):?([^}]*)}')
 
 
-def _replace_env_var(match, config: dict):
+def _replace_var(match, config: dict):
     variable, default_value = match.groups()
     # 读取顺序 config -> env -> default
     return dict_get(config, variable, os.getenv(variable, default_value))
@@ -39,5 +39,5 @@ def banner_print(banner_file: str, config: dict):
     """
     with open(banner_file, "r") as banner_file:
         banner = banner_file.read()
-        display_banner = _env_var_pattern.sub(lambda match: _replace_env_var(match, config), banner)
+        display_banner = _env_var_pattern.sub(functools.partial(_replace_var, config=config), banner)
         logger.info(display_banner)

@@ -14,12 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from typing import TypeVar, Optional
+from typing import TypeVar
 
 T = TypeVar('T')
 
 
-def dict_get(dictionary: dict, keys: str, default: Optional[T] = None) -> T | None:
+def dict_get(dictionary: dict, keys: str, default: T | None = None) -> T | None:
     """
     支持字典的链式键值获取
     :param dictionary: 字典

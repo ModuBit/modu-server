@@ -14,8 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from typing import Optional
-
 from pydantic import BaseModel
 
 
@@ -24,8 +22,8 @@ class I18nOption(BaseModel):
     国际化
     """
     default: str
-    en_us: Optional[str] = None
-    zh_cn: Optional[str] = None
+    en_us: str | None = None
+    zh_cn: str | None = None
 
 
 class IconOption(BaseModel):
@@ -38,8 +36,8 @@ class IconOption(BaseModel):
         图标
         """
         default: str
-        en_us: Optional[str] = None
-        zh_cn: Optional[str] = None
+        en_us: str | None = None
+        zh_cn: str | None = None
 
     small: Icon
     large: Icon

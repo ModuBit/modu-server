@@ -15,6 +15,7 @@ limitations under the License.
 """
 
 import datetime
+import functools
 import json
 
 from loguru import logger
@@ -36,7 +37,7 @@ class PostgresDatabase(Database):
 
         self._engine = create_engine(
             f'postgresql+psycopg2://{username}:{password}@{host}:{port}/{database}',
-            json_serializer=lambda obj: json.dumps(obj, ensure_ascii=False),
+            json_serializer=functools.partial(json.dumps, ensure_ascii=False),
             # 指定连接池类
             poolclass=QueuePool,
             # 连接池大小

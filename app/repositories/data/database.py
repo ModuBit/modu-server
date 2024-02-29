@@ -16,6 +16,7 @@ limitations under the License.
 
 from abc import ABC, abstractmethod
 from contextlib import contextmanager, AbstractContextManager
+from functools import wraps
 from typing import Callable, TypeVar
 
 from loguru import logger
@@ -78,6 +79,7 @@ def with_session(func):
     :param func: func(self, session, ...)
     """
 
+    @wraps(func)
     def wrapper(self: Repository, *args, **kwargs):
         # 检查位置参数中是否存在Session对象
         if any(isinstance(arg, Session) for arg in args):
