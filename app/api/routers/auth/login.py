@@ -25,12 +25,12 @@ router = APIRouter()
 
 @logger.catch()
 @router.post('/login')
-def login(form_data: OAuth2PasswordRequestForm = Depends()):
+async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     """
     登录
     :param form_data: 登录提交的参数
     """
-    account = account_service.authenticate(form_data.username, form_data.password)
+    account = await account_service.authenticate(form_data.username, form_data.password)
     access_token = account_service.account_token_encode(account)
     return {
         "access_token": access_token,
@@ -40,5 +40,5 @@ def login(form_data: OAuth2PasswordRequestForm = Depends()):
 
 @logger.catch()
 @router.get('/logout')
-def logout():
+async def logout():
     return

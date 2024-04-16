@@ -18,9 +18,10 @@ import functools
 import os
 
 from sqlalchemy import PrimaryKeyConstraint, String, text, Enum
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Mapped, mapped_column, Session
 
-from repositories.data.database import with_session, BasePO
+from repositories.data.database import with_async_session, BasePO
 from repositories.data.database_postgres import PostgresBasePO
 from repositories.data.team import TeamRepository
 from repositories.data.team.team_models import TeamMemberStatus, TeamMemberRole, Team, TeamMembership
@@ -33,9 +34,9 @@ class TeamRepositoryPostgres(TeamRepository):
     团队数据存储的PostgreSQL实现
     """
 
-    @with_session
-    def create(self, team: Team, session: Session) -> Team:
-        team_po = TeamPO(**team.__dict__)
+    @with_async_session
+    async def create(self, team: Team, session: AsyncSession) -> Team:
+        team_po = TeamPO(**vars(team))
         team_po.uid = BasePO.uid_generate()
         session.add(team_po)
         session.add(TeamMembershipPO(team_uid=team_po.uid,
@@ -45,14 +46,15 @@ class TeamRepositoryPostgres(TeamRepository):
         team.uid = team_po.uid
         return team
 
-    @with_session
-    def add_team_membership(self, team_uid: str, member_uid: str, role: TeamMemberRole,
-                            session: Session) -> TeamMembership:
+    @with_async_session
+    async def add_team_membership(
+            self, team_uid: str, member_uid: str, role: TeamMemberRole,
+            session: AsyncSession) -> TeamMembership:
         if role == TeamMemberRole.OWNER:
             raise TeamCreationError(message='无法添加为团队OWNER')
 
         membership_po = TeamMembershipPO(team_uid=team_uid, member_uid=member_uid,
-                                         role=role, status=TeamMemberStatus.PENDING)
+                                         member_role=role, member_status=TeamMemberStatus.PENDING)
         session.add(membership_po)
         return TeamMembership(**membership_po.as_dict())
 
@@ -92,9 +94,11 @@ class TeamMembershipPO(PostgresBasePO):
 
     team_uid: Mapped[str] = mapped_column(String(32), nullable=False, comment='团队uid')
     member_uid: Mapped[str] = mapped_column(String(32), nullable=False, comment='成员uid')
-    member_role: Mapped[TeamMemberRole] = mapped_column(Enum(TeamMemberRole), nullable=False,
-                                                        server_default=text("'member'::character varying"),
-                                                        comment='成员角色')
-    member_status: Mapped[TeamMemberStatus] = mapped_column(Enum(TeamMemberStatus), nullable=False,
-                                                            server_default=text("'active'::character varying"),
-                                                            comment='成员状态')
+    member_role: Mapped[TeamMemberRole] = mapped_column(
+        Enum(TeamMemberRole, native_enum=False), nullable=False,
+        server_default=text("'member'::character varying"),
+        comment='成员角色')
+    member_status: Mapped[TeamMemberStatus] = mapped_column(
+        Enum(TeamMemberStatus, native_enum=False), nullable=False,
+        server_default=text("'active'::character varying"),
+        comment='成员状态')

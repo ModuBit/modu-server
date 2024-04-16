@@ -24,5 +24,5 @@ router = APIRouter()
 
 @logger.catch()
 @router.get('/system')
-def system():
+async def system():
     return app_config.get('app', {})

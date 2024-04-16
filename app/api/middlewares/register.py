@@ -28,12 +28,13 @@ def register(app: FastAPI):
     注册中间件
     :param app:  FastAPI
     """
+    cors_config = app_config.server.cors
     app.add_middleware(GZipMiddleware, minimum_size=1024)
     response.register(app)
     app.add_middleware(
         CORSMiddleware,
         allow_credentials=True,
-        allow_origins=dict_get(app_config, 'server.cors.allowed_origins', ['*']),
-        allow_methods=dict_get(app_config, 'server.cors.allowed_methods', ['*']),
-        allow_headers=dict_get(app_config, 'server.cors.allowed_headers', ['*']),
+        allow_origins=cors_config.allowed_origins or ['*'],
+        allow_methods=cors_config.allowed_methods or ['*'],
+        allow_headers=cors_config.allowed_headers or ['*'],
     )

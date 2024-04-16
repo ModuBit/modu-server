@@ -16,6 +16,7 @@ limitations under the License.
 
 from abc import abstractmethod
 
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
 from .team_models import Team, TeamMemberRole, TeamMembership
@@ -28,10 +29,10 @@ class TeamRepository(Repository):
     """
 
     def __init__(self, database: Database):
-        Repository.__init__(self, database)
+        super().__init__(database)
 
     @abstractmethod
-    def create(self, team: Team, session: Session) -> Team:
+    async def create(self, team: Team, session: AsyncSession) -> Team:
         """
         创建团队
         :param team: 团队
@@ -40,8 +41,9 @@ class TeamRepository(Repository):
         raise NotImplementedError
 
     @abstractmethod
-    def add_team_membership(self, team_uid: str, member_uid: str, role: TeamMemberRole,
-                            session: Session) -> TeamMembership:
+    async def add_team_membership(
+            self, team_uid: str, member_uid: str, role: TeamMemberRole,
+            session: AsyncSession) -> TeamMembership:
         """
         添加团队成员
         :param team_uid: 团队UID

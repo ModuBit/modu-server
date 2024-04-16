@@ -22,6 +22,7 @@ from loguru import logger
 
 _pre_destroy_executors: list[Callable[[], None]] = []
 
+
 def register_pre_destroy_executor(executor: Callable[[], None]):
     """
     注册应用关闭前的处理器

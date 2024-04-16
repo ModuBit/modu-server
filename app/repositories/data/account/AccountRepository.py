@@ -16,7 +16,7 @@ limitations under the License.
 
 from abc import abstractmethod
 
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from .account_models import Account
 from ..database import Repository, Database
@@ -28,10 +28,10 @@ class AccountRepository(Repository):
     """
 
     def __init__(self, database: Database):
-        Repository.__init__(self, database)
+        super().__init__(database)
 
     @abstractmethod
-    def find_one_by_email(self, email: str, session: Session) -> Account:
+    async def find_one_by_email(self, email: str, session: AsyncSession) -> Account:
         """
         通过email查找账号
         :param email: 邮箱
@@ -41,7 +41,7 @@ class AccountRepository(Repository):
         raise NotImplementedError()
 
     @abstractmethod
-    def create(self, account: Account, session: Session) -> Account:
+    async def create(self, account: Account, session: AsyncSession) -> Account:
         """
         创建账号
         :param account: 账号
@@ -51,7 +51,7 @@ class AccountRepository(Repository):
         raise NotImplementedError()
 
     @abstractmethod
-    def count_all(self, session: Session) -> int:
+    async def count_all(self, session: AsyncSession) -> int:
         """
         统计所有账号
         :param session: Session

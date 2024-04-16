@@ -22,30 +22,30 @@ from utils.errors.base_error import ErrorShowType
 from utils.errors.system_error import InitializeError
 
 
-def is_initialized() -> bool:
+async def is_initialized() -> bool:
     """
     判断是否已经初始化
     :return: True / False
     """
-    return account_repository.count_all() > 0
+    return await account_repository.count_all() > 0
 
 
-def initialize(name: str, email: str, password: str):
+async def initialize(name: str, email: str, password: str):
     """
     初始化服务
     :param name: 名称
     :param email: 邮箱
     :param password: 密码
     """
-    if is_initialized():
+    if await is_initialized():
         raise InitializeError(
             message='已初始化，请直接登录', status_code=409,
             show_type=ErrorShowType.REDIRECT, target='/login', )
 
     # 显式使用session（存在多个写动作，保证事务一致性）
-    with database.session() as session:
+    async with database.async_session() as session:
         # 创建账号
-        account = account_repository.create(
+        account = await account_repository.create(
             Account(
                 name=name,
                 email=email,
@@ -56,7 +56,7 @@ def initialize(name: str, email: str, password: str):
         )
 
         # 创建团队
-        team_repository.create(
+        await team_repository.create(
             Team(
                 creator_uid=account.uid,
                 name=f'{name}的默认团队',

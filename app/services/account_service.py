@@ -13,15 +13,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+
 from config import app_config
 from repositories.data import account_repository
 from repositories.data.account.account_models import Account
 from utils import auth
-from utils.dictionary import dict_get
 from utils.errors.account_error import AccountLoginError
 
 
-def authenticate(email: str, password: str) -> Account:
+async def authenticate(email: str, password: str) -> Account:
     """
     账号认证
     :param email: 邮箱
@@ -29,7 +29,7 @@ def authenticate(email: str, password: str) -> Account:
     :return: 账号信息
     """
 
-    account = account_repository.find_one_by_email(email)
+    account = await account_repository.find_one_by_email(email)
 
     if not account:
         raise AccountLoginError(message='用户名或密码错误')
@@ -47,10 +47,11 @@ def account_token_encode(account: Account) -> str:
     :param account: 账号信息
     :return: token
     """
-    return auth.jose_encode(account.__dict__,
-                            dict_get(app_config, 'security.jwt.secret'),
-                            dict_get(app_config, 'security.jwt.algorithm'),
-                            dict_get(app_config, 'security.jwt.expire_minutes'))
+    jwt_config = app_config.security.jwt
+    return auth.jose_encode(vars(account),
+                            jwt_config.secret,
+                            jwt_config.algorithm,
+                            jwt_config.expire_minutes)
 
 
 def account_token_decode(token: str) -> Account:
@@ -59,9 +60,8 @@ def account_token_decode(token: str) -> Account:
     :param token: token
     :return: 账号
     """
-    return auth.jose_decode(token,
-                            dict_get(app_config, 'security.jwt.secret'),
-                            dict_get(app_config, 'security.jwt.algorithm'))
+    jwt_config = app_config.security.jwt
+    return auth.jose_decode(token, jwt_config.secret, jwt_config.algorithm)
 
 
 def account_token_verify(token: str):

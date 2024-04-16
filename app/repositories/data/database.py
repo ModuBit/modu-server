@@ -15,11 +15,12 @@ limitations under the License.
 """
 
 from abc import ABC, abstractmethod
-from contextlib import contextmanager, AbstractContextManager
+from contextlib import asynccontextmanager, AbstractAsyncContextManager
 from functools import wraps
 from typing import Callable, TypeVar
 
 from loguru import logger
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session, DeclarativeBase
 from ulid import ULID
 
@@ -32,7 +33,7 @@ class Database(ABC):
     """
 
     @abstractmethod
-    def get_session(self) -> Session:
+    def get_async_session(self) -> AsyncSession:
         """
         获取Session
         :return: Session
@@ -44,23 +45,23 @@ class Database(ABC):
         """
         关闭数据库
         """
-        raise NotImplemented
+        raise NotImplementedError
 
-    @contextmanager
-    def session(self) -> Callable[..., AbstractContextManager[Session]]:
+    @asynccontextmanager
+    async def async_session(self) -> Callable[..., AbstractAsyncContextManager[Session]]:
         """
         构建Session上下文
         """
-        _session: Session = self.get_session()
+        _session: AsyncSession = self.get_async_session()
         try:
             yield _session
-            _session.commit()
+            await _session.commit()
         except Exception:
             logger.exception("Session rollback because of exception")
-            _session.rollback()
+            await _session.rollback()
             raise
         finally:
-            _session.close()
+            await _session.close()
 
 
 class Repository(ABC):
@@ -72,27 +73,27 @@ class Repository(ABC):
         self._database = database
 
 
-def with_session(func):
+def with_async_session(func):
     """
     Session装饰器
     只能用在Repository类方法中
-    :param func: func(self, session, ...)
+    :param func: async func(self, session, ...)
     """
 
     @wraps(func)
-    def wrapper(self: Repository, *args, **kwargs):
+    async def wrapper(self: Repository, *args, **kwargs):
         # 检查位置参数中是否存在Session对象
-        if any(isinstance(arg, Session) for arg in args):
-            return func(self, *args, **kwargs)
+        if any(isinstance(arg, AsyncSession) for arg in args):
+            return await func(self, *args, **kwargs)
 
         # 检查关键字参数中是否存在名为session的对象
-        if 'session' in kwargs and isinstance(kwargs['session'], Session):
-            return func(self, *args, **kwargs)
+        if 'session' in kwargs and isinstance(kwargs['session'], AsyncSession):
+            return await func(self, *args, **kwargs)
 
         # 如果没有找到Session对象，则创建一个新的Session对象
-        with self._database.session() as session:
+        async with self._database.async_session() as session:
             kwargs['session'] = session
-            return func(self, *args, **kwargs)
+            return await func(self, *args, **kwargs)
 
     return wrapper
 

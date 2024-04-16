@@ -30,7 +30,6 @@ async def current_account(token: str = Depends(oauth2_scheme)) -> Account:
     """
     获取当前登录用户账号
     :param token: token
-    :param account_service: 账号服务
     :return: 当前登录用户账号
     """
     account = account_service.account_token_decode(token)

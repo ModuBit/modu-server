@@ -55,7 +55,7 @@ def get_database() -> Database:
     if _database:
         return _database
 
-    database_type = dict_get(app_config, 'repository.data.type')
+    database_type = app_config.repository.data.type
     if database_type not in _database_mapping:
         raise ValueError(f"Unsupported database type: {database_type}")
 
@@ -81,7 +81,7 @@ def get_repository(repository_name: str) -> RepositoryInstance:
     if globals()[global_repository_name]:
         return globals()[global_repository_name]
 
-    database_type = dict_get(app_config, 'repository.data.type')
+    database_type = app_config.repository.data.type
     if database_type not in global_repository_mapping:
         raise ValueError(f"Unsupported database type: {database_type}")
 

@@ -18,11 +18,17 @@ import datetime
 import functools
 import json
 
+from fastapi import Request, Depends
 from loguru import logger
-from sqlalchemy import text, DateTime, UUID, create_engine, QueuePool, String
-from sqlalchemy.orm import Mapped, mapped_column, scoped_session, sessionmaker, Session
+from sqlalchemy import text, DateTime, UUID, String, AsyncAdaptedQueuePool
+from sqlalchemy.ext.asyncio import AsyncSession, async_scoped_session, create_async_engine
+from sqlalchemy.orm import Mapped, mapped_column, sessionmaker
 
 from .database import Database, BasePO
+
+
+def get_request_id(request: Request):
+    return id(request)
 
 
 class PostgresDatabase(Database):
@@ -35,11 +41,11 @@ class PostgresDatabase(Database):
         self._port = port
         self._database = database
 
-        self._engine = create_engine(
-            f'postgresql+psycopg2://{username}:{password}@{host}:{port}/{database}',
+        self._engine = create_async_engine(
+            f'postgresql+asyncpg://{username}:{password}@{host}:{port}/{database}',
             json_serializer=functools.partial(json.dumps, ensure_ascii=False),
             # 指定连接池类
-            poolclass=QueuePool,
+            poolclass=AsyncAdaptedQueuePool,
             # 连接池大小
             pool_size=10,
             # 连接池中的连接最大闲置时间，超过这个时间的闲置连接将被回收
@@ -49,25 +55,25 @@ class PostgresDatabase(Database):
             # 每个连接被使用前预检
             pool_pre_ping=True,
         )
-        self._session_factory = scoped_session(
-            sessionmaker(
-                autocommit=False,
-                autoflush=False,
-                bind=self._engine,
-            ),
+        # async_scoped_session
+        self._async_session_factory = sessionmaker(
+            bind=self._engine,
+            class_=AsyncSession,
+            autocommit=False,
+            autoflush=False,
         )
         logger.info('=== create postgresql({}) {}:{}/{} ===', id(self), host, port, database)
 
     def close(self):
         logger.info('=== close postgresql({}) {}:{}/{} ===', id(self), self._host, self._port, self._database)
-        self._session_factory.remove()
+        self._async_session_factory.remove()
         self._engine.dispose()
 
     def __del__(self):
         self.close()
 
-    def get_session(self) -> Session:
-        return self._session_factory()
+    def get_async_session(self) -> AsyncSession:
+        return self._async_session_factory()
 
 
 class PostgresBasePO(BasePO):

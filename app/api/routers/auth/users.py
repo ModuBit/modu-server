@@ -39,5 +39,5 @@ class AccountDTO(BaseModel):
 
 @logger.catch()
 @router.get(path='/me', response_model=AccountDTO)
-def me(current_user: Account = Depends(current_account)):
+async def me(current_user: Account = Depends(current_account)):
     return current_user

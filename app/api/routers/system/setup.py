@@ -34,19 +34,19 @@ class InitializeCmd(BaseModel):
 
 @logger.catch()
 @router.get('/setup')
-def initialized_status():
+async def initialized_status():
     """
     获取初始化信息
     """
-    return init_service.is_initialized()
+    return await init_service.is_initialized()
 
 
 @logger.catch()
 @router.post('/setup')
-def initialize(init_data: InitializeCmd):
+async def initialize(init_data: InitializeCmd):
     """
     初始化
     :param init_data: 初始化数据
     """
-    init_service.initialize(**init_data.model_dump())
+    await init_service.initialize(**init_data.model_dump())
     return True

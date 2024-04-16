@@ -8,7 +8,7 @@
   \     ||     ||     ||     |    \     ||  |  ||  |  |  |  |
    \____| \__,_||_____||_____|     \____||__|__||__|__|  |__|
 ==================================================================
-:: ${app.title} :: ${version:0.0.1} ::
+:: ${app.title} :: ${app.version} ::
 :: ${app.description} ::
 :: ${app.contact.name} :: ${app.contact.url} ::
 :: ${app.project.name} :: ${app.project.url} ::
