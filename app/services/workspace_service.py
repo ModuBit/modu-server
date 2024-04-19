@@ -14,8 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from utils.errors.base_error import BaseServiceError
+from repositories.data import workspace_repository
+from repositories.data.workspace.workspace_models import Workspace, WorkspaceMemberRole
 
 
-class TeamCreationError(BaseServiceError):
-    pass
+def create(workspace: Workspace):
+    workspace_repository.create(workspace)
+
+
+def add_space_membership(workspace_uid: str, member_uid: str, role: WorkspaceMemberRole):
+    workspace_repository.add_workspace_membership(
+        workspace_uid, member_uid,
+        WorkspaceMemberRole.MEMBER if role == WorkspaceMemberRole.OWNER else role)

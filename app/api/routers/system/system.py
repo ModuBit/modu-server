@@ -18,11 +18,15 @@ from fastapi import APIRouter
 from loguru import logger
 
 from config import app_config
+from llm.model import model_provider_factory
 
 router = APIRouter()
 
 
 @logger.catch()
-@router.get('/system')
-async def system():
-    return app_config.get('app', {})
+@router.get('/profile')
+async def profile():
+    return {
+        'app': app_config.get('app', {}),
+        'model_providers': model_provider_factory.get_all_provider_schemas()
+    }

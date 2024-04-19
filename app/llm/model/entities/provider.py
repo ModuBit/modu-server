@@ -15,7 +15,7 @@ limitations under the License.
 """
 
 from abc import ABC
-from importlib.resources import read_text
+from importlib.resources import files
 
 import yaml
 from pydantic import BaseModel
@@ -56,7 +56,8 @@ class ModelProvider(ABC):
     _provider_schema: ProviderSchema | None = None
     """供应商元数据定义"""
 
-    def get_provider_schema(self) -> ProviderSchema:
+    @property
+    def provider_schema(self) -> ProviderSchema:
         """
         获取供应商元数据定义
         """
@@ -67,7 +68,9 @@ class ModelProvider(ABC):
         module = self.__class__.__module__
         parent_module = '.'.join(module.split('.')[:-1])
         name = parent_module.split('.')[-1]
-        schema_data = yaml.safe_load(read_text(parent_module, f"{name}.yml"))
+
+        schema_content = files(parent_module).joinpath(f"{name}.yml").read_text(encoding='utf-8')
+        schema_data = yaml.safe_load(schema_content)
         provider_schema = ProviderSchema(**schema_data)
         self._provider_schema = provider_schema
 

@@ -14,10 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from dependency_injector import containers
+from .WorkspaceRepository import WorkspaceRepository
+from .WorkspaceRepositoryPostgres import WorkspaceRepositoryPostgres
 
-
-class LLMContainer(containers.DeclarativeContainer):
-    """
-    llm 容器
-    """
+__all__ = [
+    'workspace_models.py',
+    'WorkspaceRepository',
+    'WorkspaceRepositoryPostgres'
+]

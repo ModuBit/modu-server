@@ -14,11 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from .TeamRepository import TeamRepository
-from .TeamRepositoryPostgres import TeamRepositoryPostgres
+from utils.errors.base_error import BaseServiceError
 
-__all__ = [
-    'team_models',
-    'TeamRepository',
-    'TeamRepositoryPostgres'
-]
+
+class SpaceCreationError(BaseServiceError):
+    pass

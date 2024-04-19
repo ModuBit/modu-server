@@ -19,34 +19,34 @@ from abc import abstractmethod
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
-from .team_models import Team, TeamMemberRole, TeamMembership
+from .workspace_models import Workspace, WorkspaceMemberRole, WorkspaceMembership
 from ..database import Repository, Database
 
 
-class TeamRepository(Repository):
+class WorkspaceRepository(Repository):
     """
-    团队数据存储的定义
+    空间数据存储的定义
     """
 
     def __init__(self, database: Database):
         super().__init__(database)
 
     @abstractmethod
-    async def create(self, team: Team, session: AsyncSession) -> Team:
+    async def create(self, workspace: Workspace, session: AsyncSession) -> Workspace:
         """
-        创建团队
-        :param team: 团队
+        创建空间
+        :param workspace: 空间
         :param session: Session
         """
         raise NotImplementedError
 
     @abstractmethod
-    async def add_team_membership(
-            self, team_uid: str, member_uid: str, role: TeamMemberRole,
-            session: AsyncSession) -> TeamMembership:
+    async def add_workspace_membership(
+            self, workspace_uid: str, member_uid: str, role: WorkspaceMemberRole,
+            session: AsyncSession) -> WorkspaceMembership:
         """
-        添加团队成员
-        :param team_uid: 团队UID
+        添加空间成员
+        :param workspace_uid: 空间UID
         :param member_uid: 成员UID
         :param role: 成员角色
         :param session: Session

@@ -35,7 +35,7 @@ def register(app: FastAPI):
     app.include_router(setup.router, prefix='/api',
                        tags=['init | 初始化'])
 
-    app.include_router(system.router, prefix='/api',
+    app.include_router(system.router, prefix='/api/system',
                        tags=['info | 系统信息'])
 
     app.include_router(login.router, prefix='/api',

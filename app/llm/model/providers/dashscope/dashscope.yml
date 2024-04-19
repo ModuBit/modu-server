@@ -1,9 +1,9 @@
-key: openai
+key: dashscope
 name:
-  default: 通义千问
-  en_us: TONGYI
+  default: 灵积模型
+  en_us: DashScope
 description:
-  default: 通义千问
+  default: 灵积模型服务
 icon:
   small:
     default: icon_s_en.png

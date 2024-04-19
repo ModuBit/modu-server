@@ -13,3 +13,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+
+from .model_provider_factory import ModelProviderFactory
+
+model_provider_factory = ModelProviderFactory()
+
+__all__ = [
+    model_provider_factory
+]

@@ -22,7 +22,7 @@ from utils.lifespan import register_pre_destroy_executor
 from .account import AccountRepository, AccountRepositoryPostgres
 from .database import Database
 from .database_postgres import PostgresDatabase
-from .team import TeamRepository, TeamRepositoryPostgres
+from .workspace import WorkspaceRepository, WorkspaceRepositoryPostgres
 
 RepositoryInstance = TypeVar('RepositoryInstance')
 
@@ -36,9 +36,9 @@ _account_repository_mapping = {
     'postgres': AccountRepositoryPostgres,
 }
 
-_team_repository: TeamRepository | None = None
-_team_repository_mapping = {
-    'postgres': TeamRepositoryPostgres,
+_workspace_repository: WorkspaceRepository | None = None
+_workspace_repository_mapping = {
+    'postgres': WorkspaceRepositoryPostgres,
 }
 
 

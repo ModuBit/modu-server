@@ -17,13 +17,13 @@ limitations under the License.
 from .account import AccountRepository
 from .data_repository_container import get_repository, get_database
 from .database import Database
-from .team import TeamRepository
+from .workspace import WorkspaceRepository
 
 database: Database = get_database()
 account_repository: AccountRepository = get_repository('account')
-team_repository: TeamRepository = get_repository('team')
+workspace_repository: WorkspaceRepository = get_repository('workspace')
 
 __all__ = [
     account_repository,
-    team_repository,
+    workspace_repository,
 ]

@@ -19,30 +19,30 @@ import enum
 from pydantic import BaseModel, Field
 
 
-class Team(BaseModel):
+class Workspace(BaseModel):
     """
-    团队
+    空间
     """
 
     uid: str | None = None
-    """团队ID"""
+    """空间ID"""
     creator_uid: str
     """创建人"""
     name: str
-    """团队名称"""
+    """空间名称"""
     description: str | None = None
-    """团队简介"""
+    """空间简介"""
     is_personal: bool
-    """是否个人团队"""
+    """是否个人空间"""
     iv: bytes | None = None
     """初始向量"""
     is_deleted: bool = Field(default=False)
     """是否删除"""
 
 
-class TeamMemberStatus(str, enum.Enum):
+class WorkspaceMemberStatus(str, enum.Enum):
     """
-    团队成员状态
+    空间成员状态
     """
 
     PENDING = 'pending'
@@ -53,9 +53,9 @@ class TeamMemberStatus(str, enum.Enum):
     """已注销"""
 
 
-class TeamMemberRole(str, enum.Enum):
+class WorkspaceMemberRole(str, enum.Enum):
     """
-    团队成员角色
+    空间成员角色
     """
 
     OWNER = 'owner'
@@ -66,16 +66,16 @@ class TeamMemberRole(str, enum.Enum):
     """成员"""
 
 
-class TeamMembership(BaseModel):
+class WorkspaceMembership(BaseModel):
     """
-    团队成员
+    空间成员
     """
 
-    team_uid: str
-    """团队ID"""
+    workspace_uid: str
+    """空间ID"""
     member_uid: str
     """成员ID"""
-    member_role: TeamMemberRole
+    member_role: WorkspaceMemberRole
     """成员角色"""
-    member_status: TeamMemberStatus
+    member_status: WorkspaceMemberStatus
     """成员状态"""

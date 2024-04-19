@@ -14,9 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from repositories.data import account_repository, team_repository, database
+from repositories.data import account_repository, workspace_repository, database
 from repositories.data.account.account_models import Account, AccountStatus
-from repositories.data.team.team_models import Team
+from repositories.data.workspace.workspace_models import Workspace
 from utils.auth import hash_password
 from utils.errors.base_error import ErrorShowType
 from utils.errors.system_error import InitializeError
@@ -55,12 +55,12 @@ async def initialize(name: str, email: str, password: str):
             session
         )
 
-        # 创建团队
-        await team_repository.create(
-            Team(
+        # 创建空间
+        await workspace_repository.create(
+            Workspace(
                 creator_uid=account.uid,
-                name=f'{name}的默认团队',
-                description=f'{name}的默认团队',
+                name=f'{name}的默认空间',
+                description=f'{name}的默认空间',
                 is_personal=True,
             ),
             session

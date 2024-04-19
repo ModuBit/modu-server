@@ -35,7 +35,7 @@ def test_load_classes():
         isinstance(model_provider_instance, OpenAIProvider) for model_provider_instance in model_provider_instances)
 
     # 调用实例方法
-    provider_schemas = [model_provider_instance.get_provider_schema()
+    provider_schemas = [model_provider_instance.provider_schema
                         for model_provider_instance in model_provider_instances]
     assert all(isinstance(provider_schema, ProviderSchema) for provider_schema in provider_schemas)
     assert any(provider_schema.key == 'openai' for provider_schema in provider_schemas)
