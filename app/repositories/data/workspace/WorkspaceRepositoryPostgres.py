@@ -39,7 +39,7 @@ class WorkspaceRepositoryPostgres(WorkspaceRepository):
         workspace_po = WorkspacePO(**vars(workspace))
         workspace_po.uid = BasePO.uid_generate()
         session.add(workspace_po)
-        session.add(SpaceMembershipPO(space_uid=workspace_po.uid,
+        session.add(SpaceMembershipPO(workspace_uid=workspace_po.uid,
                                       member_uid=workspace.creator_uid,
                                       member_role=WorkspaceMemberRole.OWNER,
                                       member_status=WorkspaceMemberStatus.ACTIVE))
@@ -53,7 +53,7 @@ class WorkspaceRepositoryPostgres(WorkspaceRepository):
         if role == WorkspaceMemberRole.OWNER:
             raise SpaceCreationError(message='无法添加为空间OWNER')
 
-        membership_po = SpaceMembershipPO(space_uid=workspace_uid, member_uid=member_uid,
+        membership_po = SpaceMembershipPO(workspace_uid=workspace_uid, member_uid=member_uid,
                                           member_role=role, member_status=WorkspaceMemberStatus.PENDING)
         session.add(membership_po)
         return WorkspaceMembership(**membership_po.as_dict())
@@ -64,7 +64,7 @@ class WorkspacePO(PostgresBasePO):
     空间PO
     """
 
-    __tablename__ = 'cube_spaces'
+    __tablename__ = 'cube_workspace'
     __table_args__ = (
         PrimaryKeyConstraint('id', name='pk_id'),
     )
@@ -87,7 +87,7 @@ class SpaceMembershipPO(PostgresBasePO):
     空间成员PO
     """
 
-    __tablename__ = 'cube_space_memberships'
+    __tablename__ = 'cube_workspace_membership'
     __table_args__ = (
         PrimaryKeyConstraint('id', name='pk_id'),
     )

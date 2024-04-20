@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from llm.model.entities.provider import ModelProvider, ProviderSchema
+from llm.model.entities.provider import LLMProvider, ProviderSchema
 from llm.model.providers.openai.openai import OpenAIProvider
 
 from utils.reflect.module_scan import load_classes
@@ -22,7 +22,7 @@ from utils.reflect.module_scan import load_classes
 
 def test_load_classes():
     # 扫描类
-    model_provider_classes = load_classes('llm.model.providers', ModelProvider, True, 1)
+    model_provider_classes = load_classes('llm.model.providers', LLMProvider, True, 1)
     assert len(model_provider_classes) > 0
     assert any(model_provider_class == OpenAIProvider for model_provider_class in model_provider_classes)
 
@@ -30,7 +30,7 @@ def test_load_classes():
     model_provider_instances = [model_provider_class() for model_provider_class in model_provider_classes]
     assert len(model_provider_instances) > 0
     assert all(
-        isinstance(model_provider_instance, ModelProvider) for model_provider_instance in model_provider_instances)
+        isinstance(model_provider_instance, LLMProvider) for model_provider_instance in model_provider_instances)
     assert any(
         isinstance(model_provider_instance, OpenAIProvider) for model_provider_instance in model_provider_instances)
 

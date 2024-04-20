@@ -5,9 +5,9 @@ description:
   default: OpenAI
 icon:
   small:
-    default: icon_small.svg
+    default: /providers/openai/icon_small.svg
   large:
-    default: icon_large.svg
+    default: /providers/openai/icon_large.svg
 help:
   title:
     default: 从 OpenAI 获取 API Key

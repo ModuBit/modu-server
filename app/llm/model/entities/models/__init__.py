@@ -14,8 +14,24 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from .embedding import EmbeddingModel
+from .image_generation import ImageGenerationModel
+from .speech_to_text import SpeechToTextModel
+from .text_generation import TextGenerationModel
+from .text_to_speech import TextToSpeechModel
+from .vision import VisionModel
+
 __all__ = [
-    'commons',
-    'model',
-    'provider',
+    'embedding',
+    EmbeddingModel,
+    'image_generation',
+    ImageGenerationModel,
+    'speech_to_text',
+    SpeechToTextModel,
+    'text_generation',
+    TextGenerationModel,
+    'text_to_speech',
+    TextToSpeechModel,
+    'vision',
+    VisionModel,
 ]

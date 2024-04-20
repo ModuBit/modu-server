@@ -14,8 +14,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-__all__ = [
-    'commons',
-    'model',
-    'provider',
-]
+from llm.model.entities.commons import I18nOption
+from llm.model.entities.model import LLMModel, ModelType
+
+
+class TextToSpeechModel(LLMModel):
+    """
+    文字转语音 模型
+    """
+
+    @property
+    def model_type(self) -> ModelType:
+        return ModelType.TEXT_TO_SPEECH
+
+    @property
+    def description(self) -> I18nOption:
+        return I18nOption(default='文字转语音', en_us='Text to Speech')
+

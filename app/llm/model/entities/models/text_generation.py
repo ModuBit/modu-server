@@ -14,8 +14,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-__all__ = [
-    'commons',
-    'model',
-    'provider',
-]
+from llm.model.entities.commons import I18nOption
+from llm.model.entities.model import LLMModel, ModelType
+
+
+class TextGenerationModel(LLMModel):
+    """
+    文本生成 模型
+    """
+
+    @property
+    def model_type(self) -> ModelType:
+        return ModelType.TEXT_GENERATION
+
+    @property
+    def description(self) -> I18nOption:
+        return I18nOption(default='文本生成', en_us='Text Generation')

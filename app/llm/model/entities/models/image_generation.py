@@ -14,8 +14,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-__all__ = [
-    'commons',
-    'model',
-    'provider',
-]
+from llm.model.entities.commons import I18nOption
+from llm.model.entities.model import LLMModel, ModelType
+
+
+class ImageGenerationModel(LLMModel):
+    """
+    图像生成 模型
+    """
+
+    @property
+    def model_type(self) -> ModelType:
+        return ModelType.IMAGE_GENERATION
+
+    @property
+    def description(self) -> I18nOption:
+        return I18nOption(default='图像生成', en_us='Image Generation')

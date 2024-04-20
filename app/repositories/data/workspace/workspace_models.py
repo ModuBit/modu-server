@@ -45,11 +45,11 @@ class WorkspaceMemberStatus(str, enum.Enum):
     空间成员状态
     """
 
-    PENDING = 'pending'
+    PENDING = 'PENDING'
     """待确认"""
-    ACTIVE = 'active'
+    ACTIVE = 'ACTIVE'
     """已激活"""
-    CLOSED = 'closed'
+    CLOSED = 'CLOSED'
     """已注销"""
 
 
@@ -58,11 +58,11 @@ class WorkspaceMemberRole(str, enum.Enum):
     空间成员角色
     """
 
-    OWNER = 'owner'
+    OWNER = 'OWNER'
     """owner"""
-    ADMIN = 'admin'
+    ADMIN = 'ADMIN'
     """管理员"""
-    MEMBER = 'member'
+    MEMBER = 'MEMBER'
     """成员"""
 
 
