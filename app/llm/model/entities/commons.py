@@ -41,6 +41,7 @@ class IconOption(BaseModel):
 
     small: Icon
     large: Icon
+    background: str | None = None
 
 
 class HelpOption(BaseModel):

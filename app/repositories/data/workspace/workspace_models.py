@@ -16,7 +16,18 @@ limitations under the License.
 
 import enum
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, Extra
+
+
+class WorkspaceType(str, enum.Enum):
+    """
+    空间类型
+    """
+
+    PRIVATE = 'PRIVATE'
+    """私有空间"""
+    PUBLIC = 'PUBLIC'
+    """公开空间"""
 
 
 class Workspace(BaseModel):
@@ -32,12 +43,16 @@ class Workspace(BaseModel):
     """空间名称"""
     description: str | None = None
     """空间简介"""
-    is_personal: bool
-    """是否个人空间"""
+    type: WorkspaceType
+    """空间类型"""
     iv: bytes | None = None
     """初始向量"""
     is_deleted: bool = Field(default=False)
     """是否删除"""
+
+    # 设置允许额外字段
+    class Config:
+        extra = Extra.allow
 
 
 class WorkspaceMemberStatus(str, enum.Enum):

@@ -77,6 +77,9 @@ class FrozenDictData:
     def __dict__(self):
         return self._data
 
+    def as_dict(self):
+        return self._data
+
 
 def dict_get(dictionary: Dict[str, Any] | FrozenDictData, keys: str, default: T | None = None) -> T | None:
     """

@@ -26,7 +26,8 @@ CREATE TABLE cube_account
     email      VARCHAR(128)                                                 NOT NULL,
     password   VARCHAR(128)                                                 NOT NULL,
     avatar     VARCHAR(256),
-    status     VARCHAR(32)              DEFAULT 'active'::CHARACTER VARYING NOT NULL
+    status     VARCHAR(32)              DEFAULT 'active'::CHARACTER VARYING NOT NULL,
+    is_deleted  SMALLINT                DEFAULT '0'::SMALLINT        NOT NULL
 );
 CREATE UNIQUE INDEX idx_cube_account_uid ON cube_account (uid);
 CREATE UNIQUE INDEX idx_cube_account_email ON cube_account (email);
@@ -46,7 +47,7 @@ CREATE TABLE cube_workspace
     creator_uid VARCHAR(32)                                           NOT NULL,
     name        VARCHAR(128)                                          NOT NULL,
     description VARCHAR(512),
-    is_personal SMALLINT                 DEFAULT '0'::SMALLINT        NOT NULL,
+    type        VARCHAR(32)                                           NOT NULL,
     iv          VARCHAR(32)                                           NOT NULL,
     is_deleted  SMALLINT                 DEFAULT '0'::SMALLINT        NOT NULL
 );
@@ -67,7 +68,8 @@ CREATE TABLE cube_workspace_membership
     workspace_uid VARCHAR(32)                                                   NOT NULL,
     member_uid    VARCHAR(32)                                                   NOT NULL,
     member_role   VARCHAR(32)                                                   NOT NULL,
-    member_status VARCHAR(32)              DEFAULT 'pending'::CHARACTER VARYING NOT NULL
+    member_status VARCHAR(32)              DEFAULT 'pending'::CHARACTER VARYING NOT NULL,
+    is_deleted  SMALLINT                   DEFAULT '0'::SMALLINT        NOT NULL
 );
 CREATE UNIQUE INDEX idx_cube_workspace_membership_uid ON cube_workspace_membership (uid);
 CREATE INDEX idx_cube_workspace_membership_workspace_uid ON cube_workspace_membership (workspace_uid, member_uid, member_status);

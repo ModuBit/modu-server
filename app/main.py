@@ -50,7 +50,15 @@ def create_app() -> FastAPI:
     """
 
     # 创建FastAPI实例
-    fast_app = FastAPI(**(app_config.app or {}), lifespan=lifespan.lifespan)
+    fast_app = FastAPI(title=app_config.app.title,
+                       description=app_config.app.description,
+                       version=app_config.app.version,
+                       summary=app_config.summary,
+                       termsOfService=app_config.app.terms_of_service,
+                       contact=app_config.app.contact.as_dict() or {},
+                       license=app_config.app.license_info.as_dict() or {},
+                       project=app_config.app.project.as_dict() or {},
+                       lifespan=lifespan.lifespan)
     fast_app.config = app_config
 
     return fast_app

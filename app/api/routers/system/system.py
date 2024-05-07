@@ -18,7 +18,6 @@ from fastapi import APIRouter
 from loguru import logger
 
 from config import app_config
-from llm.model import model_provider_factory
 
 router = APIRouter()
 
@@ -26,7 +25,9 @@ router = APIRouter()
 @logger.catch()
 @router.get('/profile')
 async def profile():
+    """
+    系统信息
+    """
     return {
-        'app': app_config.get('app', {}),
-        'model_providers': model_provider_factory.get_all_provider_schemas()
+        'app_info': app_config.get('app', {})
     }

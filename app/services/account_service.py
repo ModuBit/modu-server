@@ -61,7 +61,8 @@ def account_token_decode(token: str) -> Account:
     :return: 账号
     """
     jwt_config = app_config.security.jwt
-    return auth.jose_decode(token, jwt_config.secret, jwt_config.algorithm)
+    account = auth.jose_decode(token, jwt_config.secret, jwt_config.algorithm)
+    return Account(**account)
 
 
 def account_token_verify(token: str):

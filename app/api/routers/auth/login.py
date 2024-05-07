@@ -41,4 +41,7 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
 @logger.catch()
 @router.get('/logout')
 async def logout():
+    """
+    登出
+    """
     return

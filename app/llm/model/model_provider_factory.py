@@ -58,7 +58,8 @@ class ModelProviderFactory:
         for provider in sorted_providers:
             self._providers[provider.provider_schema.key] = provider
 
-    def get_all_provider_schemas(self) -> list[ProviderSchema]:
+    @property
+    def provider_schemas(self) -> list[ProviderSchema]:
         """
         获取所有的Provider Schema
         :return: ProviderSchema

@@ -14,33 +14,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 from loguru import logger
-from pydantic import BaseModel
 
-from api.dependencies.principal import current_account
-from repositories.data.account.account_models import Account, AccountStatus
+from llm.model import model_provider_factory
+from llm.model.entities.provider import ProviderSchema
 
 router = APIRouter()
 
 
-class AccountDTO(BaseModel):
-    # 账号ID
-    uid: str
-    # 账号名称
-    name: str
-    # 账号邮箱
-    email: str
-    # 账号头像
-    avatar: str | None
-    # 账号状态
-    status: AccountStatus
-
-
 @logger.catch()
-@router.get(path='/me', response_model=AccountDTO)
-async def me(current_user: Account = Depends(current_account)) -> Account:
+@router.get('/providers')
+async def providers() -> list[ProviderSchema]:
     """
-    当前登录人信息
+    系统中注册的LLM提供商
     """
-    return current_user
+    return model_provider_factory.provider_schemas

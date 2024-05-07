@@ -49,6 +49,11 @@ def register(app: FastAPI):
             _log(request=request, response=response, process_time=process_time)
             return response
 
+        if '/login' in request.url.path or '/logout' in request.url.path:
+            # 不对 login/logout 请求进行包装，用以兼容类似swagger等框架
+            _log(request=request, response=response, process_time=process_time)
+            return response
+
         # 判断request accept 是否为 application/json，包装response的body内容
         if 'application/json' in request.headers.get('accept'):
             # 异步读取response body

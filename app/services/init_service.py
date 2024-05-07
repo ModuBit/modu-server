@@ -16,7 +16,7 @@ limitations under the License.
 
 from repositories.data import account_repository, workspace_repository, database
 from repositories.data.account.account_models import Account, AccountStatus
-from repositories.data.workspace.workspace_models import Workspace
+from repositories.data.workspace.workspace_models import Workspace, WorkspaceType
 from utils.auth import hash_password
 from utils.errors.base_error import ErrorShowType
 from utils.errors.system_error import InitializeError
@@ -61,7 +61,7 @@ async def initialize(name: str, email: str, password: str):
                 creator_uid=account.uid,
                 name=f'{name}的默认空间',
                 description=f'{name}的默认空间',
-                is_personal=True,
+                type=WorkspaceType.PRIVATE,
             ),
             session
         )

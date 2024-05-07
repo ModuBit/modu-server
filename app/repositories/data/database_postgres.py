@@ -18,13 +18,14 @@ import datetime
 import functools
 import json
 
-from fastapi import Request, Depends
+from fastapi import Request
 from loguru import logger
 from sqlalchemy import text, DateTime, UUID, String, AsyncAdaptedQueuePool
-from sqlalchemy.ext.asyncio import AsyncSession, async_scoped_session, create_async_engine
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import Mapped, mapped_column, sessionmaker
 
 from .database import Database, BasePO
+from .type_decorator import Bool2SmallInt
 
 
 def get_request_id(request: Request):
@@ -101,3 +102,7 @@ class PostgresBasePO(BasePO):
                                                  server_default=text('CURRENT_TIMESTAMP(0)'),
                                                  onupdate=text('CURRENT_TIMESTAMP(0)'),
                                                  comment='更新时间')
+
+    is_deleted: Mapped[bool] = mapped_column(Bool2SmallInt, nullable=False,
+                                             server_default=text('0'),
+                                             comment='是否已删除')

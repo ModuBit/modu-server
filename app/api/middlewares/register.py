@@ -29,8 +29,10 @@ def register(app: FastAPI):
     :param app:  FastAPI
     """
     cors_config = app_config.server.cors
-    app.add_middleware(GZipMiddleware, minimum_size=1024)
+    # 统一处理返回
     response.register(app)
+    # 再开启压缩
+    app.add_middleware(GZipMiddleware, minimum_size=1024)
     app.add_middleware(
         CORSMiddleware,
         allow_credentials=True,

@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-
+import enum
 from collections.abc import Mapping
 
 from pydantic import BaseModel
@@ -22,6 +22,10 @@ from .commons import I18nOption
 
 
 class FormFieldRule(BaseModel):
+    """
+    表单规则
+    """
+
     required: bool = False
     """是否必须"""
 
@@ -38,11 +42,23 @@ class FormFieldRule(BaseModel):
     """规则消息"""
 
 
+class FormFieldValueStatusEnum(str, enum.Enum):
+    """
+    表单值状态
+    """
+
+    Success = 'Success'
+    Error = 'Error'
+    Processing = 'Processing'
+    Warning = 'Warning'
+    Default = 'Default'
+
+
 class FormFieldValueEnum(BaseModel):
     text: I18nOption
     """值展示文本"""
 
-    status: str | None = None
+    status: FormFieldValueStatusEnum | None = None
     """状态"""
 
     disabled: bool = False
@@ -65,7 +81,7 @@ class FormSchema(BaseModel):
     value_enum: Mapping[str, FormFieldValueEnum | None] = None
     """select radio 等组件的选项"""
 
-    field_props: Mapping[str, object | None] = None
+    field_props: Mapping[str, object] | None = None
     """对应组件 fieldProps 属性"""
 
     title: I18nOption | None = None

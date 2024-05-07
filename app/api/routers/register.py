@@ -22,7 +22,9 @@ from starlette.responses import JSONResponse
 
 from utils.errors.base_error import BaseServiceError
 from .auth import login, users
+from .llm import llm_schema
 from .system import setup, system
+from .workspace import workspace
 from ..dependencies.principal import token_verify
 
 
@@ -32,11 +34,13 @@ def register(app: FastAPI):
     :param app:  FastAPI
     """
 
-    app.include_router(setup.router, prefix='/api',
+    app.include_router(setup.router, prefix='/api/system',
                        tags=['init | 初始化'])
 
     app.include_router(system.router, prefix='/api/system',
-                       tags=['info | 系统信息'])
+                       tags=['system | 系统信息'])
+    app.include_router(llm_schema.router, prefix='/api/system/llm',
+                       tags=['system | 系统信息'])
 
     app.include_router(login.router, prefix='/api',
                        tags=['auth | 认证'])
@@ -44,6 +48,10 @@ def register(app: FastAPI):
     app.include_router(users.router, prefix='/api/user',
                        dependencies=[Depends(token_verify)],
                        tags=['user | 用户'])
+
+    app.include_router(workspace.router, prefix='/api/workspace',
+                       dependencies=[Depends(token_verify)],
+                       tags=['workspace | 空间'])
 
 
 def exception_handler(app: FastAPI):

@@ -19,3 +19,7 @@ from utils.errors.base_error import BaseServiceError
 
 class SpaceCreationError(BaseServiceError):
     pass
+
+
+class SpaceExistsError(BaseServiceError):
+    pass

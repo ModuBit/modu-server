@@ -15,9 +15,9 @@ limitations under the License.
 """
 
 from sqlalchemy import PrimaryKeyConstraint, String, Enum, text, func
-from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import Mapped, mapped_column, Session
+from sqlalchemy.future import select
+from sqlalchemy.orm import Mapped, mapped_column
 
 from repositories.data.database_postgres import PostgresBasePO
 from utils.errors.account_error import AccountLoginError
@@ -33,7 +33,10 @@ class AccountRepositoryPostgres(AccountRepository):
 
     @with_async_session
     async def find_one_by_email(self, email: str, session: AsyncSession) -> Account:
-        stmt = select(AccountPO).filter(AccountPO.email == email).limit(1)
+        stmt = (select(AccountPO)
+                .where(AccountPO.email == email)
+                .where(AccountPO.is_deleted == False)
+                .limit(1))
         select_result = await session.execute(stmt)
         account_model = select_result.scalars().one_or_none()
         if not account_model:
@@ -51,7 +54,7 @@ class AccountRepositoryPostgres(AccountRepository):
 
     @with_async_session
     async def count_all(self, session: AsyncSession) -> int:
-        stmt = select(func.count()).select_from(AccountPO)
+        stmt = select(func.count()).select_from(AccountPO).where(AccountPO.is_deleted == False)
         count_result = await session.execute(stmt)
         return count_result.scalar()
 
