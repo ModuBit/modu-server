@@ -58,6 +58,14 @@ class ModelProviderFactory:
         for provider in sorted_providers:
             self._providers[provider.provider_schema.key] = provider
 
+    def get_provider(self, key: str) -> LLMProvider | None:
+        """
+        通过key获取LLM Provider
+        :param key: Provider KEY
+        :return: LLMProvider
+        """
+        return self._providers[key] if key in self._providers else None
+
     @property
     def provider_schemas(self) -> list[ProviderSchema]:
         """

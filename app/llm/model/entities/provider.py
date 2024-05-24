@@ -35,7 +35,7 @@ class ProviderSchema(BaseModel):
     key: str
     """标识"""
 
-    name: I18nOption
+    name: str
     """名称"""
 
     description: I18nOption | None = None

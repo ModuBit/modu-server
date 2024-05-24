@@ -15,5 +15,6 @@ limitations under the License.
 """
 
 __all__ = [
-    'llm_schema'
+    'llm_schema',
+    'llm_provider',
 ]

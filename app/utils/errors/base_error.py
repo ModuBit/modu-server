@@ -26,7 +26,8 @@ class ErrorShowType(str, enum.Enum):
 
 
 class BaseServiceError(Exception):
-    def __init__(self, message: str, show_type: ErrorShowType = ErrorShowType.ERROR_MESSAGE, target: str = None, status_code: int = 403):
+    def __init__(self, message: str, show_type: ErrorShowType = ErrorShowType.ERROR_MESSAGE, target: str = None,
+                 status_code: int = 403):
         """
         :param message: 消息文案
         :param show_type: 展示类型
@@ -37,3 +38,7 @@ class BaseServiceError(Exception):
         self.target = target
         self.message = message
         self.status_code = status_code
+
+
+class UnauthorizedError(BaseServiceError):
+    pass

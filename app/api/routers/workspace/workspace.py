@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+
 from fastapi import APIRouter, Depends
 from loguru import logger
 from pydantic import BaseModel
@@ -41,10 +42,11 @@ class WorkspaceDTO(BaseModel):
 
 
 @logger.catch()
-@router.get(path='/', response_model=list[WorkspaceDTO])
+@router.get(path='', response_model=list[WorkspaceDTO])
 async def list_related(current_user: Account = Depends(current_account)) -> list[Workspace]:
     """
     当前登录人相关的空间列表
+    :param current_user: 当前用户
     :return: Workspace
     """
     return await workspace_service.list_related(current_user)
@@ -56,6 +58,7 @@ async def detail(workspace_uid: str, current_user: Account = Depends(current_acc
     """
     获取空间详情
     :param workspace_uid: 空间uid
+    :param current_user: 当前用户
     :return: Workspace
     """
     return await workspace_service.detail(current_user, workspace_uid)

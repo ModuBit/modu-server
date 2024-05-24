@@ -1,13 +1,7 @@
 key: zhipu
-name:
-  default: OpenAI
+name: 智普清言
 description:
   default: OpenAI
-icon:
-  small:
-    default: icon_small.svg
-  large:
-    default: icon_large.svg
 help:
   title:
     default: 从 OpenAI 获取 API Key

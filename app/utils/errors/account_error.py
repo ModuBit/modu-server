@@ -19,7 +19,3 @@ from utils.errors.base_error import BaseServiceError
 
 class AccountLoginError(BaseServiceError):
     pass
-
-
-class UnauthorizedError(BaseServiceError):
-    pass

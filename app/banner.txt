@@ -12,6 +12,6 @@
 :: ${app.description} ::
 :: ${app.contact.name} :: ${app.contact.url} ::
 :: ${app.project.name} :: ${app.project.url} ::
-:: ${app.license_info.name} :: ${app.license_info.url} ::
+:: ${app.license.name} :: ${app.license.url} ::
 :: 林中通幽径 :: 深山藏小舍 ::
 ==================================================================

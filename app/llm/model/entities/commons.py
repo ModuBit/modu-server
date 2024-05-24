@@ -30,18 +30,10 @@ class IconOption(BaseModel):
     """
     图标
     """
-
-    class Icon(BaseModel):
-        """
-        图标
-        """
-        default: str
-        en_us: str | None = None
-        zh_cn: str | None = None
-
-    small: Icon
-    large: Icon
-    background: str | None = None
+    icon: str | None = None
+    avatar: str | None = None
+    combine: str | None = None
+    color: str | None = None
 
 
 class HelpOption(BaseModel):

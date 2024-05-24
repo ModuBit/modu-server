@@ -1,15 +1,12 @@
 key: dashscope
-name:
-  default: 灵积模型
-  en_us: DashScope
+name: 阿里云灵积
 description:
-  default: 灵积模型服务
+  default: 阿里云灵积模型服务
 icon:
-  small:
-    default: icon_s_en.png
-  large:
-    default: icon_l_zh.png
-    en_us: icon_l_en.png
+  icon: /providers/dashscope/icon.svg
+  avatar: /providers/dashscope/avatar.svg
+  combine: /providers/dashscope/combine.svg
+  color: '#615ced'
 help:
   title:
     default: 从 阿里云 获取 API Key

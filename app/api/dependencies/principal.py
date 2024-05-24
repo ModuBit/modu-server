@@ -20,8 +20,7 @@ from starlette.status import HTTP_401_UNAUTHORIZED
 
 from repositories.data.account.account_models import Account
 from services import account_service
-from utils.errors.account_error import UnauthorizedError
-from utils.errors.base_error import ErrorShowType
+from utils.errors.base_error import ErrorShowType, UnauthorizedError
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/api/login')
 

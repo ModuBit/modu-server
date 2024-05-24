@@ -47,9 +47,10 @@ def account_token_encode(account: Account) -> str:
     :param account: 账号信息
     :return: token
     """
-    jwt_config = app_config.security.jwt
+    security_config = app_config.security
+    jwt_config = security_config.jwt
     return auth.jose_encode(vars(account),
-                            jwt_config.secret,
+                            security_config.secret,
                             jwt_config.algorithm,
                             jwt_config.expire_minutes)
 
@@ -60,8 +61,9 @@ def account_token_decode(token: str) -> Account:
     :param token: token
     :return: 账号
     """
-    jwt_config = app_config.security.jwt
-    account = auth.jose_decode(token, jwt_config.secret, jwt_config.algorithm)
+    security_config = app_config.security
+    jwt_config = security_config.jwt
+    account = auth.jose_decode(token, security_config.secret, jwt_config.algorithm)
     return Account(**account)
 
 

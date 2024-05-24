@@ -17,13 +17,16 @@ limitations under the License.
 from .account import AccountRepository
 from .data_repository_container import get_repository, get_database
 from .database import Database
+from .llm import LLMProviderConfigRepository
 from .workspace import WorkspaceRepository
 
 database: Database = get_database()
 account_repository: AccountRepository = get_repository('account')
 workspace_repository: WorkspaceRepository = get_repository('workspace')
+llm_provider_config_repository: LLMProviderConfigRepository = get_repository('llm_provider_config')
 
 __all__ = [
     account_repository,
     workspace_repository,
+    llm_provider_config_repository,
 ]

@@ -26,7 +26,7 @@ app:
   project:
     name: Cube Chat
     url: https://github.com/cubewisebit/cube-chat-server
-  license_info:
+  license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0
 
@@ -65,9 +65,9 @@ repository:
 
 # 安全设置
 security:
+  # openssl rand -hex 32
+  secret: ${SECRET_KEY:793539f7301c380d6ebb002ffae34eccdb04faae6716b5f7bd1a56c3e04853a1}
   jwt:
-    # openssl rand -hex 32
-    secret: ${JWT_SK:793539f7301c380d6ebb002ffae34eccdb04faae6716b5f7bd1a56c3e04853a1}
     algorithm: HS256
     expire_minutes: ${JWT_EXPIRE_MINUTES:2880}
 

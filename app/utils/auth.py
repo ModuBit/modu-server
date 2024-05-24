@@ -18,8 +18,9 @@ from datetime import datetime, timedelta
 
 from jose import jwt, ExpiredSignatureError, JWTError
 from passlib.context import CryptContext
+from starlette.status import HTTP_401_UNAUTHORIZED
 
-from utils.errors.account_error import UnauthorizedError
+from utils.errors.base_error import UnauthorizedError
 
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
@@ -70,6 +71,8 @@ def jose_decode(token: str, secret: str, algorithm: str):
     try:
         return jwt.decode(token, secret, algorithms=[algorithm])
     except ExpiredSignatureError:
-        raise UnauthorizedError('Token has expired.')
+        raise UnauthorizedError(message='Token has expired.',
+                                status_code=HTTP_401_UNAUTHORIZED)
     except JWTError:
-        raise UnauthorizedError('Invalid Token.')
+        raise UnauthorizedError(message='Invalid Token.',
+                                status_code=HTTP_401_UNAUTHORIZED)

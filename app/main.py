@@ -56,7 +56,7 @@ def create_app() -> FastAPI:
                        summary=app_config.summary,
                        termsOfService=app_config.app.terms_of_service,
                        contact=app_config.app.contact.as_dict() or {},
-                       license=app_config.app.license_info.as_dict() or {},
+                       license=app_config.app.license.as_dict() or {},
                        project=app_config.app.project.as_dict() or {},
                        lifespan=lifespan.lifespan)
     fast_app.config = app_config

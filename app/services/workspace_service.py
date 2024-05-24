@@ -17,7 +17,7 @@ limitations under the License.
 from repositories.data import workspace_repository
 from repositories.data.account.account_models import Account
 from repositories.data.workspace.workspace_models import Workspace, WorkspaceMemberRole
-from utils.errors.account_error import UnauthorizedError
+from utils.errors.base_error import UnauthorizedError
 from utils.errors.space_error import SpaceExistsError
 
 
@@ -60,3 +60,14 @@ async def detail(current_user: Account, workspace_uid: str) -> Workspace:
 
     workspace.member_role = workspace_member.member_role
     return workspace
+
+
+async def member_role(current_user: Account, workspace_uid: str) -> WorkspaceMemberRole | None:
+    """
+    获取空间成员角色
+    :param current_user: 当前用户
+    :param workspace_uid: 空间uid
+    :return: WorkspaceMemberRole
+    """
+    workspace = await detail(current_user, workspace_uid)
+    return workspace.member_role if workspace else None

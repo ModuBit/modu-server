@@ -14,9 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import functools
-import os
-
 from sqlalchemy import PrimaryKeyConstraint, String, text, Enum, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -24,7 +21,6 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from repositories.data.database import with_async_session, BasePO
 from repositories.data.database_postgres import PostgresBasePO
-from repositories.data.type_decorator import Bytes2String
 from repositories.data.workspace import WorkspaceRepository
 from repositories.data.workspace.workspace_models import WorkspaceMemberStatus, WorkspaceMemberRole, Workspace, \
     WorkspaceMembership, WorkspaceType
@@ -138,8 +134,6 @@ class WorkspacePO(PostgresBasePO):
     type: Mapped[WorkspaceType] = mapped_column(
         Enum(WorkspaceType, native_enum=False), nullable=False,
         comment='空间类型')
-    iv: Mapped[bytes] = mapped_column(Bytes2String, nullable=False,
-                                      default=functools.partial(os.urandom, 16), comment='初始向量')
 
 
 class WorkspaceMembershipPO(PostgresBasePO):

@@ -19,7 +19,7 @@ import time
 import pytest
 
 from utils import auth
-from utils.errors.account_error import UnauthorizedError
+from utils.errors.base_error import UnauthorizedError
 
 
 def test_password_hash():

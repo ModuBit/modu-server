@@ -45,8 +45,6 @@ class Workspace(BaseModel):
     """空间简介"""
     type: WorkspaceType
     """空间类型"""
-    iv: bytes | None = None
-    """初始向量"""
     is_deleted: bool = Field(default=False)
     """是否删除"""
 

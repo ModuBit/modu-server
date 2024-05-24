@@ -14,63 +14,32 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import hashes, padding
-from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from Crypto.Cipher import AES
 
 
-def _cipher(key_material: bytes, iv: bytes) -> Cipher:
-    """
-    生成Cipher
-    """
-
-    # 创建哈希上下文
-    digest = hashes.Hash(hashes.SHA256(), backend=default_backend())
-
-    # 添加密码到哈希上下文中
-    digest.update(key_material)
-
-    # 计算得到密钥
-    key = digest.finalize()
-
-    # 配置AES加密对象
-    return Cipher(algorithms.AES(key), modes.CBC(iv), backend=default_backend())
-
-
-def encrypt(key_material: bytes, iv: bytes, plain_bytes: bytes) -> bytes:
+def encrypt(key_material: bytes, plain_bytes: bytes) -> tuple[bytes, bytes, bytes]:
     """
     加密
     :param key_material: 密钥
-    :param salt: 盐值
-    :param iv: 初始向量
     :param plain_bytes: 待加密字节
     :return: 加密后字节
     """
 
-    encryptor = _cipher(key_material, iv).encryptor()
+    cipher = AES.new(key_material, AES.MODE_OCB)
+    cipher_bytes, tag = cipher.encrypt_and_digest(plain_bytes)
 
-    # PKCS7填充
-    padder = padding.PKCS7(128).padder()
-    padded_plaintext = padder.update(plain_bytes) + padder.finalize()
-
-    # 加密
-    return encryptor.update(padded_plaintext) + encryptor.finalize()
+    return tag, cipher.nonce, cipher_bytes
 
 
-def decrypt(key_material: bytes, iv: bytes, cipher_bytes: bytes) -> bytes:
+def decrypt(key_material: bytes, tag: bytes, nonce: bytes, cipher_bytes: bytes) -> bytes:
     """
     解密
     :param key_material: 密钥
-    :param iv: 初始向量
+    :param tag: tag
+    :param nonce: nonce
     :param cipher_bytes: 待解密字节
     :return: 解密后字节
     """
 
-    decryptor = _cipher(key_material, iv).decryptor()
-
-    # 解密
-    padded_plaintext = decryptor.update(cipher_bytes) + decryptor.finalize()
-
-    # 移除PKCS7填充
-    unpadder = padding.PKCS7(128).unpadder()
-    return unpadder.update(padded_plaintext) + unpadder.finalize()
+    cipher = AES.new(key_material, AES.MODE_OCB, nonce=nonce)
+    return cipher.decrypt_and_verify(cipher_bytes, tag)

@@ -17,7 +17,7 @@ limitations under the License.
 from llm.model.entities.provider import LLMProvider
 
 
-class TongYiProvider(LLMProvider):
+class DashScopeProvider(LLMProvider):
     """
     通义千问
     """
