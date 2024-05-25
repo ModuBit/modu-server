@@ -90,18 +90,3 @@ routers_register.exception_handler(app)
 
 # 注册中间件
 middlewares_register.register(app)
-
-if __name__ == '__main__':
-    """
-    本地开发使用 python main.py
-    生产请使用 Gunicorn 进行部署
-    gunicorn main:app -w 4 -k uvicorn.workers.UvicornWorker
-    """
-    import uvicorn
-
-    uvicorn.run(
-        'main:app',
-        reload=True,
-        host=app_config.server.host or '0.0.0.0',
-        port=app_config.server.port or 8080,
-    )
