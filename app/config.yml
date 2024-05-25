@@ -23,6 +23,10 @@ app:
     name: Maner·Fan
     url: https://github.com/manerfan
     email: manerfan@163.com
+  contact2:
+    name: ShyZhang
+    url: https://github.com/hattori7243
+    email: shyzhang777@gmail.com
   project:
     name: Cube Chat
     url: https://github.com/cubewisebit/cube-chat-server
