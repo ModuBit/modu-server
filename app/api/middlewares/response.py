@@ -23,7 +23,8 @@ from starlette.responses import JSONResponse, Response
 
 
 def _log(request: Request, response: Response, process_time: float):
-    logger.info(f'{request.client.host} {request.method} {request.url} {response.status_code} {process_time:.2f}ms')
+    logger.info(
+        f'{request.client.host}:{request.client.port} {request.method} {request.url.scheme.upper()} {request.url.path} {response.status_code} {process_time:.2f}ms')
 
 
 def register(app: FastAPI):

@@ -1,25 +1,46 @@
 key: wenxin
 name: 文心一言
 description:
-  default: OpenAI
+  default: 文心一言提供的模型
 help:
   title:
-    default: 从 OpenAI 获取 API Key
-    en_us: Get your API Key from OpenAI
-  url: https://platform.openai.com/account/api-keys
+    default: 从 文心一言 获取 AK/SK
+    en_us: Get your AK/SK from WenXin
+  url: https://cloud.baidu.com/wenxin.html
 credential_schemas:
-  - data_index: openai_api_key
+  - data_index: api_key
     value_type: password
     title:
       default: API Key
     tooltip:
-      default: OpenAI API Key
+      default: 文心 API Key
     field_props:
       placeholder:
         default: 在此输入您的 API Key
         en_us: Enter your API Key
+      maxLength: 128
     rules:
       required: True
+      min: 32
+      max: 128
       message:
-        default: 请输入 OpenAI API Key
-        en_us: Please enter your OpenAI API Key
+        default: 请输入 文心 API Key
+        en_us: Please enter your WenXin API Key
+  - data_index: secret_key
+    value_type: password
+    title:
+      default: Secret Key
+    tooltip:
+      default: 文心 Secret Key
+    field_props:
+      placeholder:
+        default: 在此输入您的 Secret Key
+        en_us: Enter your Secret Key
+      maxLength: 128
+    rules:
+      required: True
+      min: 32
+      max: 128
+      message:
+        default: 请输入 文心 Secret Key
+        en_us: Please enter your WenXin Secret Key

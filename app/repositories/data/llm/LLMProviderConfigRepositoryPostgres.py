@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import json
 
-from sqlalchemy import PrimaryKeyConstraint, String, update
+from sqlalchemy import PrimaryKeyConstraint, String, update, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import Mapped, mapped_column
@@ -55,6 +55,14 @@ class LLMProviderConfigRepositoryPostgres(LLMProviderConfigRepository):
         await session.execute(stmt)
 
         return llm_provider_config
+
+    @with_async_session
+    async def delete(self, workspace_uid: str, provider_key: str, session: AsyncSession) -> bool:
+        stmt = (delete(LLMProviderConfigPO)
+                .where(LLMProviderConfigPO.workspace_uid == workspace_uid)
+                .where(LLMProviderConfigPO.provider_key == provider_key))
+        await session.execute(stmt)
+        return True
 
     @with_async_session
     async def find_one_by_workspace_and_key(

@@ -51,6 +51,17 @@ class LLMProviderConfigRepository(Repository):
         raise NotImplementedError
 
     @abstractmethod
+    async def delete(
+            self, workspace_uid: str, provider_key: str, session: AsyncSession) -> bool:
+        """
+        删除Provider配置
+        :param workspace_uid: workspace uid
+        :param provider_key: provider key
+        :param session: Session
+        """
+        raise NotImplementedError
+
+    @abstractmethod
     async def find_one_by_workspace_and_key(
             self, workspace_uid: str, provider_key: str, session: AsyncSession) -> LLMProviderConfig | None:
         """

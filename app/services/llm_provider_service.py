@@ -15,7 +15,6 @@ limitations under the License.
 """
 
 from llm.model import model_provider_factory
-from llm.model.entities.provider import ProviderSchema
 from repositories.data import llm_provider_config_repository
 from repositories.data.account.account_models import Account
 from repositories.data.llm.llm_models import LLMProviderConfig
@@ -25,15 +24,17 @@ from utils.errors.base_error import UnauthorizedError
 from utils.errors.llm_error import LLMExistsError
 
 
-async def add(current_user: Account, workspace_uid: str, provider_config: LLMProviderConfig) -> LLMProviderConfig:
+async def add(current_user: Account, workspace_uid: str, provider_key: str,
+              provider_config: LLMProviderConfig) -> LLMProviderConfig:
     """
     添加LLM Provider配置
     :param current_user: 当前用户
     :param workspace_uid: 工作空间UID
+    :param provider_key: Provider Key
     :param provider_config: Provider配置
     :return: LLMProviderConfig
     """
-    llm_provider = model_provider_factory.get_provider(provider_config.provider_key)
+    llm_provider = model_provider_factory.get_provider(provider_key)
     if llm_provider is None:
         raise LLMExistsError('LLM供应商不存在')
 
@@ -42,9 +43,28 @@ async def add(current_user: Account, workspace_uid: str, provider_config: LLMPro
         raise UnauthorizedError('您无该权限操作')
 
     exists_provider_config = await llm_provider_config_repository.find_one_by_workspace_and_key(workspace_uid,
-                                                                                                provider_config.provider_key)
+                                                                                                provider_key)
     return await llm_provider_config_repository.add(provider_config) if exists_provider_config is None \
         else await llm_provider_config_repository.update(provider_config)
+
+
+async def delete(current_user: Account, workspace_uid: str, provider_key: str) -> bool:
+    """
+    删除 LLM Provider 配置
+    :param current_user: 当前用户
+    :param workspace_uid: 工作空间 UID
+    :param provider_key: LLM 提供商 key
+    :return: True False
+    """
+    llm_provider = model_provider_factory.get_provider(provider_key)
+    if llm_provider is None:
+        raise LLMExistsError('LLM供应商不存在')
+
+    member_role = await workspace_service.member_role(current_user, workspace_uid)
+    if member_role is None or member_role not in [WorkspaceMemberRole.OWNER, WorkspaceMemberRole.ADMIN]:
+        raise UnauthorizedError('您无该权限操作')
+
+    return await llm_provider_config_repository.delete(workspace_uid, provider_key)
 
 
 async def detail(current_user: Account, workspace_uid: str, provider_key: str) -> LLMProviderConfig:
@@ -62,19 +82,18 @@ async def detail(current_user: Account, workspace_uid: str, provider_key: str) -
     return await llm_provider_config_repository.find_one_by_workspace_and_key(workspace_uid, provider_key)
 
 
-async def all_configured_provider_key(current_user: Account, workspace_uid: str) -> list[str]:
+async def all_configured(current_user: Account, workspace_uid: str) -> list[LLMProviderConfig]:
     """
-    获取所有已配置的 Provider key
+    获取所有已配置的 Provider
     :param current_user: 当前用户
     :param workspace_uid: 工作空间 UID
-    :return: Provider key 列表
+    :return: LLMProviderConfig
     """
     member_role = await workspace_service.member_role(current_user, workspace_uid)
     if member_role is None:
         raise UnauthorizedError('您无该权限查看')
 
-    provider_configs = await llm_provider_config_repository.list_all(workspace_uid)
-    return [config.provider_key for config in provider_configs]
+    return await llm_provider_config_repository.list_all(workspace_uid)
 
 
 def provider_config_desensitize(provider_config: LLMProviderConfig | None) -> LLMProviderConfig | None:
@@ -84,7 +103,7 @@ def provider_config_desensitize(provider_config: LLMProviderConfig | None) -> LL
     :return: LLMProviderConfig
     """
 
-    if provider_config is None :
+    if provider_config is None:
         return None
 
     llm_provider = model_provider_factory.get_provider(provider_config.provider_key)

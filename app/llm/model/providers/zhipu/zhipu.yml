@@ -1,25 +1,28 @@
 key: zhipu
 name: 智普清言
 description:
-  default: OpenAI
+  default: 智普清言
 help:
   title:
-    default: 从 OpenAI 获取 API Key
-    en_us: Get your API Key from OpenAI
-  url: https://platform.openai.com/account/api-keys
+    default: 从 智普清言 获取 API Key
+    en_us: Get your API Key from ZhiPu
+  url: https://open.bigmodel.cn/usercenter/apikeys
 credential_schemas:
-  - data_index: openai_api_key
+  - data_index: api_key
     value_type: password
     title:
       default: API Key
     tooltip:
-      default: OpenAI API Key
+      default: 智普清言 API Key
     field_props:
       placeholder:
         default: 在此输入您的 API Key
         en_us: Enter your API Key
+      maxLength: 128
     rules:
       required: True
+      min: 32
+      max: 128
       message:
-        default: 请输入 OpenAI API Key
-        en_us: Please enter your OpenAI API Key
+        default: 请输入 智普清言 API Key
+        en_us: Please enter your ZhuPu API Key

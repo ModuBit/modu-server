@@ -4,22 +4,25 @@ description:
   default: 月之暗面
 help:
   title:
-    default: 从 阿里云 获取 API Key
-    en_us: Get your API key from AliCloud
-  url: https://dashscope.console.aliyun.com/api-key_management
+    default: 从 MoonShot 获取 API Key
+    en_us: Get your API key from MoonShot
+  url: https://platform.moonshot.cn/console/api-keys
 credential_schemas:
-  - data_index: dashscope_api_key
+  - data_index: api_key
     value_type: password
     title:
       default: API Key
     tooltip:
-      default: 通义千问 API Key
+      default: MoonShot API Key
     field_props:
       placeholder:
         default: 在此输入您的 API Key
         en_us: Enter your API Key
+      maxLength: 128
     rules:
       required: True
+      min: 32
+      max: 128
       message:
-        default: 请输入 通义千问 API Key
+        default: 请输入 MoonShot API Key
         en_us: Please enter your TONGYI API Key

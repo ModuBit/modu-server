@@ -26,35 +26,51 @@ router = APIRouter()
 
 
 @logger.catch()
-@router.post('/provider')
-async def add(workspace_uid: str, llm_provider_config: LLMProviderConfig,
+@router.post('/provider/{provider_key}/config')
+async def add(workspace_uid: str, provider_key: str, llm_provider_config: LLMProviderConfig,
               current_user: Account = Depends(current_account)) -> LLMProviderConfig:
     """
     添加LLM Provider配置
     :param workspace_uid: 空间UID
+    :param provider_key: Provider Key
     :param llm_provider_config: LLMProviderConfig
     :param current_user: 当前用户
     :return: LLMProviderConfig
     """
-    llm_provider_config = await llm_provider_service.add(current_user, workspace_uid, llm_provider_config)
+    llm_provider_config = await llm_provider_service.add(current_user, workspace_uid, provider_key, llm_provider_config)
     return llm_provider_service.provider_config_desensitize(llm_provider_config)
 
 
 @logger.catch()
-@router.get('/provider/all_key')
-async def all_configured_provider_keys(workspace_uid: str,
-                                       current_user: Account = Depends(current_account)) -> list[str]:
+@router.delete('/provider/{provider_key}/config')
+async def delete(workspace_uid: str, provider_key: str, current_user: Account = Depends(current_account)) -> bool:
     """
-    获取所有已配置LLM Provider的key
+    删除LLM Provider配置
     :param workspace_uid: 空间UID
+    :param provider_key: Provider Key
     :param current_user: 当前用户
-    :return: LLMProvider keys
+    :return: boolean
     """
-    return await llm_provider_service.all_configured_provider_key(current_user, workspace_uid)
+    return await llm_provider_service.delete(current_user, workspace_uid, provider_key)
 
 
 @logger.catch()
-@router.get('/provider/{provider_key}')
+@router.get('/provider/all/config')
+async def all_configured_provider_configs(workspace_uid: str,
+                                          current_user: Account = Depends(current_account)) -> list[LLMProviderConfig]:
+    """
+    获取所有已配置LLM Provider
+    :param workspace_uid: 空间UID
+    :param current_user: 当前用户
+    :return: LLMProviderConfig
+    """
+    llm_provider_configs = await llm_provider_service.all_configured(current_user, workspace_uid)
+    return [llm_provider_service.provider_config_desensitize(llm_provider_config)
+            for llm_provider_config in (llm_provider_configs or [])]
+
+
+@logger.catch()
+@router.get('/provider/{provider_key}/config')
 async def detail(workspace_uid: str, provider_key: str,
                  current_user: Account = Depends(current_account)) -> LLMProviderConfig | None:
     """

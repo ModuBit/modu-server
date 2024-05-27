@@ -23,8 +23,11 @@ credential_schemas:
       placeholder:
         default: 在此输入您的 API Key
         en_us: Enter your API Key
+      maxLength: 128
     rules:
       required: True
+      min: 32
+      max: 128
       message:
         default: 请输入 通义千问 API Key
         en_us: Please enter your TONGYI API Key
