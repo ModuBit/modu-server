@@ -26,7 +26,7 @@ router = APIRouter()
 
 
 @logger.catch()
-@router.post('/provider/{provider_name}/model')
+@router.get('/provider/{provider_name}/model')
 async def models(workspace_uid: str, provider_name: str,
                  current_user: Account = Depends(current_account)) -> dict[ModelType, list[ModelSchema]]:
     """

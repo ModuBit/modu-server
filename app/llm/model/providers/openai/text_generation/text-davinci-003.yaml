@@ -14,17 +14,16 @@
 # limitations under the License.
 #
 
-model: gpt-4o
-name: gpt-4o
+model: text-davinci-003
+name: text-davinci-003
 description:
-  default: gpt-4o
-  en_us: gpt-4o
+  default: text-davinci-003
+  en_us: text-davinci-003
 type: TEXT_GENERATION
-features:
-  - VISION
+features: []
 properties:
-  mode: CHAT
-  context_size: 128000
+  mode: COMPLETION
+  context_size: 4096
 parameters:
   - name: temperature
     value_type: digit
@@ -38,3 +37,4 @@ parameters:
     value_type: digit
   - name: response_format
     value_type: select
+deprecated: true
