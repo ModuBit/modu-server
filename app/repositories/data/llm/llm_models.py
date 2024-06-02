@@ -28,8 +28,8 @@ class LLMProviderConfig(BaseModel):
     workspace_uid: str
     """空间UID"""
 
-    provider_key: str
-    """Provider Key"""
+    provider_name: str
+    """Provider Name"""
 
     provider_credential: dict
     """Provider 凭证"""

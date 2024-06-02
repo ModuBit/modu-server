@@ -27,8 +27,6 @@ class ModelProviderFactory:
     LLM模型工厂
     """
 
-    _providers: OrderedDict[str, LLMProvider]
-
     def __init__(self):
         self._providers = OrderedDict()
         """模型Provider"""
@@ -53,10 +51,10 @@ class ModelProviderFactory:
         ordinal_list = yaml.safe_load(ordinal_content)
         ordering = {key: index for index, key in enumerate(ordinal_list)}
         ordering_default = float('inf')
-        sorted_providers = sorted(providers, key=lambda p: ordering.get(p.provider_schema.key, ordering_default))
+        sorted_providers = sorted(providers, key=lambda p: ordering.get(p.provider_schema.provider, ordering_default))
 
         for provider in sorted_providers:
-            self._providers[provider.provider_schema.key] = provider
+            self._providers[provider.provider_schema.provider] = provider
 
     def get_provider(self, key: str) -> LLMProvider | None:
         """

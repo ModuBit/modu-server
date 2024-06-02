@@ -18,14 +18,14 @@ from llm.model.entities.commons import I18nOption
 from llm.model.entities.model import LLMModel, ModelType
 
 
-class EmbeddingModel(LLMModel):
+class TextEmbeddingModel(LLMModel):
     """
     内嵌 模型
     """
 
     @property
     def model_type(self) -> ModelType:
-        return ModelType.EMBEDDING
+        return ModelType.TEXT_EMBEDDING
 
     @property
     def description(self) -> I18nOption:

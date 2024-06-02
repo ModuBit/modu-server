@@ -15,7 +15,7 @@ limitations under the License.
 """
 
 from abc import ABC
-from collections import defaultdict, OrderedDict
+from collections import OrderedDict
 from importlib.resources import files
 
 import yaml
@@ -32,7 +32,7 @@ class ProviderSchema(BaseModel):
     LLM提供商
     """
 
-    key: str
+    provider: str
     """标识"""
 
     name: str
@@ -47,7 +47,7 @@ class ProviderSchema(BaseModel):
     help: HelpOption | None = None
     """帮助"""
 
-    credential_schemas: list[FormSchema] | None = None
+    credential_schemas: list[FormSchema] = []
     """凭证"""
 
     supported_model_types: list[ModelType] = []
@@ -80,10 +80,10 @@ class LLMProvider(ABC):
         model_classes = load_classes(parent_module, LLMModel, True, 1)
         models = [provider_cls() for provider_cls in model_classes]
 
-        # 对model进行分组
-        model_groups = defaultdict(list)
+        # 对model进行去重处理
+        model_groups = {}
         for model in models:
-            model_groups[model.model_type].append(model)
+            model_groups[model.model_type] = model
 
         # 对model进行排序
         ordinal_list = [name for name, _ in ModelType.__members__.items()]
@@ -91,8 +91,15 @@ class LLMProvider(ABC):
         ordering_default = float('inf')
         sorted_groups = sorted(model_groups.items(), key=lambda item: ordering.get(item[0], ordering_default))
 
-        for model_type, models in sorted_groups:
-            self._models[model_type] = models
+        for model_type, model in sorted_groups:
+            self._models[model_type] = model
+
+    @property
+    def models(self) -> list[LLMModel]:
+        """
+        获取该Provider下所有的模型
+        """
+        return [model for (_, model) in self._models.items()]
 
     @property
     def provider_schema(self) -> ProviderSchema:

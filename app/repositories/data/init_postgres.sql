@@ -87,12 +87,12 @@ CREATE TABLE cube_llm_provider_config
     updated_at    TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP(0) NOT NULL,
     uid           VARCHAR(32)                                           NOT NULL,
     workspace_uid VARCHAR(32)                                           NOT NULL,
-    provider_key  VARCHAR(32)                                           NOT NULL,
+    provider_name  VARCHAR(32)                                           NOT NULL,
     provider_credential VARCHAR                                         NOT NULL,
     is_deleted  SMALLINT                   DEFAULT '0'::SMALLINT        NOT NULL
 );
 CREATE UNIQUE INDEX uk_cube_llm_provider_uid ON cube_llm_provider_config (uid);
-CREATE UNIQUE INDEX uk_cube_llm_provider_space_key ON cube_llm_provider_config (workspace_uid, provider_key);
+CREATE UNIQUE INDEX uk_cube_llm_provider_space_key ON cube_llm_provider_config (workspace_uid, provider_name);
 CREATE TRIGGER set_cube_llm_provider_updated_at
     BEFORE UPDATE
     ON cube_llm_provider_config

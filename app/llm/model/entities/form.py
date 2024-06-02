@@ -73,13 +73,13 @@ class FormSchema(BaseModel):
     https://pro-components.antdigital.dev/components/schema
     """
 
-    data_index: str
+    name: str
     """与实体映射的 key"""
 
     value_type: str
     """数据的渲渲染方式，字段类型"""
 
-    value_enum: Mapping[str, FormFieldValueEnum | None] = None
+    value_enum: Mapping[str, FormFieldValueEnum] | None = None
     """select radio 等组件的选项"""
 
     field_props: Mapping[str, object] | None = None

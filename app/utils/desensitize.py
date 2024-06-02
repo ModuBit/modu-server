@@ -14,24 +14,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from .embedding import TextEmbeddingModel
-from .image_generation import ImageGenerationModel
-from .speech_to_text import SpeechToTextModel
-from .text_generation import TextGenerationModel
-from .text_to_speech import TextToSpeechModel
-from .vision import VisionModel
 
-__all__ = [
-    'embedding',
-    TextEmbeddingModel,
-    'image_generation',
-    ImageGenerationModel,
-    'speech_to_text',
-    SpeechToTextModel,
-    'text_generation',
-    TextGenerationModel,
-    'text_to_speech',
-    TextToSpeechModel,
-    'vision',
-    VisionModel,
-]
+def desensitize(secret: str, prefix: str = '') -> str:
+    """
+    脱敏
+    :param secret: 待脱敏内容
+    :param prefix: 脱敏内容追加前缀
+    :return: 脱敏后的内容
+    """
+    length = len(secret)
+    if length >= 12:
+        return f"{prefix}{secret[:4]}{'*' * (length - 8)}{secret[-4:]}"
+    elif 8 <= length < 12:
+        return f"{prefix}{secret[:2]}{'*' * (length - 4)}{secret[-2:]}"
+    elif length < 8:
+        return f"{prefix}{secret[:2]}{'*' * (length - 2)}"
+    else:
+        return f"{prefix}{'*' * length}"

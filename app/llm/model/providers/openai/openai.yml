@@ -1,4 +1,20 @@
-key: openai
+#
+# Copyright 2024 Maner·Fan
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+provider: openai
 name: OpenAI
 description:
   default: OpenAI 提供的模型
@@ -9,7 +25,7 @@ help:
     en_us: Get your API Key from OpenAI
   url: https://platform.openai.com/account/api-keys
 credential_schemas:
-  - data_index: openai_api_key
+  - name: openai_api_key
     value_type: password
     title:
       default: API Key
@@ -24,10 +40,7 @@ credential_schemas:
       required: True
       min: 32
       max: 128
-      message:
-        default: 请输入 OpenAI API Key
-        en_us: Please enter your OpenAI API Key
-  - data_index: openai_organization
+  - name: openai_organization
     value_type: text
     title:
       default: 组织 ID
@@ -42,7 +55,7 @@ credential_schemas:
       maxLength: 64
     rules:
       required: false
-  - data_index: openai_api_base
+  - name: openai_api_base
     value_type: text
     title:
       default: API请求地址

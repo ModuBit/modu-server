@@ -50,26 +50,26 @@ class LLMProviderConfigRepositoryPostgres(LLMProviderConfigRepository):
                                                       json.dumps(llm_provider_config.provider_credential))
         stmt = (update(LLMProviderConfigPO)
                 .where(LLMProviderConfigPO.workspace_uid == llm_provider_config.workspace_uid)
-                .where(LLMProviderConfigPO.provider_key == llm_provider_config.provider_key)
+                .where(LLMProviderConfigPO.provider_name == llm_provider_config.provider_name)
                 .values(provider_credential=provider_credential))
         await session.execute(stmt)
 
         return llm_provider_config
 
     @with_async_session
-    async def delete(self, workspace_uid: str, provider_key: str, session: AsyncSession) -> bool:
+    async def delete(self, workspace_uid: str, provider_name: str, session: AsyncSession) -> bool:
         stmt = (delete(LLMProviderConfigPO)
                 .where(LLMProviderConfigPO.workspace_uid == workspace_uid)
-                .where(LLMProviderConfigPO.provider_key == provider_key))
+                .where(LLMProviderConfigPO.provider_name == provider_name))
         await session.execute(stmt)
         return True
 
     @with_async_session
     async def find_one_by_workspace_and_key(
-            self, workspace_uid: str, provider_key: str, session: AsyncSession) -> LLMProviderConfig | None:
+            self, workspace_uid: str, provider_name: str, session: AsyncSession) -> LLMProviderConfig | None:
         stmt = (select(LLMProviderConfigPO)
                 .where(LLMProviderConfigPO.workspace_uid == workspace_uid)
-                .where(LLMProviderConfigPO.provider_key == provider_key)
+                .where(LLMProviderConfigPO.provider_name == provider_name)
                 .limit(1))
         select_result = await session.execute(stmt)
         provider_config = select_result.scalars().one_or_none()
@@ -98,7 +98,7 @@ class LLMProviderConfigPO(PostgresBasePO):
     )
 
     workspace_uid: Mapped[str] = mapped_column(String(32), nullable=False, comment='provider配置uid')
-    provider_key: Mapped[str] = mapped_column(String(32), nullable=False, comment='provider key')
+    provider_name: Mapped[str] = mapped_column(String(32), nullable=False, comment='provider key')
     provider_credential: Mapped[str] = mapped_column(String(), nullable=False, comment='provider 凭证')
 
     @classmethod
@@ -111,7 +111,7 @@ class LLMProviderConfigPO(PostgresBasePO):
                                                       json.dumps(llm_provider_config.provider_credential))
         return LLMProviderConfigPO(
             workspace_uid=llm_provider_config.workspace_uid,
-            provider_key=llm_provider_config.provider_key,
+            provider_name=llm_provider_config.provider_name,
             provider_credential=provider_credential,
         )
 
@@ -126,6 +126,6 @@ class LLMProviderConfigPO(PostgresBasePO):
         return LLMProviderConfig(
             uid=self.uid,
             workspace_uid=self.workspace_uid,
-            provider_key=self.provider_key,
+            provider_name=self.provider_name,
             provider_credential=provider_credential,
         )

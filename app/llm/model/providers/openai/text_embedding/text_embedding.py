@@ -14,24 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from .embedding import TextEmbeddingModel
-from .image_generation import ImageGenerationModel
-from .speech_to_text import SpeechToTextModel
-from .text_generation import TextGenerationModel
-from .text_to_speech import TextToSpeechModel
-from .vision import VisionModel
+from llm.model.entities.models import TextEmbeddingModel
 
-__all__ = [
-    'embedding',
-    TextEmbeddingModel,
-    'image_generation',
-    ImageGenerationModel,
-    'speech_to_text',
-    SpeechToTextModel,
-    'text_generation',
-    TextGenerationModel,
-    'text_to_speech',
-    TextToSpeechModel,
-    'vision',
-    VisionModel,
-]
+
+class OpenAITextEmbeddingModel(TextEmbeddingModel):
+    pass

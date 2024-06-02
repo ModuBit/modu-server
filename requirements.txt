@@ -54,6 +54,9 @@ python-jose[cryptography]~=3.3.0
 ## [yaml处理](https://pyyaml.org/)
 pyyaml~=6.0.1
 
+## [工具大全](https://boltons.readthedocs.io/)
+boltons~=24.0.0
+
 ## [uuid](https://python-ulid.readthedocs.io/en/latest/)
 python-ulid~=2.2.0
 

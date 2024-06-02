@@ -14,8 +14,4 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from llm.model.entities.models import EmbeddingModel
-
-
-class OpenAIEmbeddingModel(EmbeddingModel):
-    pass
+HIDDEN_PREFIX = '[:hidden:]'

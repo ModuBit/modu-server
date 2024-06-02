@@ -38,4 +38,4 @@ def test_load_classes():
     provider_schemas = [model_provider_instance.provider_schema
                         for model_provider_instance in model_provider_instances]
     assert all(isinstance(provider_schema, ProviderSchema) for provider_schema in provider_schemas)
-    assert any(provider_schema.key == 'openai' for provider_schema in provider_schemas)
+    assert any(provider_schema.provider == 'openai' for provider_schema in provider_schemas)

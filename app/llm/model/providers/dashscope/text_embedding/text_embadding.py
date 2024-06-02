@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from llm.model.entities.models import EmbeddingModel
+from llm.model.entities.models import TextEmbeddingModel
 
 
-class DashScopeEmbeddingModel(EmbeddingModel):
+class DashScopeTextEmbeddingModel(TextEmbeddingModel):
     pass

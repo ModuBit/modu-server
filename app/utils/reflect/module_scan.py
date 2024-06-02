@@ -15,6 +15,7 @@ limitations under the License.
 """
 
 import importlib
+import inspect
 import pkgutil
 from typing import TypeVar, Type
 
@@ -59,10 +60,12 @@ def _load_classes(package_name: str, cls_type: Type[T],
             continue
 
         module = importlib.import_module(module_name)
-        for attribute_name in dir(module):
-            attribute = getattr(module, attribute_name)
+        for (name, cls) in inspect.getmembers(module, inspect.isclass):
             # 检查是否是cls_type的子类 (排除cls_type自身)
-            if isinstance(attribute, type) and issubclass(attribute, cls_type) and attribute is not cls_type:
-                cls_types.append(attribute)
+            if (isinstance(cls, type)
+                    and issubclass(cls, cls_type)
+                    and cls is not cls_type
+                    and cls.__module__.startswith(module_name)):
+                cls_types.append(cls)
 
     return cls_types
