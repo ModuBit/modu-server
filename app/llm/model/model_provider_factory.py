@@ -65,6 +65,14 @@ class ModelProviderFactory:
         return self._providers[key] if key in self._providers else None
 
     @property
+    def providers(self) -> list[LLMProvider]:
+        """
+        获取所有的Provider
+        :return: LLMProvider
+        """
+        return list(self._providers.values())
+
+    @property
     def provider_schemas(self) -> list[ProviderSchema]:
         """
         获取所有的Provider Schema

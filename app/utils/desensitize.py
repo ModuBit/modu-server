@@ -27,7 +27,7 @@ def desensitize(secret: str, prefix: str = '') -> str:
         return f"{prefix}{secret[:4]}{'*' * (length - 8)}{secret[-4:]}"
     elif 8 <= length < 12:
         return f"{prefix}{secret[:2]}{'*' * (length - 4)}{secret[-2:]}"
-    elif length < 8:
+    elif 4 <= length < 8:
         return f"{prefix}{secret[:2]}{'*' * (length - 2)}"
     else:
         return f"{prefix}{'*' * length}"

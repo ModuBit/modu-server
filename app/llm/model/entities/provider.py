@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-
+import enum
 from abc import ABC
 from collections import OrderedDict
 from importlib.resources import files
@@ -24,10 +24,22 @@ from pydantic import BaseModel
 from utils.reflect.module_scan import load_classes
 from .commons import I18nOption, IconOption, HelpOption
 from .form import FormSchema
-from .model import LLMModel, ModelType
+from .model import LLMModel, ModelType, ModelSchema
 
 
-class ProviderSchema(BaseModel):
+class ProviderStatus(str, enum.Enum):
+    """
+    LLM Provider状态
+    """
+
+    ACTIVE = 'ACTIVE'
+    """已激活"""
+
+    UN_CONFIGURED = "UN_CONFIGURED"
+    """未配置"""
+
+
+class ProviderInfo(BaseModel):
     """
     LLM提供商
     """
@@ -44,14 +56,46 @@ class ProviderSchema(BaseModel):
     icon: IconOption | None = None
     """图标"""
 
+    supported_model_types: list[ModelType] = []
+    """支持的模型类型"""
+
+
+class ProviderSchema(ProviderInfo):
+    """
+    LLM提供商
+    """
+
+    """图标"""
+
     help: HelpOption | None = None
     """帮助"""
 
     credential_schemas: list[FormSchema] = []
     """凭证"""
 
-    supported_model_types: list[ModelType] = []
-    """支持的模型类型"""
+
+class ProviderWithModelsSchema(BaseModel):
+    """
+    带有Provider信息的ModelSchema
+    """
+
+    provider: ProviderInfo
+    """Provider Info"""
+
+    models: list[ModelSchema]
+    """Model Schema"""
+
+    status: ProviderStatus
+    """状态"""
+
+    def get_grouped_models_by_type(self) -> dict[ModelType, list[ModelSchema]]:
+        """
+        获取按类型分组的模型
+        """
+        grouped_models = OrderedDict()
+        for model_type in self.provider.supported_model_types:
+            grouped_models[model_type] = [model for model in self.models if model.type == model_type]
+        return grouped_models
 
 
 class LLMProvider(ABC):
@@ -101,6 +145,14 @@ class LLMProvider(ABC):
         """
         return [model for (_, model) in self._models.items()]
 
+    def get_models(self, model_type: ModelType | None = None) -> list[LLMModel]:
+        """
+        获取指定类型的模型
+        :param model_type: 模型类型
+        """
+        return [model for (_model_type, model) in self._models.items() if
+                model_type is None or model_type == _model_type]
+
     @property
     def provider_schema(self) -> ProviderSchema:
         """
@@ -120,3 +172,11 @@ class LLMProvider(ABC):
         self._provider_schema = provider_schema
 
         return provider_schema
+
+    @property
+    def provider(self) -> str:
+        return self.provider_schema.provider
+
+    @property
+    def name(self) -> str:
+        return self.provider_schema.name

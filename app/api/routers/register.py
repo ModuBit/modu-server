@@ -52,13 +52,13 @@ def register(app: FastAPI):
     app.include_router(workspace.router, prefix='/api/workspace',
                        dependencies=[Depends(token_verify)],
                        tags=['workspace | 空间'])
-    app.include_router(llm_provider.router, prefix='/api/workspace/{workspace_uid}',
-                       dependencies=[Depends(token_verify)],
-                       tags=['provider config | Provider 配置'])
 
     app.include_router(llm_model.router, prefix='/api/workspace/{workspace_uid}',
                        dependencies=[Depends(token_verify)],
                        tags=['model config | Model 配置'])
+    app.include_router(llm_provider.router, prefix='/api/workspace/{workspace_uid}',
+                       dependencies=[Depends(token_verify)],
+                       tags=['provider config | Provider 配置'])
 
 
 def exception_handler(app: FastAPI):

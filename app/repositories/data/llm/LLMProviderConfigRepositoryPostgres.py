@@ -65,7 +65,7 @@ class LLMProviderConfigRepositoryPostgres(LLMProviderConfigRepository):
         return True
 
     @with_async_session
-    async def find_one_by_workspace_and_key(
+    async def find_one_by_workspace_and_provider_name(
             self, workspace_uid: str, provider_name: str, session: AsyncSession) -> LLMProviderConfig | None:
         stmt = (select(LLMProviderConfigPO)
                 .where(LLMProviderConfigPO.workspace_uid == workspace_uid)

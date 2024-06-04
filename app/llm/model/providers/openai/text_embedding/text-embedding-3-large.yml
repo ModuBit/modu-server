@@ -14,11 +14,11 @@
 # limitations under the License.
 #
 
-model: text-text_embedding-3-large
-name: text-text_embedding-3-large
+model: text-embedding-3-large
+name: text-embedding-3-large
 description:
-  default: text-text_embedding-3-large
-  en_us: text-text_embedding-3-large
+  default: text-embedding-3-large
+  en_us: text-embedding-3-large
 type: TEXT_EMBEDDING
 properties:
   context_size: 8191

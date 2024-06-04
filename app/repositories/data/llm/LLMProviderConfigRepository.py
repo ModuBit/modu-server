@@ -62,12 +62,12 @@ class LLMProviderConfigRepository(Repository):
         raise NotImplementedError
 
     @abstractmethod
-    async def find_one_by_workspace_and_key(
+    async def find_one_by_workspace_and_provider_name(
             self, workspace_uid: str, provider_name: str, session: AsyncSession) -> LLMProviderConfig | None:
         """
-        根据workspace uid和provider key查询配置
+        根据workspace uid和provider name查询配置
         :param workspace_uid: workspace uid
-        :param provider_name: provider key
+        :param provider_name: provider name
         :param session: Session
         """
         raise NotImplementedError

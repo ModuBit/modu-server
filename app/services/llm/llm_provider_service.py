@@ -44,8 +44,8 @@ async def add(current_user: Account, workspace_uid: str, provider_name: str,
     if member_role is None or member_role not in [WorkspaceMemberRole.OWNER, WorkspaceMemberRole.ADMIN]:
         raise UnauthorizedError('您无该权限操作')
 
-    exists_provider_config = await llm_provider_config_repository.find_one_by_workspace_and_key(workspace_uid,
-                                                                                                provider_name)
+    exists_provider_config = await llm_provider_config_repository.find_one_by_workspace_and_provider_name(workspace_uid,
+                                                                                                          provider_name)
 
     # 处理脱敏字段值
     exists_credential = exists_provider_config.provider_credential if exists_provider_config else {}
@@ -90,7 +90,7 @@ async def detail(current_user: Account, workspace_uid: str, provider_name: str) 
     if member_role is None:
         raise UnauthorizedError('您无该权限查看')
 
-    return await llm_provider_config_repository.find_one_by_workspace_and_key(workspace_uid, provider_name)
+    return await llm_provider_config_repository.find_one_by_workspace_and_provider_name(workspace_uid, provider_name)
 
 
 async def all_configured(current_user: Account, workspace_uid: str) -> list[LLMProviderConfig]:
