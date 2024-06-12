@@ -79,7 +79,7 @@ CREATE TRIGGER set_cube_workspace_membership_updated_at
     FOR EACH ROW
 EXECUTE procedure update_updated_at_column();
 
--- llm provider
+-- LLM Provider 配置
 CREATE TABLE cube_llm_provider_config
 (
     id            UUID                     DEFAULT UUID_GENERATE_V4()   NOT NULL CONSTRAINT pk_cube_llm_provider_config_id PRIMARY KEY,
@@ -96,5 +96,24 @@ CREATE UNIQUE INDEX uk_cube_llm_provider_space_key ON cube_llm_provider_config (
 CREATE TRIGGER set_cube_llm_provider_updated_at
     BEFORE UPDATE
     ON cube_llm_provider_config
+    FOR EACH ROW
+EXECUTE procedure update_updated_at_column();
+
+-- LLM 系统默认模型配置
+CREATE TABLE cube_llm_system_model_config
+(
+    id            UUID                     DEFAULT UUID_GENERATE_V4()   NOT NULL CONSTRAINT pk_cube_llm_system_model_config_id PRIMARY KEY,
+    created_at    TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP(0) NOT NULL,
+    updated_at    TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP(0) NOT NULL,
+    uid           VARCHAR(32)                                           NOT NULL,
+    workspace_uid VARCHAR(32)                                           NOT NULL,
+    model_config  JSONB                                                 NOT NULL,
+    is_deleted  SMALLINT                   DEFAULT '0'::SMALLINT        NOT NULL
+);
+CREATE UNIQUE INDEX uk_cube_llm_system_model_config_uid ON cube_llm_system_model_config (uid);
+CREATE UNIQUE INDEX uk_cube_llm_system_model_config_space ON cube_llm_system_model_config (workspace_uid);
+CREATE TRIGGER set_cube_llm_system_model_config_updated_at
+    BEFORE UPDATE
+    ON cube_llm_system_model_config
     FOR EACH ROW
 EXECUTE procedure update_updated_at_column();

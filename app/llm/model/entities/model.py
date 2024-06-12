@@ -19,13 +19,14 @@ from abc import ABC, abstractmethod
 from collections import OrderedDict
 from importlib.resources import files
 from importlib.resources.abc import Traversable
-from typing import Any
+from typing import Any, TypeVar, Callable
 
 import yaml
 from pydantic import BaseModel
 
-from llm.model.entities.commons import I18nOption
+from llm.model.entities.commons import I18nOption, HelpOption
 from llm.model.entities.form import FormSchema
+from utils.dictionary import dict_get, dict_merge
 
 
 class ModelType(str, enum.Enum):
@@ -87,6 +88,9 @@ class ModelSchema(BaseModel):
     type: ModelType
     """类型"""
 
+    help: HelpOption | None = None
+    """帮助"""
+
     fetch_from: FetchFrom = FetchFrom.PREDEFINED
     """模型来源"""
 
@@ -106,13 +110,16 @@ class ModelSchema(BaseModel):
     """是否已过期不再可用"""
 
 
-def _load_model_schemas(module_path: str) -> list[ModelSchema]:
+T = TypeVar('T')
+
+
+def _load_module_configs(module_path: str, load: Callable[[Traversable], T]) -> list[ModelSchema]:
     """
     从一个包路径中加载所有的ModelSchema
     :param module_path: 包路径
     :return: ModelSchema
     """
-    return [_load_model_schema(path) for path in files(module_path).iterdir()
+    return [load(path) for path in files(module_path).iterdir()
             if path.suffix in ['.yml', '.yaml']]
 
 
@@ -124,13 +131,55 @@ def _load_model_schema(model_schema_file: Traversable) -> ModelSchema:
     """
     schema_content = model_schema_file.read_text(encoding='utf-8')
     schema_data = yaml.safe_load(schema_content)
-    return ModelSchema(**schema_data)
+    model_schema = ModelSchema(**schema_data)
+
+    # 模板
+    model_templates = LLMModel._model_templates[model_schema.type] \
+        if model_schema.type in LLMModel._model_templates else {}
+
+    # 处理parameters，与模板整合
+    merged_parameters = [FormSchema(**dict_merge(
+        dict_get(model_templates, parameter.template, FormSchema(name=parameter.name)).dict(),
+        parameter.dict(),
+        True
+    )) if parameter.template else parameter for parameter in model_schema.parameters]
+    model_schema.parameters = merged_parameters
+
+    return model_schema
+
+
+def _load_model_template(model_template_file: Traversable):
+    """
+    从一个配置文件中加载ModelSchema模板
+    :param model_template_file: 配置模板
+    :return: ModelSchema
+    """
+    template_content = model_template_file.read_text(encoding='utf-8')
+    template_data = yaml.safe_load(template_content)
+    return {
+        "type": ModelType(dict_get(template_data, 'type', ).upper()),
+        "parameters": {dict_get(parameter, 'name', ): FormSchema(**parameter) for parameter in
+                       dict_get(template_data, 'parameters', [])}
+    }
+
+
+def _load_model_templates():
+    """
+    加载模型模板
+    """
+
+    parent_module = __package__
+
+    model_templates = _load_module_configs(parent_module + '.templates', _load_model_template)
+    return {model_template['type']: model_template['parameters'] for model_template in model_templates}
 
 
 class LLMModel(ABC):
     """
     LLM模型
     """
+
+    _model_templates: dict[ModelType, dict[str, list[FormSchema]]] = _load_model_templates()
 
     def __init__(self):
         self._model_schemas = OrderedDict()
@@ -150,7 +199,7 @@ class LLMModel(ABC):
         module = self.__class__.__module__
         parent_module = '.'.join(module.split('.')[:-1])
 
-        model_schemas = _load_model_schemas(parent_module)
+        model_schemas = _load_module_configs(parent_module, _load_model_schema)
         for model_schema in model_schemas:
             self._model_schemas[model_schema.model] = model_schema
 

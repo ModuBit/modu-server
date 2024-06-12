@@ -1,0 +1,144 @@
+type: text_generation
+parameters:
+  - name: temperature
+    value_type: digit
+    title:
+      default: 采样温度
+      en_us: temperature
+    tooltip:
+      default: |
+        采样温度，用于控制模型回复的随机性和多样性。
+        值越大，会使输出更随机，更具创造性；值越小，输出会更加稳定或确定。
+        建议您根据应用场景调整 top_p 或 temperature 参数，但不要同时调整两个参数。
+      en_us: |
+        What sampling temperature to use. 
+        Higher values will make the output more random, while lower values will make it more focused and deterministic.
+        We generally recommend altering this or top_p but not both.
+    initial_value: 0.2
+    field_props:
+      min: 0
+      max: 1
+      step: 0.1
+      precision: 1
+    rules:
+      required: false
+  - name: top_p
+    value_type: digit
+    title:
+      default: Top P
+    tooltip:
+      default: |
+        用温度取样的另一种方法，称为核取样。
+        模型考虑具有 top_p 概率质量 tokens 的结果。
+        例如：0.1 意味着模型解码器只考虑从前 10% 的概率的候选集中取 tokens.
+        建议您根据应用场景调整 top_p 或 temperature 参数，但不要同时调整两个参数。
+      en_us: |
+        An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are considered.
+        We generally recommend altering this or temperature but not both.
+    initial_value: 0.2
+    field_props:
+      min: 0
+      max: 1
+      step: 0.1
+      precision: 1
+    rules:
+      required: false
+  - name: presence_penalty
+    value_type: digit
+    title:
+      default: 存在惩罚
+      en_us: Presence Penalty
+    tooltip:
+      default: |
+        用户控制模型生成时整个序列中的重复度。
+        用于惩罚模型生成重复内容的惩罚系数。
+        正值可以降低模型生成的重复度，而负值会鼓励模型生成重复内容。
+      en_us: |
+       Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics.
+    initial_value: 0
+    field_props:
+      min: -2
+      max: 2
+      step: 0.1
+      precision: 1
+    rules:
+      required: false
+  - name: frequency_penalty
+    value_type: digit
+    title:
+      default: 频率惩罚
+      en_us: Frequency Penalty
+    tooltip:
+      default: |
+        用户控制模型生成时单个单词的重复度。
+        用于惩罚模型生成重复单词的惩罚系数。
+        正值可以降低模型生成的重复度，而负值会鼓励模型生成重复单词。
+      en_us: |
+       Positive values penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim.
+    initial_value: 0
+    field_props:
+      min: -2
+      max: 2
+      step: 0.1
+      precision: 1
+    rules:
+      required: false
+  - name: max_tokens
+    value_type: digit
+    title:
+      default: 最大标记
+      en_us: max_tokens
+    tooltip:
+      default: |
+        指定模型可生成的最大token个数。
+        如果模型在 max_tokens 个 tokens 后没有生成换行符，则生成过程将终止。
+      en_us: |
+        The maximum number of tokens that can be generated in the completion.
+        The token count of your prompt plus max_tokens cannot exceed the model's context length.
+    initial_value: 2048
+    field_props:
+      min: 1
+      max: 2048
+      step: 10
+      precision: 0
+    rules:
+      required: false
+  - name: response_format
+    value_type: select
+    title:
+      default: 响应格式
+      en_us: response_format
+    tooltip:
+      default: |
+        指定模型必须输出的格式。
+        确保llm的输出尽可能是有效的代码块，如JSON、XML等。
+      en_us: |
+        Specifies the format that the model must output. 
+        Ensure the output from llm is a valid code block as possible, such as JSON, XML, etc.
+    value_enum:
+      - value: text
+        text:
+          default: 文本
+          en_us: Text
+      - value: json_object
+        text:
+          default: JSON对象
+          en_us: JSON Object
+    rules:
+      required: false
+  - name: stop
+    value_type: select
+    title:
+      default: 停止词
+      en_us: stop
+    tooltip:
+      default: |
+        指定模型生成文本的停止条件。
+        当模型生成包含 stop tokens 时，它将停止生成。
+      en_us: |
+        Specifies the stop conditions for the model to generate text.
+        When the model generates text containing stop tokens, it will stop generating.
+    field_props:
+      mode: tags
+    rule:
+      required: false

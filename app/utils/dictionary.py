@@ -103,3 +103,26 @@ def dict_get(dictionary: Dict[str, Any] | FrozenDictData, keys: str, default: T 
         # 如果在任何一级找不到键或者当前值不是字典，则返回默认值
         return default
     return dictionary
+
+
+def dict_filter_none_values(dictionary: Dict) -> Dict:
+    """
+    过滤字典中的空值
+    :param dictionary: 字典
+    :return: 过滤后的字典
+    """
+    return {k: v for k, v in dictionary.items() if v is not None}
+
+
+def dict_merge(dictionary_left: Dict, dictionary_right: Dict, filter_none_values: bool = True) -> Dict:
+    """
+    合并两个字典
+    :param dictionary_left: 左字典
+    :param dictionary_right: 右字典
+    :param filter_none_values: 是否过滤空值
+    :return: 合并后的字典
+    """
+    if filter_none_values:
+        dictionary_left = dict_filter_none_values(dictionary_left)
+        dictionary_right = dict_filter_none_values(dictionary_right)
+    return {**dictionary_left, **dictionary_right}

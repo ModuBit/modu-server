@@ -97,7 +97,7 @@ class LLMProviderConfigPO(PostgresBasePO):
         PrimaryKeyConstraint('id', name='pk_id'),
     )
 
-    workspace_uid: Mapped[str] = mapped_column(String(32), nullable=False, comment='provider配置uid')
+    workspace_uid: Mapped[str] = mapped_column(String(32), nullable=False, comment='工作空间uid')
     provider_name: Mapped[str] = mapped_column(String(32), nullable=False, comment='provider key')
     provider_credential: Mapped[str] = mapped_column(String(), nullable=False, comment='provider 凭证')
 

@@ -24,7 +24,7 @@ from repositories.data.llm.llm_models import LLMProviderConfig
 
 class LLMProviderConfigRepository(Repository):
     """
-    空间数据存储的定义
+    LLM Provider 配置数据存储的定义
     """
 
     def __init__(self, database: Database):

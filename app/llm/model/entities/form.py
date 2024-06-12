@@ -56,6 +56,9 @@ class FormFieldValueStatusEnum(str, enum.Enum):
 
 
 class FormFieldValueEnum(BaseModel):
+    value: str
+    """值"""
+
     text: I18nOption
     """值展示文本"""
 
@@ -76,13 +79,16 @@ class FormSchema(BaseModel):
     name: str
     """与实体映射的 key"""
 
-    value_type: str
+    value_type: str | None = None
     """数据的渲渲染方式，字段类型"""
 
-    value_enum: Mapping[str, FormFieldValueEnum] | None = None
+    initial_value: object | None = None
+    """初始值"""
+
+    value_enum: list[FormFieldValueEnum] | None = None
     """select radio 等组件的选项"""
 
-    field_props: Mapping[str, object] | None = None
+    field_props: dict[str, object] | None = None
     """对应组件 fieldProps 属性"""
 
     title: I18nOption | None = None
@@ -93,3 +99,6 @@ class FormSchema(BaseModel):
 
     rules: FormFieldRule | None = None
     """规则"""
+
+    template: str | None = None
+    """模板"""

@@ -20,21 +20,27 @@ description:
   default: text-davinci-003
   en_us: text-davinci-003
 type: TEXT_GENERATION
+help:
+  title:
+    default: OpenAI API 参考文档
+    en_us: OpenAI API Reference
+  url: https://platform.openai.com/docs/api-reference/chat
 features: []
 properties:
   mode: COMPLETION
   context_size: 4096
 parameters:
   - name: temperature
-    value_type: digit
+    template: temperature
   - name: top_p
-    value_type: digit
+    template: top_p
   - name: presence_penalty
-    value_type: digit
-  - name: frequency_penalty
-    value_type: digit
+    template: presence_penalty
   - name: max_tokens
-    value_type: digit
-  - name: response_format
-    value_type: select
+    template: max_tokens
+    field_props:
+      min: 1
+      max: 4096
+      step: 10
+      precision: 0
 deprecated: true

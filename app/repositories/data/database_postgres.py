@@ -14,7 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import asyncio
 import datetime
 import functools
 import json
@@ -69,9 +68,7 @@ class PostgresDatabase(Database):
     def close(self):
         logger.info('=== close postgresql({}) {}:{}/{} ===', id(self), self._host, self._port, self._database)
         self._async_session_factory.close_all()
-        loop = asyncio.get_event_loop()
-        future = asyncio.run_coroutine_threadsafe(self._engine.dispose(), loop)
-        future.result()
+        self._engine.dispose()
 
     def __del__(self):
         self.close()

@@ -19,11 +19,11 @@ from pydantic import BaseModel
 
 class LLMProviderConfig(BaseModel):
     """
-    LLM Provider
+    LLM Provider 配置
     """
 
     uid: str | None = None
-    """Provider UID"""
+    """Provider config UID"""
 
     workspace_uid: str
     """空间UID"""
@@ -33,3 +33,25 @@ class LLMProviderConfig(BaseModel):
 
     provider_credential: dict
     """Provider 凭证"""
+
+
+class LLMModelConfig(BaseModel):
+    """
+    LLM Model 配置
+    """
+
+    provider_name: str
+    """Provider Name"""
+
+    model_name: str
+    """Model Name"""
+
+    model_parameters: dict
+    """Model 参数"""
+
+    # 定义配置
+    class Config:
+        # 设置 protected_namespaces
+        # UserWarning: Field "model_name" has conflict with protected namespace "model_".
+        # UserWarning: Field "model_parameters" has conflict with protected namespace "model_".
+        protected_namespaces = ("_", "__")

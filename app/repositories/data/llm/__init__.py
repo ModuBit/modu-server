@@ -17,8 +17,13 @@ limitations under the License.
 from .LLMProviderConfigRepository import LLMProviderConfigRepository
 from .LLMProviderConfigRepositoryPostgres import LLMProviderConfigRepositoryPostgres
 
+from .LLMModelConfigRepository import LLMModelConfigRepository
+from .LLMModelConfigRepositoryPostgres import LLMModelConfigRepositoryPostgres
+
 __all__ = [
     'llm_models',
     'LLMProviderConfigRepository',
-    'LLMProviderConfigRepositoryPostgres'
+    'LLMProviderConfigRepositoryPostgres',
+    'LLMModelConfigRepository',
+    'LLMModelConfigRepositoryPostgres',
 ]

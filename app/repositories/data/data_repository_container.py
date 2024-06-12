@@ -22,7 +22,8 @@ from utils.lifespan import register_pre_destroy_executor
 from .account import AccountRepository, AccountRepositoryPostgres
 from .database import Database
 from .database_postgres import PostgresDatabase
-from .llm import LLMProviderConfigRepository, LLMProviderConfigRepositoryPostgres
+from .llm import LLMProviderConfigRepository, LLMProviderConfigRepositoryPostgres, \
+    LLMModelConfigRepository, LLMModelConfigRepositoryPostgres
 from .workspace import WorkspaceRepository, WorkspaceRepositoryPostgres
 
 RepositoryInstance = TypeVar('RepositoryInstance')
@@ -45,6 +46,11 @@ _workspace_repository_mapping = {
 _llm_provider_config_repository: LLMProviderConfigRepository | None = None
 _llm_provider_config_repository_mapping = {
     'postgres': LLMProviderConfigRepositoryPostgres,
+}
+
+_llm_model_config_repository: LLMModelConfigRepository | None = None
+_llm_model_config_repository_mapping = {
+    'postgres': LLMModelConfigRepositoryPostgres,
 }
 
 
