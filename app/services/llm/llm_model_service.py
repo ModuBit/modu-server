@@ -152,18 +152,21 @@ def _check_and_renew_llm_model_config(model_config: LLMModelConfig, model_schema
     for schema_parameter in [schema_parameter for schema_parameter in schema_parameters if
                              schema_parameter.rules and schema_parameter.rules.required]:
         if schema_parameter.name not in valid_parameters or not valid_parameters[schema_parameter.name]:
-            raise LLMExistsError(f'LLM模型{model_config.provider_name}:{model_config.model_name}参数{schema_parameter.name}为必填项')
+            raise LLMExistsError(f'LLM模型{model_config.provider_name}:{model_config.model_name}'
+                                 f'参数{schema_parameter.name}为必填项')
 
     # 校验数字范围
     for schema_parameter in [schema_parameter for schema_parameter in schema_parameters if
                              schema_parameter.value_type == 'digit' and schema_parameter.name in valid_parameters]:
         schema_min = dict_get(schema_parameter.field_props, 'min', None)
         if schema_min is not None and valid_parameters[schema_parameter.name] < schema_min:
-            raise LLMExistsError(f'LLM模型{model_config.provider_name}:{model_config.model_name}参数{schema_parameter.name}最小值不能小于{schema_min}')
+            raise LLMExistsError(f'LLM模型{model_config.provider_name}:{model_config.model_name}'
+                                 f'参数{schema_parameter.name}最小值不能小于{schema_min}')
 
         schema_max = dict_get(schema_parameter.field_props, 'max', None)
         if schema_max is not None and valid_parameters[schema_parameter.name] > schema_max:
-            raise LLMExistsError(f'LLM模型{model_config.provider_name}:{model_config.model_name}参数{schema_parameter.name}最大值不能大于{schema_max}')
+            raise LLMExistsError(f'LLM模型{model_config.provider_name}:{model_config.model_name}'
+                                 f'参数{schema_parameter.name}最大值不能大于{schema_max}')
 
     return LLMModelConfig(
         provider_name=model_config.provider_name,

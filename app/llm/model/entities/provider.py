@@ -79,7 +79,7 @@ class ProviderWithModelsSchema(BaseModel):
     带有Provider信息的ModelSchema
     """
 
-    provider: ProviderInfo
+    provider: ProviderSchema
     """Provider Info"""
 
     models: list[ModelSchema]
