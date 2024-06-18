@@ -14,40 +14,45 @@
 # limitations under the License.
 #
 
-provider: wenxin
-name: 文心一言
+provider: qianfan
+name: 百度智能云千帆
 description:
-  default: 文心一言提供的模型
+  default: 百度智能云文心大模型企业级服务
+icon:
+  icon: /providers/qianfan/icon.svg
+  avatar: /providers/qianfan/avatar.svg
+  combine: /providers/qianfan/combine.svg
+  color: '#2464f5'
 help:
   title:
-    default: 从 文心一言 获取 AK/SK
-    en_us: Get your AK/SK from WenXin
-  url: https://cloud.baidu.com/wenxin.html
+    default: 从 百度智能云 获取 AK/SK
+    en_us: Get your AK/SK from Baidu
+  url: https://console.bce.baidu.com/qianfan/ais/console/applicationConsole/application
 credential_schemas:
-  - name: api_key
+  - name: qianfan_ak
     value_type: password
     title:
       default: API Key
     tooltip:
-      default: 文心 API Key
+      default: 百度智能云 API Key
     field_props:
       placeholder:
         default: 在此输入您的 API Key
         en_us: Enter your API Key
-      maxLength: 128
+      maxLength: 36
     rules:
       required: True
-      min: 32
-      max: 128
+      min: 24
+      max: 36
       message:
-        default: 请输入 文心 API Key
-        en_us: Please enter your WenXin API Key
-  - name: secret_key
+        default: 请输入 百度智能云 API Key
+        en_us: Please enter your QianFan API Key
+  - name: qianfan_sk
     value_type: password
     title:
       default: Secret Key
     tooltip:
-      default: 文心 Secret Key
+      default: 百度智能云 Secret Key
     field_props:
       placeholder:
         default: 在此输入您的 Secret Key
@@ -58,5 +63,5 @@ credential_schemas:
       min: 32
       max: 128
       message:
-        default: 请输入 文心 Secret Key
-        en_us: Please enter your WenXin Secret Key
+        default: 请输入 百度智能云 Secret Key
+        en_us: Please enter your QianFan Secret Key

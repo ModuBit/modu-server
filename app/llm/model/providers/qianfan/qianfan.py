@@ -13,10 +13,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+from llm.model.entities.model import ModelType
+from llm.model.entities.provider import LLMProvider
 
-from llm.model.entities.models import TextGenerationModel
 
+class QianFanProvider(LLMProvider):
+    """
+    文心一言
+    """
 
-class WenXinTextGenerationModel(TextGenerationModel):
-    async def validate_credentials(self, credentials: dict, model: str | None = None) -> None:
-        pass
+    async def validate_credentials(self, credentials: dict) -> None:
+        text_generation_model = self.get_model(ModelType.TEXT_GENERATION)
+        await text_generation_model.validate_credentials(credentials)

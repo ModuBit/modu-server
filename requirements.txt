@@ -87,7 +87,10 @@ langchain-community~=0.2.5
 langchain-openai~=0.1.8
 
 ## [aliyun dashscope]
- dashscope~=1.19.3
+dashscope~=1.19.3
+
+## [baidu qianfan]
+qianfan~=0.3.16
 
 # 测试
 
