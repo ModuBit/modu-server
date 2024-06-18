@@ -14,9 +14,30 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from langchain_community.chat_models import ChatTongyi
+from langchain_core.messages import SystemMessage, HumanMessage
+from loguru import logger
+
 from llm.model.entities.models import TextGenerationModel
+from utils.errors.llm_error import LLMValidateError
 
 
 class DashScopeTextGenerationModel(TextGenerationModel):
     async def validate_credentials(self, credentials: dict, model: str | None = None) -> None:
-        pass
+        try:
+            model_name = model or "qwen-max"
+            chat_model = ChatTongyi(
+                model_name=model_name, max_retries=0, streaming=False,
+                model_kwargs={
+                    "max_tokens": 512,
+                },
+                **credentials
+            )
+            chat_result = await chat_model.ainvoke([
+                SystemMessage(content="Translate the following from Chinese into English"),
+                HumanMessage(content="林中通幽境，深山藏小舍")
+            ])
+            logger.info("DashScope Credential Validate Success, using model {}, chat result {}",
+                        model_name, chat_result)
+        except Exception as e:
+            raise LLMValidateError(f"认证异常: {e}")

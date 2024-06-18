@@ -25,14 +25,15 @@ from utils.errors.llm_error import LLMValidateError
 class OpenAITextGenerationModel(TextGenerationModel):
     async def validate_credentials(self, credentials: dict, model: str | None = None) -> None:
         try:
-            chat_model = ChatOpenAI(model_name=model or "gpt-4o",
-                                    request_timeout=5, max_retries=0, max_tokens=512,
+            model_name = model or "gpt-4o"
+            chat_model = ChatOpenAI(model_name=model_name,
+                                    request_timeout=5, max_retries=0, max_tokens=512, streaming=False,
                                     **credentials)
             chat_result = await chat_model.ainvoke([
                 SystemMessage(content="Translate the following from Chinese into English"),
                 HumanMessage(content="林中通幽境，深山藏小舍")
             ])
             logger.info("OpenAI Credential Validate Success, using model {}, chat result {}",
-                        model or "gpt-4o", chat_result)
+                        model_name, chat_result)
         except Exception as e:
             raise LLMValidateError(f"认证异常: {e}")

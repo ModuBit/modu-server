@@ -76,14 +76,18 @@ opentelemetry-instrumentation-fastapi~=0.43b0
 # LLM
 
 ## [LangChain](https://python.langchain.com/docs)
-## include langchain langsmith langchain-core langchain-community
 langchain~=0.2.5
+langchain-core~=0.2.7
+langchain-community~=0.2.5
+
+## https://github.com/langchain-ai/langchain/issues/22972
+# tenacity>=8.3.0,<8.4.0
 
 ## [OpenAI]
 langchain-openai~=0.1.8
 
-## https://github.com/langchain-ai/langchain/issues/22972
-# tenacity>=8.3.0,<8.4.0
+## [aliyun dashscope]
+ dashscope~=1.19.3
 
 # 测试
 
