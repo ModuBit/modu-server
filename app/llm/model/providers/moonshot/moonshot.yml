@@ -24,7 +24,7 @@ help:
     en_us: Get your API key from MoonShot
   url: https://platform.moonshot.cn/console/api-keys
 credential_schemas:
-  - name: api_key
+  - name: moonshot_api_key
     value_type: password
     title:
       default: API Key

@@ -13,10 +13,26 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+from langchain_community.chat_models.moonshot import MoonshotChat
+from langchain_core.messages import SystemMessage, HumanMessage
+from loguru import logger
 
 from llm.model.entities.models import TextGenerationModel
+from utils.errors.llm_error import LLMValidateError
 
 
 class MoonShotTextGenerationModel(TextGenerationModel):
     async def validate_credentials(self, credentials: dict, model: str | None = None) -> None:
-        pass
+        try:
+            model_name = model or "moonshot-v1-32k"
+            chat_model = MoonshotChat(model_name=model_name,
+                                      request_timeout=5, max_retries=0, max_tokens=512, streaming=False,
+                                      **credentials)
+            chat_result = await chat_model.ainvoke([
+                SystemMessage(content="Translate the following from Chinese into English"),
+                HumanMessage(content="林中通幽境，深山藏小舍")
+            ])
+            logger.info("MoonShot Credential Validate Success, using model {}, chat result {}",
+                        model_name, chat_result)
+        except Exception as e:
+            raise LLMValidateError(f"认证异常: {e}")
