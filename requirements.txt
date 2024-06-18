@@ -86,11 +86,14 @@ langchain-community~=0.2.5
 ## [OpenAI]
 langchain-openai~=0.1.8
 
-## [aliyun dashscope]
+## [阿里云dashscope]
 dashscope~=1.19.3
 
-## [baidu qianfan]
+## [百度千帆]
 qianfan~=0.3.16
+
+## [智普清言]
+zhipuai~=2.1.0.20240521
 
 # 测试
 
