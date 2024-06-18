@@ -19,3 +19,7 @@ from utils.errors.base_error import BaseServiceError
 
 class LLMExistsError(BaseServiceError):
     pass
+
+
+class LLMValidateError(BaseServiceError):
+    pass

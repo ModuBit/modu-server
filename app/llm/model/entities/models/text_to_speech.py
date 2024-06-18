@@ -14,11 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from abc import ABC
+
 from llm.model.entities.commons import I18nOption
 from llm.model.entities.model import LLMModel, ModelType
 
 
-class TextToSpeechModel(LLMModel):
+class TextToSpeechModel(LLMModel, ABC):
     """
     文字转语音 模型
     """
@@ -30,4 +32,3 @@ class TextToSpeechModel(LLMModel):
     @property
     def description(self) -> I18nOption:
         return I18nOption(default='文字转语音', en_us='Text to Speech')
-

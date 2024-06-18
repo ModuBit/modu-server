@@ -21,4 +21,6 @@ class WenXinProvider(LLMProvider):
     """
     文心一言
     """
-    pass
+
+    async def validate_credentials(self, credentials: dict) -> None:
+        pass

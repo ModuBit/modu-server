@@ -19,6 +19,8 @@ from llm.model.entities.provider import LLMProvider
 
 class MoonShotProvider(LLMProvider):
     """
-    通义千问
+    月之暗面
     """
-    pass
+
+    async def validate_credentials(self, credentials: dict) -> None:
+        pass

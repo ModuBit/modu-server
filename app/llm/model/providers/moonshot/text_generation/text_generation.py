@@ -18,4 +18,5 @@ from llm.model.entities.models import TextGenerationModel
 
 
 class MoonShotTextGenerationModel(TextGenerationModel):
-    pass
+    async def validate_credentials(self, credentials: dict, model: str | None = None) -> None:
+        pass

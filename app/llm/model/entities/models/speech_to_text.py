@@ -14,11 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from abc import ABC
+
 from llm.model.entities.commons import I18nOption
 from llm.model.entities.model import LLMModel, ModelType
 
 
-class SpeechToTextModel(LLMModel):
+class SpeechToTextModel(LLMModel, ABC):
     """
     语音转文本 模型
     """

@@ -223,3 +223,12 @@ class LLMModel(ABC):
         模型描述
         """
         raise NotImplementedError()
+
+    @abstractmethod
+    async def validate_credentials(self, credentials: dict, model: str | None = None) -> None:
+        """
+        验证凭证
+        :param model: 模型
+        :param credentials: 凭证
+        """
+        raise NotImplementedError()

@@ -21,4 +21,5 @@ class DashScopeProvider(LLMProvider):
     """
     通义千问
     """
-    pass
+    async def validate_credentials(self, credentials: dict) -> None:
+        pass

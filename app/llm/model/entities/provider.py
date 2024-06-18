@@ -13,8 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+
 import enum
-from abc import ABC
+from abc import ABC, abstractmethod
 from collections import OrderedDict
 from importlib.resources import files
 
@@ -147,11 +148,18 @@ class LLMProvider(ABC):
 
     def get_models(self, model_type: ModelType | None = None) -> list[LLMModel]:
         """
-        获取指定类型的模型
+        获取指定类型的模型列表
         :param model_type: 模型类型
         """
         return [model for (_model_type, model) in self._models.items() if
                 model_type is None or model_type == _model_type]
+
+    def get_model(self, model_type: ModelType) -> LLMModel:
+        """
+        获取指定类型的模型
+        :param model_type: 模型类型
+        """
+        return self._models[model_type]
 
     @property
     def provider_schema(self) -> ProviderSchema:
@@ -180,3 +188,11 @@ class LLMProvider(ABC):
     @property
     def name(self) -> str:
         return self.provider_schema.name
+
+    @abstractmethod
+    async def validate_credentials(self, credentials: dict) -> None:
+        """
+        验证凭证
+        :param credentials: 凭证
+        """
+        raise NotImplementedError()

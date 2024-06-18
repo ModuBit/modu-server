@@ -61,12 +61,12 @@ credential_schemas:
       default: API请求地址
       en_us: API request address
     tooltip:
-      default: 可选，默认 https://api.openai.com
-      en_us: Optional, default https://api.openai.com
+      default: 可选，默认 https://api.openai.com/v1，通常URL中需要一个版本号
+      en_us: Optional, default https://api.openai.com/v1, usually URL needs a version number
     field_props:
       placeholder:
-        default: 输入你的API请求地址，默认 https://api.openai.com
-        en_us: Enter your API request address, default https://api.openai.com
+        default: 输入你的API请求地址，默认 https://api.openai.com/v1，通常URL中需要一个版本号
+        en_us: Enter your API request address, default https://api.openai.com/v1, usually URL needs a version number
       maxLength: 256
     rules:
       required: false

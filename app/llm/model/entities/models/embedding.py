@@ -14,11 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from abc import ABC
+
 from llm.model.entities.commons import I18nOption
 from llm.model.entities.model import LLMModel, ModelType
 
 
-class TextEmbeddingModel(LLMModel):
+class TextEmbeddingModel(LLMModel, ABC):
     """
     内嵌 模型
     """

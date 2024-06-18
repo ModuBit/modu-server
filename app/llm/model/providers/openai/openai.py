@@ -14,8 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from llm.model.entities.model import ModelType
 from llm.model.entities.provider import LLMProvider
 
 
 class OpenAIProvider(LLMProvider):
-    pass
+    """
+    OpenAI
+    """
+
+    async def validate_credentials(self, credentials: dict) -> None:
+        text_generation_model = self.get_model(ModelType.TEXT_GENERATION)
+        await text_generation_model.validate_credentials(credentials)

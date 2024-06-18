@@ -21,4 +21,6 @@ class ZhiPuProvider(LLMProvider):
     """
     智普清言
     """
-    pass
+
+    async def validate_credentials(self, credentials: dict) -> None:
+        pass

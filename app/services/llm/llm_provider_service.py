@@ -55,6 +55,9 @@ async def add(current_user: Account, workspace_uid: str, provider_name: str,
         if isinstance(value, str) and value.startswith(HIDDEN_PREFIX):
             adding_credential[key] = exists_credential[key]
 
+    # 凭证验证
+    await llm_provider.validate_credentials(adding_credential)
+
     return await llm_provider_config_repository.add(provider_config) if exists_provider_config is None \
         else await llm_provider_config_repository.update(provider_config)
 

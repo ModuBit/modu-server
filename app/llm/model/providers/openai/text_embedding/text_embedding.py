@@ -18,4 +18,5 @@ from llm.model.entities.models import TextEmbeddingModel
 
 
 class OpenAITextEmbeddingModel(TextEmbeddingModel):
-    pass
+    async def validate_credentials(self, credentials: dict, model: str | None = None) -> None:
+        pass
