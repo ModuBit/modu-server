@@ -18,7 +18,7 @@ from fastapi import FastAPI, Depends
 from fastapi.exceptions import ValidationException
 from loguru import logger
 from sqlalchemy.exc import DBAPIError
-from starlette.responses import JSONResponse
+from fastapi.responses import JSONResponse
 
 from utils.errors.base_error import BaseServiceError
 from .auth import login, users

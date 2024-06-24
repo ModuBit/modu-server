@@ -13,3 +13,23 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+
+from abc import ABC
+from typing import TypeVar
+
+T = TypeVar('T')
+
+
+class Cache(ABC):
+    """
+    缓存基类
+    """
+
+
+class CacheBuilder:
+    """
+    缓存构造
+    """
+
+    def __init__(self, cache: Cache):
+        self.cache = cache

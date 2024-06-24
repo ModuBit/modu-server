@@ -1,0 +1,109 @@
+[tool.poetry]
+name = "cube-chat-server"
+version = "0.0.1"
+description = "Empower Your Ideas, Expand Your Reach. | 想你所想及你所及"
+authors = ["ManerFan <manerfan@163.com>", "ShyZhang <shyzhang777@gmail.com>"]
+license = "Apache 2.0"
+readme = "README.md"
+package-mode = false
+
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+
+# WEB
+[tool.poetry.group.web.dependencies]
+## [fastapi](https://fastapi.tiangolo.com/)
+fastapi = { extras = ["all"], version = "^0.111.0" }
+## [uvloop](https://pypi.org/project/uvloop/)
+uvloop = "^0.19.0"
+
+
+# 数据库
+[tool.poetry.group.db.dependencies]
+## [ORM](https://docs.sqlalchemy.org/en/20/)
+sqlalchemy = { extras = ["asyncio"], version = "^2.0.31" }
+## [PostgreSQL Adapter](https://www.psycopg.org/)
+asyncpg = "^0.29.0"
+# psycopg2-binary
+## [数据库版本管理](https://alembic.sqlalchemy.org/en/latest/)
+# alembic
+
+
+# 缓存
+[tool.poetry.group.cache.dependencies]
+## [redis](https://aioredis.readthedocs.io/en/latest/)
+redis = "^5.0.6"
+## [Memory](https://github.com/Yiling-J/theine)
+# theine
+
+
+# 存储
+[tool.poetry.group.storage.dependencies]
+## [Aliyun Oss](https://help.aliyun.com/zh/oss/developer-reference/installation-14)
+## sudo yum install python-devel
+# oss2
+## [Minio](https://github.com/minio/minio)
+# minio
+
+
+# 工具
+[tool.poetry.group.tool.dependencies]
+## [密码库passlib](https://passlib.readthedocs.io/)
+passlib = { extras = ["bcrypt"], version = "^1.7.4" }
+## [密码库cryptography](https://cryptography.io/)
+cryptography = "^42.0.8"
+## [JWT](https://python-jose.readthedocs.io/)
+python-jose = { extras = ["cryptography"], version = "^3.3.0" }
+## [yaml处理](https://pyyaml.org/)
+pyyaml = "^6.0.1"
+## [id生成器ulid](https://python-ulid.readthedocs.io/en/latest/)
+python-ulid = "^2.7.0"
+## [日志](https://loguru.readthedocs.io/en/stable/)
+loguru = "^0.7.2"
+## [工具大全](https://boltons.readthedocs.io/)
+boltons = "^24.0.0"
+## [Eventbus Blinker](https://blinker.readthedocs.io/)
+# blinker
+
+
+# 链路
+[tool.poetry.group.trace.dependencies]
+## [opentelemetry](https://opentelemetry.io/docs/languages/python/getting-started/)
+## [ot-fastapi](https://github.com/open-telemetry/opentelemetry-python-contrib/tree/main/instrumentation/opentelemetry-instrumentation-fastapi)
+opentelemetry-api = "^1.25.0"
+opentelemetry-sdk = "^1.25.0"
+opentelemetry-instrumentation = "^0.46b0"
+opentelemetry-instrumentation-fastapi = "^0.46b0"
+
+
+# LLM
+[tool.poetry.group.llm.dependencies]
+## [LangChain](https://python.langchain.com/docs)
+langchain = "^0.2.5"
+langchain-core = "^0.2.9"
+langchain-community = "^0.2.5"
+## [OpenAI]
+langchain-openai = "^0.1.9"
+## [阿里云dashscope]
+dashscope = "^1.20.0"
+## [百度千帆]
+qianfan = "^0.3.17"
+## [智普清言]
+zhipuai = "^2.1.1.20240620.1"
+
+
+# 测试
+[tool.poetry.group.dev.dependencies]
+## [pytest](https://docs.pytest.org/en/latest/)
+pytest = "^8.2.2"
+## [pytest-html](https://pytest-html.readthedocs.io/en/latest/)
+## add arguments: --html=/some-dir/some-file.html
+pytest-html = "^4.1.1"
+## [httpx](https://www.python-httpx.org/)
+httpx = "^0.27.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

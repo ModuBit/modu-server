@@ -19,7 +19,7 @@ import time
 
 from fastapi import FastAPI, Request
 from loguru import logger
-from starlette.responses import JSONResponse, Response
+from fastapi.responses import JSONResponse, Response
 
 
 def _log(request: Request, response: Response, process_time: float):
