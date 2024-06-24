@@ -65,7 +65,14 @@ repository:
     type: ${VECTOR_TYPE:faiss}
   # cache
   cache:
-    type: ${CACHE_TYPE:memory}
+    type: ${CACHE_TYPE:redis}
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      database: ${REDIS_DATABASE:0}
+      # clusters:
+      #   - ${REDIS_HOST:localhost}:${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:cube_chat}
 
 # 安全设置
 security:

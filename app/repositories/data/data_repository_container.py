@@ -21,7 +21,7 @@ from utils.dictionary import dict_get
 from utils.lifespan import register_pre_destroy_executor
 from .account import AccountRepository, AccountRepositoryPostgres
 from .database import Database
-from .database_postgres import PostgresDatabase
+from .postgres_database import PostgresDatabase
 from .llm import LLMProviderConfigRepository, LLMProviderConfigRepositoryPostgres, \
     LLMModelConfigRepository, LLMModelConfigRepositoryPostgres
 from .workspace import WorkspaceRepository, WorkspaceRepositoryPostgres
@@ -63,6 +63,7 @@ def get_database() -> Database:
     """
 
     global _database
+    global _database_mapping
 
     if _database:
         return _database

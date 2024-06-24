@@ -13,3 +13,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+
+from .cache import Cache, CacheDecoratorBuilder
+from .cache_repository_container import get_cache
+
+cache: Cache = get_cache()
+cache_decorator_builder: CacheDecoratorBuilder = CacheDecoratorBuilder(cache)
+
+__all__ = [
+    cache,
+    cache_decorator_builder,
+]

@@ -25,7 +25,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from config import app_config
 from repositories.data.database import with_async_session
-from repositories.data.database_postgres import PostgresBasePO
+from repositories.data.postgres_database import PostgresBasePO
 from repositories.data.llm.LLMProviderConfigRepository import LLMProviderConfigRepository
 from repositories.data.llm.llm_models import LLMProviderConfig
 from utils.crypto import composition

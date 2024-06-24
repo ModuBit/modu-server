@@ -17,7 +17,7 @@ limitations under the License.
 from abc import ABC, abstractmethod
 from contextlib import asynccontextmanager, AbstractAsyncContextManager
 from functools import wraps
-from typing import Callable, TypeVar
+from typing import Callable, TypeVar, Awaitable
 
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -73,7 +73,7 @@ class Repository(ABC):
         self._database = database
 
 
-def with_async_session(func):
+def with_async_session(func: Callable[..., Awaitable],):
     """
     Session装饰器
     只能用在Repository类方法中

@@ -20,7 +20,7 @@ from sqlalchemy.future import select
 from sqlalchemy.orm import Mapped, mapped_column
 
 from repositories.data.database import with_async_session, BasePO
-from repositories.data.database_postgres import PostgresBasePO
+from repositories.data.postgres_database import PostgresBasePO
 from repositories.data.workspace import WorkspaceRepository
 from repositories.data.workspace.workspace_models import WorkspaceMemberStatus, WorkspaceMemberRole, Workspace, \
     WorkspaceMembership, WorkspaceType

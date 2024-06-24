@@ -22,7 +22,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from llm.model.entities.model import ModelType
 from repositories.data.database import with_async_session
-from repositories.data.database_postgres import PostgresBasePO
+from repositories.data.postgres_database import PostgresBasePO
 from repositories.data.llm import LLMModelConfigRepository
 from repositories.data.llm.llm_models import LLMModelConfig
 

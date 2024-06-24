@@ -19,7 +19,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import Mapped, mapped_column
 
-from repositories.data.database_postgres import PostgresBasePO
+from repositories.data.postgres_database import PostgresBasePO
 from utils.errors.account_error import AccountLoginError
 from .AccountRepository import AccountRepository
 from .account_models import Account, AccountStatus
