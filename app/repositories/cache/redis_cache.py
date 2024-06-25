@@ -15,26 +15,36 @@ limitations under the License.
 """
 
 import redis.asyncio as redis
+from loguru import logger
 
 from .cache import Cache
 
 
 class RedisCache(Cache):
     def __init__(self, host: str, port: int, database: int, password: str):
+        self._host = host
+        self._port = port
+        self._database = database
+
         pool = redis.ConnectionPool(host=host, port=port, db=database, password=password, max_connections=10)
         self._redis = redis.Redis(connection_pool=pool)
+        logger.info('=== create redis({}) {}:{}/{} ===', id(self), host, port, database)
 
-    async def get(self, key: str) -> str:
+    async def get(self, key: str) -> str | bytes | None:
         return await self._redis.get(key)
 
-    async def set(self, key: str, value: str, expire_seconds: int = 0):
+    async def set(self, key: str, value: str | bytes, expire_seconds: int = 0):
         await self._redis.set(key, value, ex=expire_seconds)
 
     async def delete(self, key: str):
         await self._redis.delete(key)
 
-    async def delete_all_with_prefix(self, key_prefix: str, batch_size: int = 10):
-        keys = [key async for key in self._redis.scan_iter(match=f"{key_prefix}*")]
+    async def delete_all_key_pattern(self, key_pattern: str, batch_size: int = 10):
+        keys = [key async for key in self._redis.scan_iter(match=key_pattern)]
         for i in range(0, len(keys), batch_size):
             batch = keys[i:i + batch_size]
             await self._redis.delete(*batch)
+
+    async def close(self):
+        logger.info('=== close redis({}) {}:{}/{} ===', id(self), self._host, self._port, self._database)
+        await self._redis.close()

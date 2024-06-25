@@ -41,7 +41,7 @@ class Database(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def close(self):
+    async def close(self):
         """
         关闭数据库
         """

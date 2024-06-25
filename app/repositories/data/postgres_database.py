@@ -65,10 +65,10 @@ class PostgresDatabase(Database):
         )
         logger.info('=== create postgresql({}) {}:{}/{} ===', id(self), host, port, database)
 
-    def close(self):
+    async def close(self):
         logger.info('=== close postgresql({}) {}:{}/{} ===', id(self), self._host, self._port, self._database)
         self._async_session_factory.close_all()
-        self._engine.dispose()
+        await self._engine.dispose()
 
     def __del__(self):
         self.close()

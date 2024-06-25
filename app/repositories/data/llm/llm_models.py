@@ -13,8 +13,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+import json
 
 from pydantic import BaseModel
+
+from config import app_config
+from utils.crypto import composition
 
 
 class LLMProviderConfig(BaseModel):
@@ -31,8 +35,24 @@ class LLMProviderConfig(BaseModel):
     provider_name: str
     """Provider Name"""
 
-    provider_credential: dict
+    provider_credential: dict | str
     """Provider 凭证"""
+
+    def encrypt_credential(self):
+        if isinstance(self.provider_credential, str):
+            return self
+
+        self.provider_credential = composition.encrypt_str(app_config.security.secret, self.workspace_uid,
+                                                           json.dumps(self.provider_credential))
+        return self
+
+    def decrypt_credential(self):
+        if isinstance(self.provider_credential, dict):
+            return self
+
+        self.provider_credential = json.loads(composition.decrypt_str(app_config.security.secret, self.workspace_uid,
+                                                                      self.provider_credential))
+        return self
 
 
 class LLMModelConfig(BaseModel):

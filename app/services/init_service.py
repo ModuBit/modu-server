@@ -13,7 +13,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+from distutils.util import strtobool
 
+from repositories.cache import cache_decorator_builder
+from repositories.cache.cache import CacheDecorator
 from repositories.data import account_repository, workspace_repository, database
 from repositories.data.account.account_models import Account, AccountStatus
 from repositories.data.workspace.workspace_models import Workspace, WorkspaceType
@@ -21,7 +24,15 @@ from utils.auth import hash_password
 from utils.errors.base_error import ErrorShowType
 from utils.errors.system_error import InitializeError
 
+initialized_status_cache: CacheDecorator[bool] = cache_decorator_builder.build(
+    serialize=lambda initialized: 'True' if initialized else 'False',
+    deserialize=lambda json_content: bool(strtobool(json_content)),
+    default_expire_seconds=30 * 24 * 3600,
+    allow_none_values=True,
+)
 
+
+@initialized_status_cache.async_cacheable(key_generator=lambda **kwargs: 'system:initialized')
 async def is_initialized() -> bool:
     """
     判断是否已经初始化

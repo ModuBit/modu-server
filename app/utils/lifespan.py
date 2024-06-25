@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import inspect
 from contextlib import asynccontextmanager
 from typing import Callable
 
@@ -50,6 +51,9 @@ async def lifespan(fast_app: FastAPI):
     # 应用关闭之前
 
     for executor in (_pre_destroy_executors or []):
-        executor()
+        if inspect.iscoroutinefunction(executor):
+            await executor()
+        else:
+            executor()
 
     logger.info('==== application will be shutdown ====')

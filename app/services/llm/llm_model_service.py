@@ -14,16 +14,32 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import json
+
 from llm.model import model_provider_factory
 from llm.model.entities.model import ModelType, ModelSchema
 from llm.model.entities.provider import ProviderWithModelsSchema, ProviderStatus
-from repositories.data import llm_provider_config_repository, llm_model_config_repository
+from repositories.cache import cache_decorator_builder
+from repositories.cache.cache import CacheDecorator
+from repositories.data import llm_model_config_repository
 from repositories.data.account.account_models import Account
 from repositories.data.llm.llm_models import LLMModelConfig
 from services import workspace_service
 from utils.dictionary import dict_get
 from utils.errors.base_error import UnauthorizedError
 from utils.errors.llm_error import LLMExistsError
+from . import llm_provider_service
+
+llm_system_model_config_cache: CacheDecorator[dict[ModelType, LLMModelConfig]] = cache_decorator_builder.build(
+    # Convert dict[ModelType, LLMModelConfig] to dict[string, dict]
+    serialize=lambda system_model_config: json.dumps({model_type.value: model_config.dict()
+                                                      for model_type, model_config in system_model_config.items()}),
+    # Convert dict[string, dict] to dict[ModelType, LLMModelConfig]
+    deserialize=lambda json_content: {ModelType(model_type.upper()): LLMModelConfig.parse_obj(model_config)
+                                      for model_type, model_config in json.loads(json_content).items()},
+    default_expire_seconds=24 * 3600,
+    allow_none_values=True,
+)
 
 
 async def get_models(current_user: Account,
@@ -50,6 +66,7 @@ async def get_models(current_user: Account,
     return await _get_models(workspace_uid, provider_name, model_type, only_active)
 
 
+# noinspection PyProtectedMember
 async def _get_models(workspace_uid: str,
                       provider_name: str | None = None,
                       model_type: ModelType | None = None,
@@ -76,7 +93,7 @@ async def _get_models(workspace_uid: str,
         raise LLMExistsError('LLM供应商不存在')
 
     # 所有已配置的Provider信息
-    configured_providers = await llm_provider_config_repository.list_all(workspace_uid)
+    configured_providers = await llm_provider_service._all_configured(workspace_uid)
     configured_provider_names = set(map(lambda p: p.provider_name, configured_providers))
 
     # 如果指定only_active，则获取已配置的Providers
@@ -188,6 +205,19 @@ async def add_system_config(current_user: Account, workspace_uid: str,
     if member_role is None:
         raise UnauthorizedError('您无该权限查看')
 
+    return await _add_system_config(workspace_uid, llm_model_config)
+
+
+@llm_system_model_config_cache.async_cache_put(
+    key_generator=lambda workspace_uid, **kwargs: f"workspace:{workspace_uid}:llm:system:model:config")
+async def _add_system_config(workspace_uid: str,
+                             llm_model_config: dict[ModelType, LLMModelConfig]) -> dict[ModelType, LLMModelConfig]:
+    """
+    添加 工作空间 系统默认模型配置
+    :param workspace_uid: 空间UID
+    :param llm_model_config:  LLM模型配置
+    :return:
+    """
     # 参数校验
     model_configs = {model_type: await check_and_renew_llm_model_config(workspace_uid, model_type, model_config)
                      for model_type, model_config in llm_model_config.items()}
@@ -209,4 +239,15 @@ async def get_system_config(current_user: Account, workspace_uid: str) -> dict[M
     if member_role is None:
         raise UnauthorizedError('您无该权限查看')
 
+    return await _get_system_config(workspace_uid)
+
+
+@llm_system_model_config_cache.async_cacheable(
+    key_generator=lambda workspace_uid, **kwargs: f"workspace:{workspace_uid}:llm:system:model:config")
+async def _get_system_config(workspace_uid: str) -> dict[ModelType, LLMModelConfig]:
+    """
+    获取 工作空间 系统默认模型配置
+    :param workspace_uid: 工作空间UID
+    :return: dict[ModelType, LLMModelConfig]
+    """
     return await llm_model_config_repository.find_system_models_by_workspace(workspace_uid) or {}

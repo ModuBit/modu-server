@@ -14,22 +14,44 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import json
+
+from repositories.cache import cache_decorator_builder
+from repositories.cache.cache import CacheDecorator
 from repositories.data import workspace_repository
 from repositories.data.account.account_models import Account
 from repositories.data.workspace.workspace_models import Workspace, WorkspaceMemberRole
 from utils.errors.base_error import UnauthorizedError
 from utils.errors.space_error import SpaceExistsError
 
+# noinspection DuplicatedCode
+workspace_detail_cache: CacheDecorator[Workspace] = cache_decorator_builder.build(
+    serialize=lambda workspace: workspace.json(),
+    deserialize=lambda json_content: Workspace.parse_raw(json_content),
+    default_expire_seconds=24 * 3600,
+    allow_none_values=True,
+)
 
-async def list_related(account: Account) -> list[Workspace]:
+workspace_related_cache: CacheDecorator[list[Workspace]] = cache_decorator_builder.build(
+    serialize=lambda workspaces: json.dumps([workspace.json() for workspace in workspaces]),
+    deserialize=lambda json_contents: [Workspace.parse_raw(json_str) for json_str in json.loads(json_contents)],
+    default_expire_seconds=24 * 3600,
+    allow_none_values=True,
+)
+
+
+# FIXME 关联的空间可能很多，终有一天需要分页的时候需要重新考虑缓存设计
+@workspace_related_cache.async_cacheable(
+    key_generator=lambda current_user, **kwargs: f"workspace:account:{current_user.uid}:workspace_related")
+async def list_related(current_user: Account) -> list[Workspace]:
     """
     查询用户相关的空间
-    :param account: 用户
+    :param current_user: 用户
     :return: Workspace
     """
 
     # 我的空间
-    my_workspace = await workspace_repository.find_mine_by_creator_uid(account.uid)
+    my_workspace = await workspace_repository.find_mine_by_creator_uid(current_user.uid)
     my_workspace.member_role = WorkspaceMemberRole.OWNER
 
     # TODO 我参与的空间
@@ -37,6 +59,9 @@ async def list_related(account: Account) -> list[Workspace]:
     return [my_workspace]
 
 
+@workspace_detail_cache.async_cacheable(
+    key_generator=lambda current_user, workspace_uid, **kwargs:
+    f"workspace:{workspace_uid}:account:{current_user.uid}:workspace_detail")
 async def detail(current_user: Account, workspace_uid: str) -> Workspace:
     """
     查看空间详情

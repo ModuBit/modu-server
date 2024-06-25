@@ -46,12 +46,11 @@ class LLMProviderConfigRepositoryPostgres(LLMProviderConfigRepository):
     @with_async_session
     async def update(
             self, llm_provider_config: LLMProviderConfig, session: AsyncSession) -> LLMProviderConfig:
-        provider_credential = composition.encrypt_str(app_config.security.secret, llm_provider_config.workspace_uid,
-                                                      json.dumps(llm_provider_config.provider_credential))
+        provider_config = llm_provider_config.copy().encrypt_credential()
         stmt = (update(LLMProviderConfigPO)
-                .where(LLMProviderConfigPO.workspace_uid == llm_provider_config.workspace_uid)
-                .where(LLMProviderConfigPO.provider_name == llm_provider_config.provider_name)
-                .values(provider_credential=provider_credential))
+                .where(LLMProviderConfigPO.workspace_uid == provider_config.workspace_uid)
+                .where(LLMProviderConfigPO.provider_name == provider_config.provider_name)
+                .values(provider_credential=provider_config.provider_credential))
         await session.execute(stmt)
 
         return llm_provider_config
@@ -107,12 +106,11 @@ class LLMProviderConfigPO(PostgresBasePO):
         从 LLMProviderConfig 转换
         :return: LLMProviderConfig
         """
-        provider_credential = composition.encrypt_str(app_config.security.secret, llm_provider_config.workspace_uid,
-                                                      json.dumps(llm_provider_config.provider_credential))
+        provider_config = llm_provider_config.copy().encrypt_credential()
         return LLMProviderConfigPO(
-            workspace_uid=llm_provider_config.workspace_uid,
-            provider_name=llm_provider_config.provider_name,
-            provider_credential=provider_credential,
+            workspace_uid=provider_config.workspace_uid,
+            provider_name=provider_config.provider_name,
+            provider_credential=provider_config.provider_credential,
         )
 
     def to_llm_provider_config(self) -> LLMProviderConfig:
@@ -120,12 +118,12 @@ class LLMProviderConfigPO(PostgresBasePO):
         转为 LLMProviderConfig
         :return:  LLMProviderConfig
         """
-        provider_credential = json.loads(composition.decrypt_str(
-            app_config.security.secret, self.workspace_uid,
-            self.provider_credential))
-        return LLMProviderConfig(
+        provider_config = LLMProviderConfig(
             uid=self.uid,
             workspace_uid=self.workspace_uid,
             provider_name=self.provider_name,
-            provider_credential=provider_credential,
+            provider_credential=self.provider_credential,
         )
+        provider_config.decrypt_credential()
+
+        return provider_config
