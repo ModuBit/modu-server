@@ -14,19 +14,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from config import app_config
-
 if __name__ == '__main__':
     """
     本地开发使用 python start.py
     生产请使用 Gunicorn 进行部署
-    gunicorn main:app -w 4 -k uvicorn.workers.UvicornWorker
+    gunicorn -w 4 -k uvicorn_tools.CubeUvicornWorker --bind 0.0.0.0:8080 main:app
     """
     import uvicorn
+    import uvicorn_tools
 
     uvicorn.run(
         'main:app',
         reload=True,
-        host=app_config.server.host or '0.0.0.0',
-        port=app_config.server.port or 8080,
+        host='0.0.0.0',
+        port=8080,
+        http=uvicorn_tools.CubeHttpToolsProtocol,
     )

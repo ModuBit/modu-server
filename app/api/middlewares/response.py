@@ -46,6 +46,9 @@ def register(app: FastAPI):
         process_time = (time.time() - start_time) * 1000
         response.headers["X-Process-Time"] = f"{process_time:.2f}"
 
+        if 'text/event-stream' in response.headers.get('content-type'):
+            return response
+
         if request.url.path.endswith('.json') or request.url.path.endswith('.txt'):
             _log(request=request, response=response, process_time=process_time)
             return response

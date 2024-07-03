@@ -14,17 +14,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import os
 import sys
 
 from loguru import logger
+
+from utils.dictionary import dict_get
 
 
 def loguru_config(config: dict):
     """
     日志配置
     """
+
+    # 按进程号存储，避免使用 gunicorn 时多个进程输出到同一个文件
+    base, ext = os.path.splitext(dict_get(config, 'sink', 'logs/app.log'))
+    sink = f"{base}.{os.getpid()}{ext}"
+
     # 先移除自动生成的配置
     logger.remove()
     # 再添加新配置
-    logger.add(**config)
+    logger.add(**{**config, "sink": sink})
     logger.add(sys.stdout, format=config['format'])

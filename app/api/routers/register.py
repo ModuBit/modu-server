@@ -23,6 +23,7 @@ from fastapi.responses import JSONResponse
 from utils.errors.base_error import BaseServiceError
 from .auth import login, users
 from .llm import llm_schema, llm_provider, llm_model
+from .message import message
 from .system import setup, system
 from .workspace import workspace
 from ..dependencies.principal import token_verify
@@ -59,6 +60,10 @@ def register(app: FastAPI):
     app.include_router(llm_provider.router, prefix='/api/workspace/{workspace_uid}',
                        dependencies=[Depends(token_verify)],
                        tags=['provider config | Provider 配置'])
+
+    app.include_router(message.router, prefix='/api/workspace/{workspace_uid}',
+                       # dependencies=[Depends(token_verify)],
+                       tags=['message | 消息'])
 
 
 def exception_handler(app: FastAPI):

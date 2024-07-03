@@ -19,7 +19,6 @@ from fastapi.middleware.gzip import GZipMiddleware
 from starlette.middleware.cors import CORSMiddleware
 
 from config import app_config
-from utils.dictionary import dict_get
 from . import response
 
 
@@ -28,11 +27,11 @@ def register(app: FastAPI):
     注册中间件
     :param app:  FastAPI
     """
-    cors_config = app_config.server.cors
     # 统一处理返回
     response.register(app)
     # 再开启压缩
     app.add_middleware(GZipMiddleware, minimum_size=1024)
+    cors_config = app_config.server.cors
     app.add_middleware(
         CORSMiddleware,
         allow_credentials=True,

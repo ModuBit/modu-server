@@ -23,7 +23,7 @@ from loguru import logger
 from api.middlewares import register as middlewares_register
 from api.routers import register as routers_register
 from config import app_config
-from config import loguru_config, ot_config, ot_instrument_loguru
+from config import ot_config
 from utils import lifespan
 from utils.banner import banner_print
 
@@ -70,12 +70,6 @@ use_uvloop_if_available()
 
 # 打印banner
 banner_print('./banner.txt', app_config)
-
-# 配置日志
-loguru_config(app_config.loguru)
-
-# OT trace 配置到日志
-ot_instrument_loguru()
 
 # 创建应用
 app = create_app()

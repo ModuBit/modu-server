@@ -17,4 +17,5 @@ limitations under the License.
 __all__ = [
     'llm_provider_service',
     'llm_model_service',
+    'llm_generate_service',
 ]

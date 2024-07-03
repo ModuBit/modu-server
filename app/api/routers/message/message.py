@@ -13,28 +13,39 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-
-from typing import Generator, AsyncGenerator
+from datetime import datetime
 
 from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse, Response
 from fastapi.responses import StreamingResponse
 from loguru import logger
+from starlette.responses import ContentStream
 
 from api.dependencies.principal import current_account
 from repositories.data.account.account_models import Account
+from services.llm import llm_generate_service
 
 router = APIRouter()
 
 
-def compact_async_generate_response(response: dict | Generator | AsyncGenerator) -> Response:
+def compact_async_generate_response(response: dict | ContentStream) -> Response:
     if isinstance(response, dict):
         return JSONResponse(content=response)
-
-    return StreamingResponse(response, media_type="text/event-stream")
+    return StreamingResponse(
+        response,
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "Transfer-Encoding": "chunked",
+            "X-Accel-Buffering": "no",
+            "Content-Encoding": "identity"
+        })
 
 
 @logger.catch()
-@router.get(path='/{workspace_uid}/chat')
-async def detail(workspace_uid: str, current_user: Account = Depends(current_account)):
-    pass
+@router.post(path='/chat')
+async def chat(workspace_uid: str):
+    generator = await llm_generate_service.generate(workspace_uid)
+    response = compact_async_generate_response(generator)
+    return response

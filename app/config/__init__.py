@@ -21,9 +21,13 @@ from .opentelemetry_config import ot_config, ot_instrument_loguru
 
 app_config = FrozenDictData(safe_load('config.yml'))
 
+# 配置日志
+loguru_config(app_config.loguru)
+
+# OT trace 配置到日志
+ot_instrument_loguru()
+
 __all__ = [
     app_config,
-    loguru_config,
     ot_config,
-    ot_instrument_loguru,
 ]
