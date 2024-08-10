@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "cube-chat-server"
+name = "modu-server"
 version = "0.0.1"
 description = "Empower Your Ideas, Expand Your Reach. | 想你所想及你所及"
 authors = ["ManerFan <manerfan@163.com>", "ShyZhang <shyzhang777@gmail.com>"]
@@ -15,7 +15,7 @@ python = "^3.11"
 # WEB
 [tool.poetry.group.web.dependencies]
 ## [fastapi](https://fastapi.tiangolo.com/)
-fastapi = { extras = ["all"], version = "^0.111.0" }
+fastapi = { extras = ["all"], version = "^0.111.1" }
 ## [uvloop](https://pypi.org/project/uvloop/)
 uvloop = "^0.19.0"
 ## https://pypi.org/project/uvicorn/
@@ -39,7 +39,7 @@ asyncpg = "^0.29.0"
 # 缓存
 [tool.poetry.group.cache.dependencies]
 ## [redis](https://aioredis.readthedocs.io/en/latest/)
-redis = "^5.0.6"
+redis = "^5.0.7"
 ## [Memory](https://github.com/Yiling-J/theine)
 # theine
 
@@ -86,17 +86,19 @@ opentelemetry-instrumentation-fastapi = "^0.46b0"
 # LLM
 [tool.poetry.group.llm.dependencies]
 ## [LangChain](https://python.langchain.com/docs)
-langchain = "^0.2.5"
-langchain-core = "^0.2.9"
-langchain-community = "^0.2.5"
+langchain = "^0.2.7"
+langchain-core = "^0.2.18"
+langchain-community = "^0.2.7"
+langchain-experimental = "^0.0.62"
+langgraph = "^0.1.8"
 ## [OpenAI]
-langchain-openai = "^0.1.9"
+langchain-openai = "^0.1.16"
 ## [阿里云dashscope]
-dashscope = "^1.20.0"
+dashscope = "^1.20.1"
 ## [百度千帆]
-qianfan = "^0.3.17"
+qianfan = "^0.3.18"
 ## [智普清言]
-zhipuai = "^2.1.1.20240620.1"
+zhipuai = "^2.1.2"
 
 
 # 测试

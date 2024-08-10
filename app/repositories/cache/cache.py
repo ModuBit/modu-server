@@ -88,7 +88,7 @@ class Cache(ABC):
         """
         关闭缓存
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
 
 class CacheDecorator(Generic[T]):

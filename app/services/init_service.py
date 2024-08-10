@@ -41,6 +41,7 @@ async def is_initialized() -> bool:
     return await account_repository.count_all() > 0
 
 
+@initialized_status_cache.async_cache_evict(key_generator=lambda **kwargs: 'system:initialized')
 async def initialize(name: str, email: str, password: str):
     """
     初始化服务

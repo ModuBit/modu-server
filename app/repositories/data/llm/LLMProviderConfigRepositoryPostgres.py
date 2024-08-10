@@ -91,7 +91,7 @@ class LLMProviderConfigPO(PostgresBasePO):
     LLM Provider 配置 PO
     """
 
-    __tablename__ = 'cube_llm_provider_config'
+    __tablename__ = 'modu_llm_provider_config'
     __table_args__ = (
         PrimaryKeyConstraint('id', name='pk_id'),
     )

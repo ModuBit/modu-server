@@ -93,7 +93,7 @@ class LLMSystemModelConfigPO(PostgresBasePO):
     LLM 系统默认模型配置
     """
 
-    __tablename__ = 'cube_llm_system_model_config'
+    __tablename__ = 'modu_llm_system_model_config'
     __table_args__ = (
         PrimaryKeyConstraint('id', name='pk_id'),
     )

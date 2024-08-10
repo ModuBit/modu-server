@@ -16,6 +16,7 @@ limitations under the License.
 
 from utils.config_loader import safe_load
 from utils.dictionary import FrozenDictData
+from .langsmith_config import langsmith_config
 from .loguru_config import loguru_config
 from .opentelemetry_config import ot_config, ot_instrument_loguru
 
@@ -26,6 +27,9 @@ loguru_config(app_config.loguru)
 
 # OT trace 配置到日志
 ot_instrument_loguru()
+
+# 配置 langsmith
+langsmith_config(app_config.langsmith)
 
 __all__ = [
     app_config,

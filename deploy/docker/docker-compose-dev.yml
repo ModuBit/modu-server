@@ -2,16 +2,16 @@ services:
   db:
     image: postgres:16.2-alpine
     environment:
-      POSTGRES_USER: cube_chat
-      POSTGRES_PASSWORD: cube_chat
-      POSTGRES_DB: cube_chat
+      POSTGRES_USER: modu_chat
+      POSTGRES_PASSWORD: modu_chat
+      POSTGRES_DB: modu_chat
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
       - ./volumes/db/data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     healthcheck:
-      test: [ "CMD", "pg_isready -d cube_chat -U cube_chat" ]
+      test: [ "CMD", "pg_isready -d modu_chat -U modu_chat" ]
       interval: 1s
       timeout: 3s
       retries: 30
@@ -21,6 +21,6 @@ services:
       - ./volumes/redis/data:/data
     ports:
       - "6379:6379"
-    command: redis-server --requirepass cube_chat
+    command: redis-server --requirepass modu_chat
     healthcheck:
       test: [ "CMD", "redis-cli", "ping" ]

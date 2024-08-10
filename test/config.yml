@@ -14,7 +14,7 @@
 
 # 应用信息
 app:
-  title: Cube Chat | Speak FREELY with Me!
+  title: Modu Chat | Speak FREELY with Me!
   description: Empower Your Ideas, Expand Your Reach. | 想你所想及你所及
   summary:
   version: '0.0.1'
@@ -47,9 +47,9 @@ repository:
     postgres:
       host: ${POSTGRES_HOST:localhost}
       port: ${POSTGRES_PORT:5432}
-      database: ${POSTGRES_DATABASE:cube_chat}
-      username: ${POSTGRES_USERNAME:cube_chat}
-      password: ${POSTGRES_PASSWORD:cube_chat}
+      database: ${POSTGRES_DATABASE:modu_chat}
+      username: ${POSTGRES_USERNAME:modu_chat}
+      password: ${POSTGRES_PASSWORD:modu_chat}
   # storage
   storage:
     type: ${STORAGE_TYPE:local}

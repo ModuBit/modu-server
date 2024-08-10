@@ -51,12 +51,27 @@ async def list_related(current_user: Account) -> list[Workspace]:
     """
 
     # 我的空间
-    my_workspace = await workspace_repository.find_mine_by_creator_uid(current_user.uid)
-    my_workspace.member_role = WorkspaceMemberRole.OWNER
+    my_workspace = await mine(current_user)
 
     # TODO 我参与的空间
 
     return [my_workspace]
+
+
+@workspace_detail_cache.async_cacheable(
+    key_generator=lambda current_user, **kwargs:
+    f"workspace:own:account:{current_user.uid}:workspace_detail")
+async def mine(current_user: Account) -> Workspace:
+    """
+    查询用户创建的空间
+    :param current_user: 用户
+    :return: Workspace
+    """
+
+    my_workspace = await workspace_repository.find_mine_by_creator_uid(current_user.uid)
+    my_workspace.member_role = WorkspaceMemberRole.OWNER
+
+    return my_workspace
 
 
 @workspace_detail_cache.async_cacheable(

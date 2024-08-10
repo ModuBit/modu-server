@@ -14,7 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from abc import ABC
+from abc import ABC, abstractmethod
+
+from langchain_core.language_models import BaseChatModel
 
 from llm.model.entities.commons import I18nOption
 from llm.model.entities.model import LLMModel, ModelType
@@ -32,3 +34,19 @@ class TextGenerationModel(LLMModel, ABC):
     @property
     def description(self) -> I18nOption:
         return I18nOption(default='文本生成', en_us='Text Generation')
+
+    @abstractmethod
+    def chat_model(self,
+                   provider_credential: dict, model_parameters: dict, model_name: str,
+                   streaming: bool = True, request_timeout: int = 10, max_retries: int = 0) -> BaseChatModel:
+        """
+        构造BaseChatModel
+        :param provider_credential: Provider凭证
+        :param model_parameters: Model参数
+        :param model_name: 模型名称
+        :param streaming: 是否流式输出
+        :param request_timeout: 请求超时时间
+        :param max_retries: 最大重试次数
+        :return: BaseChatModel
+        """
+        raise NotImplementedError()

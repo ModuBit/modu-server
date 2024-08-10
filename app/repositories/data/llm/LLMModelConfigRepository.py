@@ -40,7 +40,7 @@ class LLMModelConfigRepository(Repository):
         :param llm_model_configs: 模型配置
         :param session: Session
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
     @abstractmethod
     async def update_system_models(
@@ -52,7 +52,7 @@ class LLMModelConfigRepository(Repository):
         :param llm_model_configs: 模型配置
         :param session: Session
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
     @abstractmethod
     async def find_system_models_by_workspace(
@@ -62,4 +62,4 @@ class LLMModelConfigRepository(Repository):
         :param workspace_uid: 空间UID
         :param session: Session
         """
-        raise NotImplementedError
+        raise NotImplementedError()

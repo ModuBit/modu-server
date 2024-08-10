@@ -18,7 +18,7 @@ from uvicorn.protocols.http.httptools_impl import HttpToolsProtocol
 from uvicorn_worker import UvicornWorker
 
 
-class CubeHttpToolsProtocol(HttpToolsProtocol):
+class ModuHttpToolsProtocol(HttpToolsProtocol):
 
     def _has_event_stream(self):
         """
@@ -46,7 +46,7 @@ class CubeHttpToolsProtocol(HttpToolsProtocol):
             self.headers = self._remove_accept_encoding()
 
 
-class CubeUvicornWorker(UvicornWorker):
+class ModuUvicornWorker(UvicornWorker):
     CONFIG_KWARGS = {
-        "http": CubeHttpToolsProtocol
+        "http": ModuHttpToolsProtocol
     }

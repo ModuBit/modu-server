@@ -123,7 +123,7 @@ class WorkspacePO(PostgresBasePO):
     空间PO
     """
 
-    __tablename__ = 'cube_workspace'
+    __tablename__ = 'modu_workspace'
     __table_args__ = (
         PrimaryKeyConstraint('id', name='pk_id'),
     )
@@ -141,7 +141,7 @@ class WorkspaceMembershipPO(PostgresBasePO):
     空间成员PO
     """
 
-    __tablename__ = 'cube_workspace_membership'
+    __tablename__ = 'modu_workspace_membership'
     __table_args__ = (
         PrimaryKeyConstraint('id', name='pk_id'),
     )

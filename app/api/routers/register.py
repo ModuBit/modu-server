@@ -61,7 +61,7 @@ def register(app: FastAPI):
                        dependencies=[Depends(token_verify)],
                        tags=['provider config | Provider 配置'])
 
-    app.include_router(message.router, prefix='/api/workspace/{workspace_uid}',
+    app.include_router(message.router, prefix='/api',
                        # dependencies=[Depends(token_verify)],
                        tags=['message | 消息'])
 

@@ -18,7 +18,7 @@ import keyword
 import typing
 from collections import abc
 from types import MappingProxyType
-from typing import TypeVar, Dict, Any
+from typing import TypeVar, Dict, Any, Callable
 
 T = TypeVar('T')
 
@@ -126,3 +126,44 @@ def dict_merge(dictionary_left: Dict, dictionary_right: Dict, filter_none_values
         dictionary_left = dict_filter_none_values(dictionary_left)
         dictionary_right = dict_filter_none_values(dictionary_right)
     return {**dictionary_left, **dictionary_right}
+
+
+def dict_exclude_keys(original_dict: Dict, keys_to_exclude: list | set):
+    """
+    将原字典中指定的 key 排除，生成新的字典
+    :param original_dict: 原字典
+    :param keys_to_exclude: 排除的 key 列表
+    :return: 生成的新字典
+    """
+    return {key: value for key, value in original_dict.items() if key not in keys_to_exclude}
+
+
+def dict_map_values(dictionary: Dict, value_map: Callable[[any, any], any]):
+    """
+    将原字典中的 value 映射为新的值
+    :param dictionary: 原字典
+    :param value_map: value 映射函数
+    :return: 生成的新字典
+    """
+    return {key: value_map(key, value) for key, value in dictionary.items()}
+
+
+def dict_map_keys(dictionary: Dict, key_map: Callable[[any], any]):
+    """
+    将原字典中的 key 映射为新的值
+    :param dictionary: 原字典
+    :param key_map: key 映射函数
+    :return: 生成的新字典
+    """
+    return {key_map(key): value for key, value in dictionary.items()}
+
+
+def dict_map_key_value(dictionary: Dict, key_map: Callable[[any], any], value_map: Callable[[any, any], any]):
+    """
+    将原字典中的 key value 映射为新的值
+    :param dictionary: 原字典
+    :param key_map: key 映射函数
+    :param value_map: value 映射函数
+    :return: 生成的新字典
+    """
+    return {key_map(key): value_map(key, value) for key, value in dictionary.items()}

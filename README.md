@@ -1,4 +1,4 @@
-# CubeChat Server
+# MODU Server
 
 ## 开发
 
@@ -10,9 +10,9 @@
 ### 依赖
 ```shell
 conda deactivate
-conda env remove -n cube-chat-server
-conda create -n cube-chat-server python=3.11
-conda activate cube-chat-server
+conda env remove -n modu-server
+conda create -n modu-server python=3.11
+conda activate modu-server
 pip install poetry
 poetry install
 ```
@@ -20,5 +20,5 @@ poetry install
 ### 组件
 ```shell
 cd deploy/docker
-docker-compose -f docker-compose-dev.yml -p cube-chat-dev up
+docker-compose -f docker-compose-dev.yml -p modu-dev up
 ```

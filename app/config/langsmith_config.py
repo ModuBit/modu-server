@@ -14,19 +14,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-if __name__ == '__main__':
-    """
-    本地开发使用 python start.py
-    生产请使用 Gunicorn 进行部署
-    gunicorn -w 4 -k uvicorn_tools.ModuUvicornWorker --bind 0.0.0.0:8080 main:app
-    """
-    import uvicorn
-    import uvicorn_tools
+import os
 
-    uvicorn.run(
-        'main:app',
-        reload=True,
-        host='0.0.0.0',
-        port=8080,
-        http=uvicorn_tools.ModuHttpToolsProtocol,
-    )
+from utils.dictionary import dict_get
+
+
+def langsmith_config(config: dict):
+    api_key = dict_get(config, "api_key")
+    if not api_key:
+        return
+
+    os.environ['LANGCHAIN_TRACING_V2'] = "true"
+    os.environ['LANGCHAIN_ENDPOINT'] = "https://api.smith.langchain.com"
+    os.environ['LANGCHAIN_API_KEY'] = api_key
+    os.environ['LANGCHAIN_PROJECT'] = dict_get(config, "app.project.name", "MODU")

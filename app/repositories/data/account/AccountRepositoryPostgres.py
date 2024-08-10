@@ -64,7 +64,7 @@ class AccountPO(PostgresBasePO):
     账号PO
     """
 
-    __tablename__ = 'cube_account'
+    __tablename__ = 'modu_account'
     __table_args__ = (
         PrimaryKeyConstraint('id', name='pk_id'),
     )

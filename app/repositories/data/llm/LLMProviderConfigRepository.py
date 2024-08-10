@@ -38,7 +38,7 @@ class LLMProviderConfigRepository(Repository):
         :param llm_provider_config: llm provider
         :param session: Session
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
     @abstractmethod
     async def update(
@@ -48,7 +48,7 @@ class LLMProviderConfigRepository(Repository):
         :param llm_provider_config: llm provider
         :param session: Session
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
     @abstractmethod
     async def delete(
@@ -59,7 +59,7 @@ class LLMProviderConfigRepository(Repository):
         :param provider_name: provider key
         :param session: Session
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
     @abstractmethod
     async def find_one_by_workspace_and_provider_name(
@@ -70,7 +70,7 @@ class LLMProviderConfigRepository(Repository):
         :param provider_name: provider name
         :param session: Session
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
     @abstractmethod
     async def list_all(self, workspace_uid: str, session: AsyncSession) -> list[LLMProviderConfig]:
@@ -79,4 +79,4 @@ class LLMProviderConfigRepository(Repository):
         :param workspace_uid: workspace uid
         :param session: Session
         """
-        raise NotImplementedError
+        raise NotImplementedError()

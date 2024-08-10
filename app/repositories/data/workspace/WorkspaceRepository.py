@@ -37,7 +37,7 @@ class WorkspaceRepository(Repository):
         :param workspace: 空间
         :param session: Session
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
     @abstractmethod
     async def add_workspace_membership(
@@ -50,7 +50,7 @@ class WorkspaceRepository(Repository):
         :param role: 成员角色
         :param session: Session
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
     @abstractmethod
     async def find_mine_by_creator_uid(self, creator_uid: str, session: AsyncSession) -> Workspace:
@@ -60,7 +60,7 @@ class WorkspaceRepository(Repository):
         :param session: Session
         :return Workspace
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
     @abstractmethod
     async def get_by_uid(self, uid: str, session: AsyncSession) -> Workspace:
@@ -69,7 +69,7 @@ class WorkspaceRepository(Repository):
         :param uid: 空间uid
         :return Workspace
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
     @abstractmethod
     async def get_member_by_uid(self, workspace_uid: str, member_uid: str,
@@ -80,7 +80,7 @@ class WorkspaceRepository(Repository):
         :param member_uid: 成员uid
         :return Workspace
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
     @abstractmethod
     async def is_member(self, workspace_uid: str, account_uid: str, session: AsyncSession) -> bool:
@@ -90,7 +90,7 @@ class WorkspaceRepository(Repository):
         :param account_uid: 成员uid
         :return True False
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
     @abstractmethod
     async def get_member_role(self, workspace_uid: str, account_uid: str, session: AsyncSession) -> WorkspaceMemberRole:
@@ -100,4 +100,4 @@ class WorkspaceRepository(Repository):
         :param account_uid: 成员uid
         :return WorkspaceMemberRole
         """
-        raise NotImplementedError
+        raise NotImplementedError()

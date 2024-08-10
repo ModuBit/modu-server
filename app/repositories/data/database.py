@@ -38,14 +38,14 @@ class Database(ABC):
         获取Session
         :return: Session
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
     @abstractmethod
     async def close(self):
         """
         关闭数据库
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
     @asynccontextmanager
     async def async_session(self) -> Callable[..., AbstractAsyncContextManager[Session]]:

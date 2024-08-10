@@ -14,7 +14,7 @@
 
 # 应用信息
 app:
-  title: Cube Chat | Speak FREELY with Me!
+  title: MODU | Speak FREELY with Me!
   description: Empower Your Ideas, Expand Your Reach. | 想你所想及你所及
   summary:
   version: '0.0.1'
@@ -28,8 +28,8 @@ app:
     url: https://github.com/hattori7243
     email: shyzhang777@gmail.com
   project:
-    name: Cube Chat
-    url: https://github.com/cubewisebit/cube-chat-server
+    name: MODU
+    url: https://github.com/modubit/modu-server
   license_info:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0
@@ -52,9 +52,9 @@ repository:
     postgres:
       host: ${POSTGRES_HOST:localhost}
       port: ${POSTGRES_PORT:5432}
-      database: ${POSTGRES_DATABASE:cube_chat}
-      username: ${POSTGRES_USERNAME:cube_chat}
-      password: ${POSTGRES_PASSWORD:cube_chat}
+      database: ${POSTGRES_DATABASE:modu_chat}
+      username: ${POSTGRES_USERNAME:modu_chat}
+      password: ${POSTGRES_PASSWORD:modu_chat}
   # storage
   storage:
     type: ${STORAGE_TYPE:local}
@@ -68,7 +68,7 @@ repository:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
       database: ${REDIS_DATABASE:0}
-      password: ${REDIS_PASSWORD:cube_chat}
+      password: ${REDIS_PASSWORD:modu_chat}
 
 # 安全设置
 security:
@@ -99,3 +99,6 @@ loguru:
   enqueue: True
   # 是否应自动捕获 sink 处理日志消息时发生的错误
   catch: True
+
+langsmith:
+  api_key: ${LANGSMITH_API_KEY}

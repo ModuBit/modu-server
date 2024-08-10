@@ -13,7 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+
 from langchain_community.chat_models.moonshot import MoonshotChat
+from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import SystemMessage, HumanMessage
 from loguru import logger
 
@@ -22,6 +24,11 @@ from utils.errors.llm_error import LLMValidateError
 
 
 class MoonShotTextGenerationModel(TextGenerationModel):
+    def chat_model(self,
+                   provider_credential: dict, model_parameters: dict, model_name: str,
+                   streaming: bool = True, request_timeout: int = 10, max_retries: int = 0) -> BaseChatModel:
+        pass
+
     async def validate_credentials(self, credentials: dict, model: str | None = None) -> None:
         try:
             model_name = model or "moonshot-v1-32k"
