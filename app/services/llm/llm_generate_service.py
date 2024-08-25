@@ -95,7 +95,7 @@ async def generate(current_user: Account, chat_generate_cmd: GenerateCmd) -> dic
         sender_id=current_user.uid,
         sender_role="assistant",
         message_id=message_id,
-        message_time=int(datetime.now().timestamp()),
+        message_time=int(datetime.now().timestamp() * 1000),
         message=MessageBlock(
             type="answer",
             content_type="text",
@@ -112,7 +112,28 @@ async def generate(current_user: Account, chat_generate_cmd: GenerateCmd) -> dic
         f'id: {datetime.now()}\nevent: done\n\n')
 
     # 合并内容
-    return merge_async_iterators(before, message, after)
+    return merge_async_iterators(
+        before, message, after,
+        yield_when_exception=lambda e:
+        f'id: {datetime.now()}\nevent: error\n'
+        f'data: {_make_error_message_event(conversation_id, current_user.uid, message_id, str(e)).json()}\n\n')
+
+
+def _make_error_message_event(conversation_id: str, sender_id: str, message_id: str, content: str):
+    return MessageEvent(
+        conversation_id=conversation_id,
+        sender_id=sender_id,
+        sender_role="assistant",
+        message_id=message_id,
+        message_time=int(datetime.now().timestamp() * 1000),
+        message=MessageBlock(
+            type="answer",
+            content_type="error",
+            content=content,
+            section_id=str(ULID()),
+        ),
+        is_finished=True,
+    )
 
 
 async def _make_graph_bot(current_user: Account, chat_generate_cmd: GenerateCmd) -> CompiledGraph:

@@ -86,8 +86,13 @@ def exception_handler(app: FastAPI):
         业务异常
         """
         logger.warning('ServiceError {}, {}', exc.__class__, exc.message)
-        return JSONResponse({'message': exc.message, 'show_type': exc.show_type, 'target': exc.target},
-                            status_code=exc.status_code)
+        return JSONResponse({
+            'success': False,
+            'code': exc.status_code,
+            'message': exc.message,
+            'show_type': exc.show_type,
+            'target': exc.target
+        }, status_code=exc.status_code)
 
     @app.exception_handler(DBAPIError)
     async def sql_exception_handler(request, exc: DBAPIError):
@@ -95,7 +100,11 @@ def exception_handler(app: FastAPI):
         SQL数据库异常
         """
         logger.exception('SQLError 服务异常 {}', str(exc))
-        return JSONResponse({'message': '服务异常，请稍候重试'}, status_code=500)
+        return JSONResponse({
+            'success': False,
+            'code': 500,
+            'message': f'服务异常，请稍候重试{str(exc)}'
+        }, status_code=500)
 
     @app.exception_handler(Exception)
     async def common_exception_handler(request, exc: Exception):
@@ -103,4 +112,8 @@ def exception_handler(app: FastAPI):
         其他系统异常
         """
         logger.exception('ExceptionError 服务异常 {}', str(exc))
-        return JSONResponse({'message': '服务异常，请稍候重试'}, status_code=500)
+        return JSONResponse({
+            'success': False,
+            'code': 500,
+            'message': f'服务异常，请稍候重试 {str(exc)}'
+        }, status_code=500)

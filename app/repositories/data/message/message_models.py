@@ -31,7 +31,7 @@ class MessageBlock(BaseModel):
     - answer 回答
     """
 
-    content_type: Literal["text", "refer:text"]
+    content_type: Literal["text", "refer:text", "error"]
     """
     消息内容的类型
     - text 文本

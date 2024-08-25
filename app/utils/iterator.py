@@ -14,20 +14,28 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from typing import AsyncIterator, TypeVar
+from typing import AsyncIterator, TypeVar, Callable
+
+from loguru import logger
 
 T = TypeVar('T')
 
 
-async def merge_async_iterators(*iterators: AsyncIterator[T]) -> AsyncIterator[T]:
+async def merge_async_iterators(
+        *iterators: AsyncIterator[T], yield_when_exception: Callable[[Exception], T] = None) -> AsyncIterator[T]:
     """
     将多个异步迭代器合并成一个新的异步迭代器
     :param iterators: 待合并的异步迭代器
+    :param yield_when_exception: 异常时的内容
     :return:  新的异步迭代器
     """
-    for iterator in filter(lambda it: it is not None, iterators):
-        async for item in iterator:
-            yield item
+    try:
+        for iterator in filter(lambda it: it is not None, iterators):
+            async for item in iterator:
+                yield item
+    except Exception as e:
+        logger.exception(f"merge_async_iterators error: {str(e)}")
+        yield yield_when_exception(e) if yield_when_exception else None
 
 
 async def single_element_async_iterator(element: T) -> AsyncIterator[T]:
