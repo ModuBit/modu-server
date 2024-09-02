@@ -13,13 +13,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+
 from datetime import datetime
+from typing import AsyncIterator
 
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_core.runnables import RunnableConfig
+from langchain_core.runnables.schema import StreamEvent
 from langgraph.graph import START, StateGraph, MessagesState, END
 from langgraph.graph.graph import CompiledGraph
+from loguru import logger
 from pydantic import BaseModel, Extra
 from starlette.responses import ContentStream
 from ulid import ULID
@@ -28,10 +32,11 @@ from llm.model import model_provider_factory
 from llm.model.entities.model import ModelType
 from llm.model.entities.models import TextGenerationModel
 from repositories.data.account.account_models import Account
-from repositories.data.message.message_models import MessageEvent, MessageBlock
+from repositories.data.message.message_models import MessageBlock, MessageEventData
 from services import workspace_service
 from services.llm import llm_model_service, llm_provider_service
-from services.message_service import stream_event_checkpoint
+from services.llm.llm_message_event_models import MessageStartEvent, MessageEndEvent, ErrorEvent, MessageEvent, \
+    AIMessageChunkEvent
 from utils.dictionary import dict_merge
 from utils.errors.llm_error import LLMExistsError
 from utils.errors.space_error import SpaceExistsError
@@ -81,59 +86,29 @@ async def generate(current_user: Account, chat_generate_cmd: GenerateCmd) -> dic
     chat_bot = await _make_graph_bot(current_user, chat_generate_cmd)
 
     # 机器人对话
-    event_stream = chat_bot.astream_events({"messages": [
+    llm_event_stream = chat_bot.astream_events({"messages": [
         HumanMessage(content=next(filter(lambda item: item.type == "text", chat_generate_cmd.query.inputs)).content)
     ]}, {"configurable": {"thread_id": "1"}}, version="v2")
 
-    # 对话内容
-    message, conversation_id, message_id = await stream_event_checkpoint(event_stream,
-                                                                         chat_generate_cmd.conversation_id)
+    # TODO 初始化 conversation & message
+    conversation_id = str(ULID())
+    message_id = str(ULID())
 
     # 前置内容
-    before_message = MessageEvent(
-        conversation_id=conversation_id,
-        sender_id=current_user.uid,
-        sender_role="assistant",
-        message_id=message_id,
-        message_time=int(datetime.now().timestamp() * 1000),
-        message=MessageBlock(
-            type="answer",
-            content_type="text",
-            content=f'```mermaid\n{chat_bot.get_graph().draw_mermaid()}\n```',
-            section_id=str(ULID()),
-        ),
-        is_finished=False,
-    )
-    before = single_element_async_iterator(
-        f'id: {datetime.now()}\nevent: message\ndata: {before_message.json()}\n\n')
+    before_events = single_element_async_iterator(MessageStartEvent())
+
+    # 生成内容
+    llm_message_events = llm_stream_events(llm_event_stream)
 
     # 后置内容
-    after = single_element_async_iterator(
-        f'id: {datetime.now()}\nevent: done\n\n')
+    after_events = single_element_async_iterator(MessageEndEvent())
 
     # 合并内容
-    return merge_async_iterators(
-        before, message, after,
-        yield_when_exception=lambda e:
-        f'id: {datetime.now()}\nevent: error\n'
-        f'data: {_make_error_message_event(conversation_id, current_user.uid, message_id, str(e)).json()}\n\n')
+    message_events = merge_async_iterators(
+        before_events, llm_message_events, after_events,
+        yield_when_exception=lambda e: ErrorEvent(error=e))
 
-
-def _make_error_message_event(conversation_id: str, sender_id: str, message_id: str, content: str):
-    return MessageEvent(
-        conversation_id=conversation_id,
-        sender_id=sender_id,
-        sender_role="assistant",
-        message_id=message_id,
-        message_time=int(datetime.now().timestamp() * 1000),
-        message=MessageBlock(
-            type="answer",
-            content_type="error",
-            content=content,
-            section_id=str(ULID()),
-        ),
-        is_finished=True,
-    )
+    return message_events_checkpoint(message_events, conversation_id, message_id)
 
 
 async def _make_graph_bot(current_user: Account, chat_generate_cmd: GenerateCmd) -> CompiledGraph:
@@ -198,3 +173,82 @@ async def _make_graph_bot(current_user: Account, chat_generate_cmd: GenerateCmd)
     # langgraph.graph.state.StateGraph.compile(checkpoint=)
     # https://langchain-ai.github.io/langgraph/how-tos/persistence/
     return workflow.compile()
+
+
+async def llm_stream_events(event_iter: AsyncIterator[StreamEvent]) -> AsyncIterator[MessageEvent]:
+    """
+    通常，langgraph使用 BaseCheckpointSaver 处理历史消息
+    langgraph.graph.state.StateGraph.compile(checkpoint=)
+    https://langchain-ai.github.io/langgraph/how-tos/persistence/
+
+    由于对历史消息的处理和端的展示高度耦合，同时对历史消息有定制化的诉求，langgraph的CheckpointSaver无法满足
+    这里需要自定义处理逻辑
+
+    :param event_iter: 异步事件流
+    :return: 处理后的 异步事件流
+    """
+
+    section_id = str(ULID())
+    async for event in event_iter:
+        logger.debug(event)
+        if event['event'] == 'on_chat_model_stream':
+            chunk_event = AIMessageChunkEvent(section_id=section_id, chunk=event['data']['chunk'])
+            yield chunk_event
+        # TODO 其他类型判断
+
+
+async def message_events_checkpoint(event_iter: AsyncIterator[MessageEvent], conversation_id: str, message_id: str):
+    async for event in event_iter:
+        if isinstance(event, MessageStartEvent):
+            message = MessageEventData(
+                conversation_id=conversation_id,
+                sender_id="",
+                sender_role="assistant",
+                message_id=message_id,
+                message_time=int(datetime.now().timestamp()),
+                message=MessageBlock(
+                    type="answer",
+                    content_type="text",
+                    content="",
+                    section_id=event.section_id,
+                ),
+                is_finished=False,
+            )
+            yield f'event: message\ndata: {message.model_dump_json()}\n\n'
+
+        if isinstance(event, AIMessageChunkEvent):
+            message = MessageEventData(
+                conversation_id=conversation_id,
+                sender_id="",
+                sender_role="assistant",
+                message_id=message_id,
+                message_time=int(datetime.now().timestamp()),
+                message=MessageBlock(
+                    type="answer",
+                    content_type="text",
+                    content=event.chunk.content,
+                    section_id=event.section_id,
+                ),
+                is_finished=False,
+            )
+            yield f'event: message\ndata: {message.model_dump_json()}\n\n'
+
+        if isinstance(event, MessageEndEvent):
+            yield f'event: done\n\n'
+
+        if isinstance(event, ErrorEvent):
+            message = MessageEventData(
+                conversation_id=conversation_id,
+                sender_id="",
+                sender_role="assistant",
+                message_id=message_id,
+                message_time=int(datetime.now().timestamp()),
+                message=MessageBlock(
+                    type="answer",
+                    content_type="error",
+                    content=str(event.error),
+                    section_id=event.section_id,
+                ),
+                is_finished=True,
+            )
+            yield f'event: error\ndata: {message.model_dump_json()}\n\n'

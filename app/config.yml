@@ -100,5 +100,12 @@ loguru:
   # 是否应自动捕获 sink 处理日志消息时发生的错误
   catch: True
 
+# https://smith.langchain.com
 langsmith:
   api_key: ${LANGSMITH_API_KEY}
+
+# https://langfuse.com
+langfuse:
+  host: ${LANGFUSE_HOST}
+  public_key: ${LANGFUSE_PUBLIC_KEY}
+  secret_key: ${LANGFUSE_SECRET_KEY}

@@ -31,7 +31,7 @@ from utils.errors.llm_error import LLMExistsError
 
 # noinspection DuplicatedCode
 llm_provider_config_cache: CacheDecorator[LLMProviderConfig] = cache_decorator_builder.build(
-    serialize=lambda provider_config: provider_config.copy().encrypt_credential().json(),
+    serialize=lambda provider_config: provider_config.copy().encrypt_credential().model_dump_json(),
     deserialize=lambda json_content: LLMProviderConfig.parse_raw(json_content).decrypt_credential(),
     default_expire_seconds=24 * 3600,
     allow_none_values=True,

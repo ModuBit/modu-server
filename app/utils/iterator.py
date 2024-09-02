@@ -35,7 +35,10 @@ async def merge_async_iterators(
                 yield item
     except Exception as e:
         logger.exception(f"merge_async_iterators error: {str(e)}")
-        yield yield_when_exception(e) if yield_when_exception else None
+        if yield_when_exception:
+            yield_when_exception(e)
+        else:
+            raise e
 
 
 async def single_element_async_iterator(element: T) -> AsyncIterator[T]:

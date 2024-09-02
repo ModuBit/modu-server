@@ -45,7 +45,7 @@ class MessageBlock(BaseModel):
     """该部分内容ID"""
 
 
-class MessageEvent(BaseModel):
+class MessageEventData(BaseModel):
     """
     消息事件
     """

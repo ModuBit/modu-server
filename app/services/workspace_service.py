@@ -26,14 +26,14 @@ from utils.errors.space_error import SpaceExistsError
 
 # noinspection DuplicatedCode
 workspace_detail_cache: CacheDecorator[Workspace] = cache_decorator_builder.build(
-    serialize=lambda workspace: workspace.json(),
+    serialize=lambda workspace: workspace.model_dump_json(),
     deserialize=lambda json_content: Workspace.parse_raw(json_content),
     default_expire_seconds=24 * 3600,
     allow_none_values=True,
 )
 
 workspace_related_cache: CacheDecorator[list[Workspace]] = cache_decorator_builder.build(
-    serialize=lambda workspaces: json.dumps([workspace.json() for workspace in workspaces]),
+    serialize=lambda workspaces: json.dumps([workspace.model_dump_json() for workspace in workspaces]),
     deserialize=lambda json_contents: [Workspace.parse_raw(json_str) for json_str in json.loads(json_contents)],
     default_expire_seconds=24 * 3600,
     allow_none_values=True,

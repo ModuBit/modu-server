@@ -23,7 +23,7 @@ from starlette.responses import ContentStream
 from api.dependencies.principal import current_account
 from repositories.data.account.account_models import Account
 from services import llm_generate_service
-from services.llm.llm_generate_service import GenerateCmd
+from services.llm.generate.llm_generate_service import GenerateCmd
 
 router = APIRouter()
 
