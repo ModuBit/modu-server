@@ -139,8 +139,8 @@ def _load_model_schema(model_schema_file: Traversable) -> ModelSchema:
 
     # 处理parameters，与模板整合
     merged_parameters = [FormSchema(**dict_merge(
-        dict_get(model_templates, parameter.template, FormSchema(name=parameter.name)).dict(),
-        parameter.dict(),
+        dict_get(model_templates, parameter.template, FormSchema(name=parameter.name)).model_dump(),
+        parameter.model_dump(),
         True
     )) if parameter.template else parameter for parameter in model_schema.parameters]
     model_schema.parameters = merged_parameters

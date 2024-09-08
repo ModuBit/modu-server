@@ -16,7 +16,7 @@ limitations under the License.
 
 import enum
 
-from pydantic import BaseModel, Field, Extra
+from pydantic import BaseModel, Field
 
 
 class WorkspaceType(str, enum.Enum):
@@ -50,7 +50,7 @@ class Workspace(BaseModel):
 
     # 设置允许额外字段
     class Config:
-        extra = Extra.allow
+        extra = 'allow'
 
 
 class WorkspaceMemberStatus(str, enum.Enum):

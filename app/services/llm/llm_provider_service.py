@@ -14,8 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import json
-
 from llm.model import model_provider_factory
 from repositories.cache import cache_decorator_builder
 from repositories.cache.cache import CacheDecorator
@@ -24,23 +22,27 @@ from repositories.data.account.account_models import Account
 from repositories.data.llm.llm_models import LLMProviderConfig
 from repositories.data.workspace.workspace_models import WorkspaceMemberRole
 from services import workspace_service
+from utils import json
 from utils.constants import HIDDEN_PREFIX
 from utils.desensitize import desensitize
 from utils.errors.base_error import UnauthorizedError
 from utils.errors.llm_error import LLMExistsError
+from utils.json import default_excluded_fields
 
 # noinspection DuplicatedCode
 llm_provider_config_cache: CacheDecorator[LLMProviderConfig] = cache_decorator_builder.build(
-    serialize=lambda provider_config: provider_config.copy().encrypt_credential().model_dump_json(),
-    deserialize=lambda json_content: LLMProviderConfig.parse_raw(json_content).decrypt_credential(),
+    serialize=lambda provider_config: provider_config.copy().encrypt_credential().model_dump_json(
+        exclude=default_excluded_fields),
+    deserialize=lambda json_content: LLMProviderConfig.model_validate_json(json_content).decrypt_credential(),
     default_expire_seconds=24 * 3600,
     allow_none_values=True,
 )
 
 llm_provider_configured_config_cache: CacheDecorator[list[LLMProviderConfig]] = cache_decorator_builder.build(
-    serialize=lambda provider_configs: json.dumps([provider_config.copy().encrypt_credential().dict()
-                                                   for provider_config in provider_configs]),
-    deserialize=lambda json_contents: [LLMProviderConfig.parse_obj(json_obj).decrypt_credential()
+    serialize=lambda provider_configs: json.dumps(
+        [provider_config.copy().encrypt_credential().model_dump(exclude=default_excluded_fields)
+         for provider_config in provider_configs]),
+    deserialize=lambda json_contents: [LLMProviderConfig.model_validate(json_obj).decrypt_credential()
                                        for json_obj in json.loads(json_contents)],
     default_expire_seconds=24 * 3600,
     allow_none_values=True,

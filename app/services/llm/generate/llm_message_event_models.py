@@ -46,7 +46,7 @@ class MessageEvent(BaseModel):
     event: Event
     """事件类型"""
 
-    section_id: str = str(ULID())
+    section_uid: str = str(ULID())
     """内容块ID"""
 
 

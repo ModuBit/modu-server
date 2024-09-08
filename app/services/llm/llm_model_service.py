@@ -14,8 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import json
-
 from llm.model import model_provider_factory
 from llm.model.entities.model import ModelType, ModelSchema
 from llm.model.entities.provider import ProviderWithModelsSchema, ProviderStatus
@@ -25,17 +23,20 @@ from repositories.data import llm_model_config_repository
 from repositories.data.account.account_models import Account
 from repositories.data.llm.llm_models import LLMModelConfig
 from services import workspace_service
+from utils import json
 from utils.dictionary import dict_get
 from utils.errors.base_error import UnauthorizedError
 from utils.errors.llm_error import LLMExistsError
+from utils.json import default_excluded_fields
 from . import llm_provider_service
 
 llm_system_model_config_cache: CacheDecorator[dict[ModelType, LLMModelConfig]] = cache_decorator_builder.build(
     # Convert dict[ModelType, LLMModelConfig] to dict[string, dict]
-    serialize=lambda system_model_config: json.dumps({model_type.value: model_config.dict()
-                                                      for model_type, model_config in system_model_config.items()}),
+    serialize=lambda system_model_config: json.dumps(
+        {model_type.value: model_config.model_dump(exclude=default_excluded_fields)
+         for model_type, model_config in system_model_config.items()}),
     # Convert dict[string, dict] to dict[ModelType, LLMModelConfig]
-    deserialize=lambda json_content: {ModelType(model_type.upper()): LLMModelConfig.parse_obj(model_config)
+    deserialize=lambda json_content: {ModelType(model_type.upper()): LLMModelConfig.model_validate(model_config)
                                       for model_type, model_config in json.loads(json_content).items()},
     default_expire_seconds=24 * 3600,
     allow_none_values=True,

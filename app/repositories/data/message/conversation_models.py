@@ -14,11 +14,22 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-__all__ = [
-    'errors',
-    'crypto',
-    'reflect',
-    'auth',
-    'dictionary',
-    'json'
-]
+from pydantic import BaseModel
+
+
+class Conversation(BaseModel):
+    """
+    会话
+    """
+
+    conversation_uid: str = ""
+    """会话 uid"""
+
+    creator_uid: str
+    """创建者uid"""
+
+    workspace_uid: str = 'ROOT'
+    """空间uid"""
+
+    name: str
+    """会话名"""

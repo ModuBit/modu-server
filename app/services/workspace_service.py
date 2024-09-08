@@ -14,27 +14,27 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import json
-
 from repositories.cache import cache_decorator_builder
 from repositories.cache.cache import CacheDecorator
 from repositories.data import workspace_repository
 from repositories.data.account.account_models import Account
 from repositories.data.workspace.workspace_models import Workspace, WorkspaceMemberRole
+from utils import json
 from utils.errors.base_error import UnauthorizedError
 from utils.errors.space_error import SpaceExistsError
+from utils.json import default_excluded_fields
 
-# noinspection DuplicatedCode
 workspace_detail_cache: CacheDecorator[Workspace] = cache_decorator_builder.build(
-    serialize=lambda workspace: workspace.model_dump_json(),
-    deserialize=lambda json_content: Workspace.parse_raw(json_content),
+    serialize=lambda workspace: workspace.model_dump_json(exclude=default_excluded_fields),
+    deserialize=lambda json_content: Workspace.model_validate_json(json_content),
     default_expire_seconds=24 * 3600,
     allow_none_values=True,
 )
 
 workspace_related_cache: CacheDecorator[list[Workspace]] = cache_decorator_builder.build(
-    serialize=lambda workspaces: json.dumps([workspace.model_dump_json() for workspace in workspaces]),
-    deserialize=lambda json_contents: [Workspace.parse_raw(json_str) for json_str in json.loads(json_contents)],
+    serialize=lambda workspaces: json.dumps(
+        [workspace.model_dump(exclude=default_excluded_fields) for workspace in workspaces]),
+    deserialize=lambda json_contents: [Workspace.model_validate(json_obj) for json_obj in json.loads(json_contents)],
     default_expire_seconds=24 * 3600,
     allow_none_values=True,
 )

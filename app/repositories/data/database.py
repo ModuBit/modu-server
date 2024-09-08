@@ -17,9 +17,10 @@ limitations under the License.
 from abc import ABC, abstractmethod
 from contextlib import asynccontextmanager, AbstractAsyncContextManager
 from functools import wraps
-from typing import Callable, TypeVar, Awaitable
+from typing import Callable, TypeVar, Awaitable, Dict, Any
 
 from loguru import logger
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session, DeclarativeBase
 from ulid import ULID
@@ -73,7 +74,7 @@ class Repository(ABC):
         self._database = database
 
 
-def with_async_session(func: Callable[..., Awaitable],):
+def with_async_session(func: Callable[..., Awaitable], ):
     """
     Session装饰器
     只能用在Repository类方法中
@@ -98,6 +99,14 @@ def with_async_session(func: Callable[..., Awaitable],):
     return wrapper
 
 
+class AliasMapper(BaseModel):
+    alias: str
+    """属性映射"""
+
+    value: Callable[[Any], Any] = lambda v: v
+    """值映射"""
+
+
 class BasePO(DeclarativeBase):
     """
     SQL通用模型
@@ -114,8 +123,18 @@ class BasePO(DeclarativeBase):
         """
         return str(ULID())
 
-    def as_dict(self) -> dict:
+    def as_dict(self, alias_mapping: Dict[str, AliasMapper] = None) -> dict:
         """
         将ORM模型的实例转换为字典
         """
-        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+        result = {}
+        for c in self.__table__.columns:
+            if alias_mapping and c.name in alias_mapping:
+                key = c.name
+                value = getattr(self, c.name)
+                mapping = alias_mapping[key]
+                result[mapping.alias or key] = mapping.value(value) if mapping.value else value
+            else:
+                result[c.name] = getattr(self, c.name)
+
+        return result

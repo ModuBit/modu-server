@@ -2,6 +2,8 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- 创建pgcrypto扩展
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
+-- 创建vector扩展
+CREATE EXTENSION IF NOT EXISTS vector;
 
 -- 更行数据时更新updated_at
 CREATE FUNCTION update_updated_at_column() RETURNS trigger LANGUAGE plpgsql AS
@@ -115,5 +117,46 @@ CREATE UNIQUE INDEX uk_modu_llm_system_model_config_space ON modu_llm_system_mod
 CREATE TRIGGER set_modu_llm_system_model_config_updated_at
     BEFORE UPDATE
     ON modu_llm_system_model_config
+    FOR EACH ROW
+EXECUTE procedure update_updated_at_column();
+
+-- 会话
+CREATE TABLE modu_conversations
+(
+    id                  UUID                     DEFAULT UUID_GENERATE_V4()     NOT NULL CONSTRAINT pk_modu_conversations_id PRIMARY KEY,
+    created_at          TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP(0)   NOT NULL,
+    updated_at          TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP(0)   NOT NULL,
+    uid                 VARCHAR(32)                                             NOT NULL,
+    creator_uid         VARCHAR(32)                                             NOT NULL,
+    workspace_uid       VARCHAR(32)                                             NOT NULL,
+    name                VARCHAR(64)                                             NOT NULL,
+    is_deleted          SMALLINT                 DEFAULT '0'::SMALLINT          NOT NULL
+);
+CREATE UNIQUE INDEX uk_modu_conversations_uid ON modu_conversations (uid);
+CREATE TRIGGER set_modu_conversations_updated_at
+    BEFORE UPDATE
+    ON modu_conversations
+    FOR EACH ROW
+EXECUTE procedure update_updated_at_column();
+
+-- 消息
+CREATE TABLE modu_messages
+(
+    id                  UUID                     DEFAULT UUID_GENERATE_V4()     NOT NULL CONSTRAINT pk_modu_messages_id PRIMARY KEY,
+    created_at          TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP(0)   NOT NULL,
+    updated_at          TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP(0)   NOT NULL,
+    uid                 VARCHAR(32)                                             NOT NULL,
+    conversation_uid    VARCHAR(32)                                             NOT NULL,
+    message_time        BIGINT                                                  NOT NULL,
+    sender_uid          VARCHAR(32)                                             NOT NULL,
+    sender_role         VARCHAR(32)                                             NOT NULL,
+    messages            JSONB                                                   NOT NULL,
+    is_deleted          SMALLINT                 DEFAULT '0'::SMALLINT          NOT NULL
+);
+CREATE UNIQUE INDEX uk_modu_messages_uid ON modu_messages (uid);
+CREATE INDEX idx_modu_messages_conversation ON modu_messages (conversation_uid);
+CREATE TRIGGER set_modu_messages_updated_at
+    BEFORE UPDATE
+    ON modu_messages
     FOR EACH ROW
 EXECUTE procedure update_updated_at_column();

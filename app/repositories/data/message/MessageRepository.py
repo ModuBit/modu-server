@@ -1,0 +1,72 @@
+"""
+Copyright 2024 Maner·Fan
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+"""
+from abc import abstractmethod
+
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from repositories.data.database import Repository, Database
+from repositories.data.message.message_models import Message
+
+
+class MessageRepository(Repository):
+    """
+    会话消息数据存储的定义
+    """
+
+    def __init__(self, database: Database):
+        super().__init__(database)
+
+    @abstractmethod
+    async def add(self, message: Message, session: AsyncSession) -> Message:
+        """
+        新增会话消息
+        :param message: 会话消息
+        :param session: Session
+        """
+        raise NotImplementedError()
+
+    @abstractmethod
+    async def add_batch(self, messages: list[Message], session: AsyncSession) -> list[Message]:
+        """
+        批量新增会话消息
+        :param messages: 会话消息
+        :param session: Session
+        """
+        raise NotImplementedError()
+
+    @abstractmethod
+    async def find_latest(self, creator_uid: str, conversation_uid: str, latest_count: int, session: AsyncSession) -> \
+    list[Message]:
+        """
+        查找最新的 n 条消息
+        :param creator_uid: 创建人 uid
+        :param conversation_uid: 会话ID
+        :param latest_count: 最新消息条数
+        :param session: Session
+        """
+        raise NotImplementedError()
+
+    @abstractmethod
+    async def find_all_after_time(self, creator_uid: str, conversation_uid: str, after_time: int,
+                                  session: AsyncSession) -> list[Message]:
+        """
+        查找某时间之后的所有消息
+        :param creator_uid: 创建人 uid
+        :param conversation_uid: 会话ID
+        :param after_time: 某时间后的消息
+        :param session: Session
+        """
+        raise NotImplementedError()

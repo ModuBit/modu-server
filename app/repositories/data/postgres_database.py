@@ -14,9 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import datetime
 import functools
-import json
+from datetime import datetime
 
 from fastapi import Request
 from loguru import logger
@@ -24,6 +23,7 @@ from sqlalchemy import text, DateTime, UUID, String, AsyncAdaptedQueuePool
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import Mapped, mapped_column, sessionmaker
 
+from utils import json
 from .database import Database, BasePO
 from .type_decorator import Bool2SmallInt
 

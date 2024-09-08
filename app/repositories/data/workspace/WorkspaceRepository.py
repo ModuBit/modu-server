@@ -19,7 +19,7 @@ from abc import abstractmethod
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .workspace_models import Workspace, WorkspaceMemberRole, WorkspaceMembership
-from ..database import Repository, Database
+from repositories.data.database import Repository, Database
 
 
 class WorkspaceRepository(Repository):

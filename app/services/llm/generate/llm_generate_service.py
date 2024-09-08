@@ -17,6 +17,7 @@ limitations under the License.
 from datetime import datetime
 from typing import AsyncIterator
 
+from boltons.strutils import multi_replace
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_core.runnables import RunnableConfig
@@ -24,18 +25,22 @@ from langchain_core.runnables.schema import StreamEvent
 from langgraph.graph import START, StateGraph, MessagesState, END
 from langgraph.graph.graph import CompiledGraph
 from loguru import logger
-from pydantic import BaseModel, Extra
+from pydantic import BaseModel
 from starlette.responses import ContentStream
 from ulid import ULID
 
 from llm.model import model_provider_factory
 from llm.model.entities.model import ModelType
 from llm.model.entities.models import TextGenerationModel
+from repositories.data import conversation_repository, message_repository
 from repositories.data.account.account_models import Account
-from repositories.data.message.message_models import MessageBlock, MessageEventData
+from repositories.data.database import BasePO
+from repositories.data.message.conversation_models import Conversation
+from repositories.data.message.message_models import MessageBlock, MessageEventData, Message
 from services import workspace_service
 from services.llm import llm_model_service, llm_provider_service
-from services.llm.llm_message_event_models import MessageStartEvent, MessageEndEvent, ErrorEvent, MessageEvent, \
+from services.llm.generate.llm_message_checkpoint import LLMMessageCheckPointSaver
+from services.llm.generate.llm_message_event_models import MessageStartEvent, MessageEndEvent, ErrorEvent, MessageEvent, \
     AIMessageChunkEvent
 from utils.dictionary import dict_merge
 from utils.errors.llm_error import LLMExistsError
@@ -52,7 +57,7 @@ class Item(BaseModel):
 
     # 设置允许额外字段
     class Config:
-        extra = Extra.allow
+        extra = 'allow'
 
 
 class Query(BaseModel):
@@ -82,17 +87,36 @@ async def generate(current_user: Account, chat_generate_cmd: GenerateCmd) -> dic
     :return: 会话流
     """
 
+    # 初始化 conversation
+    first_text_message = next(filter(lambda item: item.type == "text", chat_generate_cmd.query.inputs)).content
+    conversation_name = multi_replace(first_text_message, {'\n': ' '})[:30] if first_text_message else "对话"
+    conversation = Conversation(creator_uid=current_user.uid, name=conversation_name)
+    await _init_generate_conversation(current_user, conversation)
+
+    # 存储 user message
+    question_messages = ([MessageBlock(type="question",
+                                       content_type=f'refer:{_refer.type}',
+                                       content=_refer.content,
+                                       section_uid=BasePO.uid_generate()) for _refer in
+                          chat_generate_cmd.query.refers] +
+                         [MessageBlock(type="question",
+                                       content_type=_input.type,
+                                       content=_input.content,
+                                       section_uid=BasePO.uid_generate()) for _input in chat_generate_cmd.query.inputs]
+                         )
+    user_message = Message(
+        conversation_uid=conversation.conversation_uid,
+        sender_uid=current_user.uid,
+        sender_role="user",
+        messages=question_messages)
+    await _init_generate_message(user_message)
+
     # 编译机器人
     chat_bot = await _make_graph_bot(current_user, chat_generate_cmd)
 
     # 机器人对话
-    llm_event_stream = chat_bot.astream_events({"messages": [
-        HumanMessage(content=next(filter(lambda item: item.type == "text", chat_generate_cmd.query.inputs)).content)
-    ]}, {"configurable": {"thread_id": "1"}}, version="v2")
-
-    # TODO 初始化 conversation & message
-    conversation_id = str(ULID())
-    message_id = str(ULID())
+    llm_event_stream = chat_bot.astream_events({"messages": [HumanMessage(content=first_text_message)]},
+                                               {"configurable": {"thread_id": "1"}}, version="v2")
 
     # 前置内容
     before_events = single_element_async_iterator(MessageStartEvent())
@@ -108,7 +132,12 @@ async def generate(current_user: Account, chat_generate_cmd: GenerateCmd) -> dic
         before_events, llm_message_events, after_events,
         yield_when_exception=lambda e: ErrorEvent(error=e))
 
-    return message_events_checkpoint(message_events, conversation_id, message_id)
+    return message_events_checkpoint(message_events,
+                                     conversation.conversation_uid, "",
+                                     LLMMessageCheckPointSaver(
+                                         conversation_uid=conversation.conversation_uid,
+                                         assistant_uid=""
+                                     ))
 
 
 async def _make_graph_bot(current_user: Account, chat_generate_cmd: GenerateCmd) -> CompiledGraph:
@@ -175,6 +204,50 @@ async def _make_graph_bot(current_user: Account, chat_generate_cmd: GenerateCmd)
     return workflow.compile()
 
 
+async def _init_generate_records(conversation: Conversation, user_message: Message) -> (str, str):
+    """
+    初始化会话消息
+    :param conversation: 当前用户
+    :param chat_generate_cmd: 会话指令
+    :return: (conversation_id, message_id)
+    """
+
+    conversation_uid = conversation.uid
+    if not conversation_repository.get_by_uid(conversation_uid):
+        _conversation = await conversation_repository.create(conversation)
+        conversation_uid = _conversation.uid
+
+    user_message.conversation_uid = conversation_uid
+    await message_repository.add(user_message)
+
+    # 生成新的 message_uid 给 assistant 使用
+    return conversation_uid, BasePO.uid_generate()
+
+
+async def _init_generate_conversation(current_user: Account, conversation: Conversation) -> Conversation:
+    """
+    初始化会话
+    :param conversation: 当前用户
+    :return: Conversation
+    """
+
+    conversation_uid = conversation.conversation_uid
+    if not conversation_uid and not await conversation_repository.get_by_uid(current_user.uid, conversation_uid):
+        conversation = await conversation_repository.create(conversation)
+
+    return conversation
+
+
+async def _init_generate_message(message: Message) -> Message:
+    """
+    初始化会话消息
+    :param message: 会话消息
+    :return: Message
+    """
+
+    return await message_repository.add(message)
+
+
 async def llm_stream_events(event_iter: AsyncIterator[StreamEvent]) -> AsyncIterator[MessageEvent]:
     """
     通常，langgraph使用 BaseCheckpointSaver 处理历史消息
@@ -188,67 +261,76 @@ async def llm_stream_events(event_iter: AsyncIterator[StreamEvent]) -> AsyncIter
     :return: 处理后的 异步事件流
     """
 
-    section_id = str(ULID())
+    section_uid = str(ULID())
     async for event in event_iter:
         logger.debug(event)
         if event['event'] == 'on_chat_model_stream':
-            chunk_event = AIMessageChunkEvent(section_id=section_id, chunk=event['data']['chunk'])
+            chunk_event = AIMessageChunkEvent(section_uid=section_uid, chunk=event['data']['chunk'])
             yield chunk_event
         # TODO 其他类型判断
 
 
-async def message_events_checkpoint(event_iter: AsyncIterator[MessageEvent], conversation_id: str, message_id: str):
+async def message_events_checkpoint(event_iter: AsyncIterator[MessageEvent],
+                                    conversation_uid: str, assistant_uid: str,
+                                    checkpoint_saver: LLMMessageCheckPointSaver):
+    message_uid = BasePO.uid_generate()
+
     async for event in event_iter:
         if isinstance(event, MessageStartEvent):
             message = MessageEventData(
-                conversation_id=conversation_id,
-                sender_id="",
+                conversation_uid=conversation_uid,
+                sender_uid=assistant_uid,
                 sender_role="assistant",
-                message_id=message_id,
-                message_time=int(datetime.now().timestamp()),
+                message_uid=message_uid,
+                message_time=int(datetime.now().timestamp()) * 1000,
                 message=MessageBlock(
                     type="answer",
                     content_type="text",
                     content="",
-                    section_id=event.section_id,
+                    section_uid=event.section_uid,
                 ),
                 is_finished=False,
             )
+            checkpoint_saver.process(message)
             yield f'event: message\ndata: {message.model_dump_json()}\n\n'
 
         if isinstance(event, AIMessageChunkEvent):
             message = MessageEventData(
-                conversation_id=conversation_id,
-                sender_id="",
+                conversation_uid=conversation_uid,
+                sender_uid=assistant_uid,
                 sender_role="assistant",
-                message_id=message_id,
+                message_uid=message_uid,
                 message_time=int(datetime.now().timestamp()),
                 message=MessageBlock(
                     type="answer",
                     content_type="text",
                     content=event.chunk.content,
-                    section_id=event.section_id,
+                    section_uid=event.section_uid,
                 ),
                 is_finished=False,
             )
+            checkpoint_saver.process(message)
             yield f'event: message\ndata: {message.model_dump_json()}\n\n'
 
         if isinstance(event, MessageEndEvent):
+            await checkpoint_saver.save()
             yield f'event: done\n\n'
 
         if isinstance(event, ErrorEvent):
             message = MessageEventData(
-                conversation_id=conversation_id,
-                sender_id="",
+                conversation_uid=conversation_uid,
+                sender_uid=assistant_uid,
                 sender_role="assistant",
-                message_id=message_id,
+                message_uid=message_uid,
                 message_time=int(datetime.now().timestamp()),
                 message=MessageBlock(
                     type="answer",
                     content_type="error",
                     content=str(event.error),
-                    section_id=event.section_id,
+                    section_uid=event.section_uid,
                 ),
                 is_finished=True,
             )
+            checkpoint_saver.process(message)
+            await checkpoint_saver.save()
             yield f'event: error\ndata: {message.model_dump_json()}\n\n'

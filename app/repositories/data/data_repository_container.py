@@ -21,6 +21,8 @@ from utils.dictionary import dict_get
 from utils.lifespan import register_pre_destroy_executor
 from .account import AccountRepository, AccountRepositoryPostgres
 from .database import Database
+from .message import ConversationRepository, ConversationRepositoryPostgres, MessageRepository, \
+    MessageRepositoryPostgres
 from .postgres_database import PostgresDatabase
 from .llm import LLMProviderConfigRepository, LLMProviderConfigRepositoryPostgres, \
     LLMModelConfigRepository, LLMModelConfigRepositoryPostgres
@@ -51,6 +53,16 @@ _llm_provider_config_repository_mapping = {
 _llm_model_config_repository: LLMModelConfigRepository | None = None
 _llm_model_config_repository_mapping = {
     'postgres': LLMModelConfigRepositoryPostgres,
+}
+
+_conversation_repository: ConversationRepository | None = None
+_conversation_repository_mapping = {
+    'postgres': ConversationRepositoryPostgres,
+}
+
+_message_repository: MessageRepository | None = None
+_message_repository_mapping = {
+    'postgres': MessageRepositoryPostgres,
 }
 
 

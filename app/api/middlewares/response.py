@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import json
+from utils import json
 import time
 
 from fastapi import FastAPI, Request

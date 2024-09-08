@@ -13,8 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-
-from typing import Literal, Any
+from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel
 
@@ -41,7 +41,7 @@ class MessageBlock(BaseModel):
     content: str | dict
     """消息内容"""
 
-    section_id: str
+    section_uid: str
     """该部分内容ID"""
 
 
@@ -50,20 +50,20 @@ class MessageEventData(BaseModel):
     消息事件
     """
 
-    conversation_id: str
+    conversation_uid: str
     """会话ID"""
 
-    sender_id: str
-    """发送者ID"""
+    message_uid: str
+    """消息ID"""
+
+    message_time: int = int(datetime.now().timestamp()) * 1000
+    """消息时间戳"""
+
+    sender_uid: str
+    """发送者UID"""
 
     sender_role: Literal["user", "assistant"]
     """发送者角色"""
-
-    message_id: str
-    """消息ID"""
-
-    message_time: int
-    """消息时间戳"""
 
     message: MessageBlock
     """消息内容"""
@@ -72,22 +72,25 @@ class MessageEventData(BaseModel):
     """消息是否结束"""
 
 
-class MessageContent(BaseModel):
+class Message(BaseModel):
     """
-    消息内容
+    消息
     """
 
-    sender_id: str
-    """发送者ID"""
+    conversation_uid: str
+    """会话ID"""
+
+    message_uid: str = ""
+    """消息ID"""
+
+    message_time: int = int(datetime.now().timestamp()) * 1000
+    """消息时间戳"""
+
+    sender_uid: str
+    """发送者UID"""
 
     sender_role: Literal["user", "assistant"]
     """发送者角色"""
-
-    message_id: str
-    """消息ID"""
-
-    message_time: int
-    """消息时间戳"""
 
     messages: list[MessageBlock]
     """消息内容"""

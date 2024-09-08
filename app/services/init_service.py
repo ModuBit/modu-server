@@ -13,7 +13,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-from distutils.util import strtobool
 
 from repositories.cache import cache_decorator_builder
 from repositories.cache.cache import CacheDecorator
@@ -21,6 +20,7 @@ from repositories.data import account_repository, workspace_repository, database
 from repositories.data.account.account_models import Account, AccountStatus
 from repositories.data.workspace.workspace_models import Workspace, WorkspaceType
 from utils.auth import hash_password
+from utils.common_utils import strtobool
 from utils.errors.base_error import ErrorShowType
 from utils.errors.system_error import InitializeError
 

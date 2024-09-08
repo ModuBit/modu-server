@@ -61,6 +61,8 @@ passlib = { extras = ["bcrypt"], version = "^1.7.4" }
 cryptography = "^42.0.8"
 ## [JWT](https://python-jose.readthedocs.io/)
 python-jose = { extras = ["cryptography"], version = "^3.3.0" }
+## [json处理](https://simplejson.readthedocs.io/)
+simplejson = "^3.19.3"
 ## [yaml处理](https://pyyaml.org/)
 pyyaml = "^6.0.1"
 ## [id生成器ulid](https://python-ulid.readthedocs.io/en/latest/)

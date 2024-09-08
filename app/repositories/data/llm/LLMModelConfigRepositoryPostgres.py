@@ -75,7 +75,7 @@ class LLMModelConfigDict2Json(TypeDecorator):
         Convert dict[ModelType, LLMModelConfig] to dict[string, dict]
         """
         if value is not None:
-            value = {model_type.value: model_config.dict() for model_type, model_config in value.items()}
+            value = {model_type.value: model_config.model_dump() for model_type, model_config in value.items()}
         return value
 
     def process_result_value(self, value, dialect):
@@ -83,7 +83,7 @@ class LLMModelConfigDict2Json(TypeDecorator):
         Convert dict[string, dict] to dict[ModelType, LLMModelConfig]
         """
         if value is not None:
-            value = {ModelType(model_type.upper()): LLMModelConfig.parse_obj(model_config)
+            value = {ModelType(model_type.upper()): LLMModelConfig.model_validate(model_config)
                      for model_type, model_config in value.items()}
         return value
 
