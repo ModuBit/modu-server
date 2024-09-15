@@ -13,8 +13,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-from repositories.data import message_repository
+
+from repositories.data.account.account_models import Account
 from repositories.data.message.message_models import Message, MessageEventData
+from services.llm.generate.llm_message_memory import ConversationSummaryBufferMemory
 
 
 class LLMMessageCheckPointSaver:
@@ -27,7 +29,7 @@ class LLMMessageCheckPointSaver:
     这里需要自定义处理逻辑
     """
 
-    def __init__(self, conversation_uid: str, assistant_uid: str):
+    def __init__(self, current_user: Account, workspace_uid: str, conversation_uid: str, assistant_uid: str):
         """
         LLMMessageCheckPointSaver
         :param conversation_uid: 会话 UID
@@ -35,11 +37,20 @@ class LLMMessageCheckPointSaver:
         """
         self._saved: bool = False
 
+        self._current_user = current_user
+        self.workspace_uid = workspace_uid
+
         self._conversation_uid = conversation_uid
         self._assistant_uid = assistant_uid
 
         self._conversation_messages: list[Message] = []
         self._current_message: Message | None = None
+
+        self._conversationSummaryBufferMemory = ConversationSummaryBufferMemory(
+            current_user=current_user,
+            workspace_uid=workspace_uid,
+            conversation_uid=conversation_uid
+        )
 
     def process(self, message_event: MessageEventData):
         """
@@ -77,5 +88,5 @@ class LLMMessageCheckPointSaver:
         """
         保存消息
         """
-        await message_repository.add_batch(self._conversation_messages)
+        await self._conversationSummaryBufferMemory.save_messages(self._conversation_messages, True)
         self._saved = True

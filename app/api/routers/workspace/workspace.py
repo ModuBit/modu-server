@@ -46,6 +46,7 @@ class WorkspaceDTO(BaseModel):
 async def list_related(current_user: Account = Depends(current_account)) -> list[Workspace]:
     """
     当前登录人相关的空间列表
+    FIXME 关联的空间可能很多，终有一天需要考虑下分页
     :param current_user: 当前用户
     :return: Workspace
     """

@@ -44,8 +44,8 @@ def compact_async_generate_response(response: dict | ContentStream) -> Response:
 
 
 @logger.catch()
-@router.post(path='/chat')
-async def chat(chat_generate_cmd: GenerateCmd, current_user: Account = Depends(current_account)):
-    generator = await llm_generate_service.generate(current_user, chat_generate_cmd)
+@router.post(path='/{workspace_uid}/chat')
+async def chat(workspace_uid: str, chat_generate_cmd: GenerateCmd, current_user: Account = Depends(current_account)):
+    generator = await llm_generate_service.generate(current_user, workspace_uid, chat_generate_cmd)
     response = compact_async_generate_response(generator)
     return response

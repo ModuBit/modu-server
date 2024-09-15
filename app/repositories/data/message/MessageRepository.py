@@ -13,12 +13,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+
 from abc import abstractmethod
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from repositories.data.database import Repository, Database
-from repositories.data.message.message_models import Message
+from repositories.data.message.message_models import Message, MessageSummary
 
 
 class MessageRepository(Repository):
@@ -48,11 +49,10 @@ class MessageRepository(Repository):
         raise NotImplementedError()
 
     @abstractmethod
-    async def find_latest(self, creator_uid: str, conversation_uid: str, latest_count: int, session: AsyncSession) -> \
-    list[Message]:
+    async def find_latest(self, conversation_uid: str, latest_count: int,
+                          session: AsyncSession) -> list[Message]:
         """
         查找最新的 n 条消息
-        :param creator_uid: 创建人 uid
         :param conversation_uid: 会话ID
         :param latest_count: 最新消息条数
         :param session: Session
@@ -60,13 +60,62 @@ class MessageRepository(Repository):
         raise NotImplementedError()
 
     @abstractmethod
-    async def find_all_after_time(self, creator_uid: str, conversation_uid: str, after_time: int,
+    async def find_all_after_time(self, conversation_uid: str, after_time: int, max_count: int,
                                   session: AsyncSession) -> list[Message]:
         """
         查找某时间之后的所有消息
-        :param creator_uid: 创建人 uid
         :param conversation_uid: 会话ID
         :param after_time: 某时间后的消息
+        :param max_count: 返回的最大条数
         :param session: Session
+        """
+        raise NotImplementedError()
+
+    @abstractmethod
+    async def find_all_after_uid(self, conversation_uid: str, after_uid: str, max_count: int,
+                                 session: AsyncSession) -> list[Message]:
+        """
+        查找某条消息之后的所有消息
+        :param conversation_uid: 会话ID
+        :param after_uid: 某消息uid
+        :param max_count: 返回的最大条数
+        :param session: Session
+        """
+        raise NotImplementedError()
+
+    @abstractmethod
+    async def count_after_uid(self, conversation_uid: str, after_uid: str | None,
+                              session: AsyncSession) -> int:
+        """
+        查找某条消息之后的所有消息的数量
+        :param conversation_uid: 会话ID
+        :param after_uid: 某消息uid
+        :param session: Session
+        """
+        raise NotImplementedError()
+
+
+class MessageSummaryRepository(Repository):
+    """
+    会话消息总结数据存储的定义
+    """
+
+    def __init__(self, database: Database):
+        super().__init__(database)
+
+    @abstractmethod
+    async def add(self, message_summary: MessageSummary, session: AsyncSession) -> MessageSummary:
+        """
+        新增会话消息总结
+        :param message_summary: 会话消息总结
+        :param session: Session
+        """
+        raise NotImplementedError()
+
+    @abstractmethod
+    async def get_latest(self, conversation_uid: str) -> MessageSummary:
+        """
+        获取最新的会话消息总结
+        :param conversation_uid: 会话 ID
         """
         raise NotImplementedError()

@@ -160,3 +160,24 @@ CREATE TRIGGER set_modu_messages_updated_at
     ON modu_messages
     FOR EACH ROW
 EXECUTE procedure update_updated_at_column();
+
+-- 消息总结
+CREATE TABLE modu_messages_summary
+(
+    id                  UUID                     DEFAULT UUID_GENERATE_V4()     NOT NULL CONSTRAINT pk_modu_messages_summary_id PRIMARY KEY,
+    created_at          TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP(0)   NOT NULL,
+    updated_at          TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP(0)   NOT NULL,
+    uid                 VARCHAR(32)                                             NOT NULL,
+    conversation_uid    VARCHAR(32)                                             NOT NULL,
+    summary             TEXT                                                    NOT NULL,
+    summary_order       BIGINT                   DEFAULT '0'::BIGINT            NOT NULL,
+    last_message_uid    VARCHAR(32)                                             NOT NULL,
+    is_deleted          SMALLINT                 DEFAULT '0'::SMALLINT          NOT NULL
+);
+CREATE UNIQUE INDEX uk_modu_messages_summary_uid ON modu_messages_summary (uid);
+CREATE INDEX idx_modu_messages_summary_conversation ON modu_messages_summary (conversation_uid, last_message_uid, summary_order);
+CREATE TRIGGER set_modu_messages_summary_updated_at
+    BEFORE UPDATE
+    ON modu_messages_summary
+    FOR EACH ROW
+EXECUTE procedure update_updated_at_column();

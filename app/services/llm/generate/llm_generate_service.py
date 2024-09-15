@@ -79,10 +79,11 @@ class GenerateCmd(BaseModel):
     """@的机器人"""
 
 
-async def generate(current_user: Account, chat_generate_cmd: GenerateCmd) -> dict | ContentStream:
+async def generate(current_user: Account, workspace_uid: str, chat_generate_cmd: GenerateCmd) -> dict | ContentStream:
     """
     生成对话
     :param current_user: 当前用户
+    :param workspace_uid: 空间ID
     :param chat_generate_cmd: 会话指令
     :return: 会话流
     """
@@ -112,7 +113,7 @@ async def generate(current_user: Account, chat_generate_cmd: GenerateCmd) -> dic
     await _init_generate_message(user_message)
 
     # 编译机器人
-    chat_bot = await _make_graph_bot(current_user, chat_generate_cmd)
+    chat_bot = await _make_graph_bot(current_user, workspace_uid, chat_generate_cmd)
 
     # 机器人对话
     llm_event_stream = chat_bot.astream_events({"messages": [HumanMessage(content=first_text_message)]},
@@ -132,33 +133,24 @@ async def generate(current_user: Account, chat_generate_cmd: GenerateCmd) -> dic
         before_events, llm_message_events, after_events,
         yield_when_exception=lambda e: ErrorEvent(error=e))
 
-    return message_events_checkpoint(message_events,
-                                     conversation.conversation_uid, "",
-                                     LLMMessageCheckPointSaver(
-                                         conversation_uid=conversation.conversation_uid,
-                                         assistant_uid=""
-                                     ))
+    return message_events_checkpoint(current_user, workspace_uid, message_events, conversation.conversation_uid, "")
 
 
-async def _make_graph_bot(current_user: Account, chat_generate_cmd: GenerateCmd) -> CompiledGraph:
+async def _make_graph_bot(current_user: Account, workspace_uid: str, chat_generate_cmd: GenerateCmd) -> CompiledGraph:
     """
     TODO 仅用于演示，需要重新设计
     """
 
-    workspace = await workspace_service.mine(current_user)
-    if not workspace:
-        raise SpaceExistsError(message='找不到您的个人空间，请联系管理员')
-
-    system_models = await llm_model_service.get_system_config(current_user, workspace.uid)
+    system_models = await llm_model_service.get_system_config(current_user, workspace_uid)
     if not system_models or ModelType.TEXT_GENERATION not in system_models:
         raise LLMExistsError(
-            message='您还没有配置系统推理模型，请在 个人空间-设置-模型-系统模型设置 中添加 系统推理模型')
+            message='您还没有配置系统推理模型，请在 空间-设置-模型-系统模型设置 中添加 系统推理模型')
 
     # model 配置
     model_config = system_models[ModelType.TEXT_GENERATION]
 
     # provider 配置
-    provider_config = await llm_provider_service.detail(current_user, workspace.uid, model_config.provider_name)
+    provider_config = await llm_provider_service.detail(current_user, workspace_uid, model_config.provider_name)
     provider_config.decrypt_credential()
 
     # provider → model → chat_model
@@ -270,9 +262,16 @@ async def llm_stream_events(event_iter: AsyncIterator[StreamEvent]) -> AsyncIter
         # TODO 其他类型判断
 
 
-async def message_events_checkpoint(event_iter: AsyncIterator[MessageEvent],
-                                    conversation_uid: str, assistant_uid: str,
-                                    checkpoint_saver: LLMMessageCheckPointSaver):
+async def message_events_checkpoint(current_user: Account, workspace_uid: str,
+                                    event_iter: AsyncIterator[MessageEvent],
+                                    conversation_uid: str, assistant_uid: str):
+    checkpoint_saver = LLMMessageCheckPointSaver(
+        current_user=current_user,
+        workspace_uid=workspace_uid,
+        conversation_uid=conversation_uid,
+        assistant_uid=assistant_uid
+    )
+
     message_uid = BasePO.uid_generate()
 
     async for event in event_iter:

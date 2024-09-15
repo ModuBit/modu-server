@@ -94,3 +94,17 @@ class Message(BaseModel):
 
     messages: list[MessageBlock]
     """消息内容"""
+
+class MessageSummary(BaseModel):
+    """
+    消息总结
+    """
+
+    conversation_uid: str
+    """会话ID"""
+
+    summary: str
+    """会话摘要总结"""
+
+    last_message_uid: str
+    """会话总结时最后一条消息uid"""

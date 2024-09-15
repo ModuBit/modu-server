@@ -21,11 +21,12 @@ from utils.dictionary import dict_get
 from utils.lifespan import register_pre_destroy_executor
 from .account import AccountRepository, AccountRepositoryPostgres
 from .database import Database
-from .message import ConversationRepository, ConversationRepositoryPostgres, MessageRepository, \
-    MessageRepositoryPostgres
-from .postgres_database import PostgresDatabase
 from .llm import LLMProviderConfigRepository, LLMProviderConfigRepositoryPostgres, \
     LLMModelConfigRepository, LLMModelConfigRepositoryPostgres
+from .message import (ConversationRepository, ConversationRepositoryPostgres,
+                      MessageRepository, MessageRepositoryPostgres,
+                      MessageSummaryRepository, MessageSummaryRepositoryPostgres)
+from .postgres_database import PostgresDatabase
 from .workspace import WorkspaceRepository, WorkspaceRepositoryPostgres
 
 RepositoryInstance = TypeVar('RepositoryInstance')
@@ -63,6 +64,11 @@ _conversation_repository_mapping = {
 _message_repository: MessageRepository | None = None
 _message_repository_mapping = {
     'postgres': MessageRepositoryPostgres,
+}
+
+_message_summary_repository: MessageSummaryRepository | None = None
+_message_summary_repository_mapping = {
+    'postgres': MessageSummaryRepositoryPostgres
 }
 
 

@@ -15,5 +15,6 @@ limitations under the License.
 """
 
 __all__ = [
-    'llm_generate_service'
+    'llm_generate_service',
+    'llm_message_memory'
 ]

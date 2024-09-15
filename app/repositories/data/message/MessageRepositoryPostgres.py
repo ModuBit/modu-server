@@ -13,18 +13,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+
 from typing import Dict
 
-from sqlalchemy import PrimaryKeyConstraint, String, BIGINT, TypeDecorator
+from sqlalchemy import PrimaryKeyConstraint, String, BIGINT, TypeDecorator, TEXT, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import Mapped, mapped_column
 
 from repositories.data.database import with_async_session, BasePO, AliasMapper
-from repositories.data.message.ConversationRepositoryPostgres import ConversationPO
-from repositories.data.message.MessageRepository import MessageRepository
-from repositories.data.message.message_models import MessageBlock, Message
+from repositories.data.message.MessageRepository import MessageRepository, MessageSummaryRepository
+from repositories.data.message.message_models import MessageBlock, Message, MessageSummary
 from repositories.data.postgres_database import PostgresBasePO
 from utils.dictionary import dict_exclude_keys
 from utils.json import default_excluded_fields
@@ -62,28 +62,88 @@ class MessageRepositoryPostgres(MessageRepository):
         return messages
 
     @with_async_session
-    async def find_latest(self, creator_uid: str, conversation_uid: str, latest_count: int,
+    async def find_latest(self, conversation_uid: str, latest_count: int,
                           session: AsyncSession) -> list[Message]:
-        stmt = (select(Message)
-                .join(ConversationPO, ConversationPO.uid == MessagePO.conversation_uid)
+        stmt = (select(MessagePO)
                 .where(MessagePO.conversation_uid == conversation_uid)
-                .where(ConversationPO.creator_uid == creator_uid)
+                .where(MessagePO.is_deleted == False)
                 .order_by(MessagePO.message_time.desc())
                 .limit(latest_count))
         select_result = await session.execute(stmt)
         return [Message(**message.as_dict(alias_mapping=_alias_mapping)) for message in select_result.scalars()]
 
     @with_async_session
-    async def find_all_after_time(self, creator_uid: str, conversation_uid: str, after_time: int,
+    async def find_all_after_time(self, conversation_uid: str, after_time: int | None, max_count: int,
                                   session: AsyncSession) -> list[Message]:
-        stmt = (select(Message)
-                .join(ConversationPO, ConversationPO.uid == MessagePO.conversation_uid)
+        stmt = (select(MessagePO)
                 .where(MessagePO.conversation_uid == conversation_uid)
-                .where(MessagePO.message_time > after_time)
-                .where(ConversationPO.creator_uid == creator_uid)
-                .order_by(MessagePO.message_time.desc()))
+                .where(MessagePO.is_deleted == False))
+
+        if after_time:
+            stmt = stmt.where(MessagePO.message_time > after_time)
+
+        stmt = stmt.order_by(MessagePO.message_time.desc()).limit(max_count)
+
         select_result = await session.execute(stmt)
         return [Message(**message.as_dict(alias_mapping=_alias_mapping)) for message in select_result.scalars()]
+
+    @with_async_session
+    async def find_all_after_uid(self, conversation_uid: str, after_uid: str | None , max_count: int,
+                                 session: AsyncSession) -> list[Message]:
+        stmt = (select(MessagePO)
+                .where(MessagePO.conversation_uid == conversation_uid)
+                .where(MessagePO.is_deleted == False))
+
+        if not after_uid:
+            message_time_subquery = (
+                select(MessagePO.message_time)
+                .where(MessagePO.uid == after_uid)
+                .where(MessagePO.is_deleted == False)
+            ).subquery()
+            stmt = stmt.where(MessagePO.message_time > message_time_subquery)
+
+        stmt = stmt.order_by(MessagePO.message_time.desc()).limit(max_count)
+
+        select_result = await session.execute(stmt)
+        return [Message(**message.as_dict(alias_mapping=_alias_mapping)) for message in select_result.scalars()]
+
+    @with_async_session
+    async def count_after_uid(self, conversation_uid: str, after_uid: str | None,
+                              session: AsyncSession) -> int:
+        message_time_subquery = (
+            select(MessagePO.message_time)
+            .where(MessagePO.uid == after_uid)
+            .where(MessagePO.is_deleted == False)
+        ).subquery()
+
+        stmt = (select(func.count()).select_from(MessagePO)
+                .where(MessagePO.conversation_uid == conversation_uid)
+                .where(MessagePO.is_deleted == False))
+
+        if after_uid:
+            stmt = stmt.where(MessagePO.message_time > message_time_subquery)
+
+        count_result = await session.execute(stmt)
+        return count_result.scalar()
+
+
+class MessageSummaryRepositoryPostgres(MessageSummaryRepository):
+    @with_async_session
+    async def add(self, message_summary: MessageSummary, session: AsyncSession) -> MessageSummary:
+        message_summary_po = MessageSummaryPO(**vars(message_summary))
+        session.add(message_summary_po)
+        return message_summary
+
+    @with_async_session
+    async def get_latest(self, conversation_uid: str, session: AsyncSession) -> MessageSummary:
+        stmt = (select(MessageSummaryPO)
+                .where(MessageSummaryPO.conversation_uid == conversation_uid)
+                .where(MessageSummaryPO.is_deleted == False)
+                .order_by(MessageSummaryPO.summary_order.desc())
+                .limit(1))
+        select_result = await session.execute(stmt)
+        message_summary = select_result.one_or_none()
+        return MessageSummary(**message_summary.as_dict()) if message_summary else None
 
 
 class MessageBlocks2Jsonb(TypeDecorator):
@@ -121,3 +181,19 @@ class MessagePO(PostgresBasePO):
     sender_uid: Mapped[str] = mapped_column(String(32), nullable=False, comment='发送者uid')
     sender_role: Mapped[str] = mapped_column(String(32), nullable=False, comment='发送者角色')
     messages: Mapped[list[MessageBlock]] = mapped_column(MessageBlocks2Jsonb(), nullable=False, comment='消息')
+
+
+class MessageSummaryPO(PostgresBasePO):
+    """
+    消息PO
+    """
+
+    __tablename__ = 'modu_messages_summary'
+    __table_args__ = (
+        PrimaryKeyConstraint('id', name='pk_id'),
+    )
+
+    conversation_uid: Mapped[str] = mapped_column(String(32), nullable=False, comment='会话uid')
+    summary: Mapped[str] = mapped_column(TEXT, nullable=False, comment='会话摘要总结')
+    summary_order: Mapped[int] = mapped_column(BIGINT(), nullable=False, comment='会话摘要排序')
+    last_message_uid: Mapped[str] = mapped_column(String(32), nullable=False, comment='会话总结时最后一条消息uid')

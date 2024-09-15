@@ -43,7 +43,6 @@ async def token_verify(token: str = Depends(oauth2_scheme)):
     """
     验证token
     :param token: token
-    :param account_service: 账号服务
     :return: 验证当前登录态
     """
     account_service.account_token_verify(token)

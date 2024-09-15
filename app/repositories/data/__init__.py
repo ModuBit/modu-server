@@ -18,7 +18,7 @@ from .account import AccountRepository
 from .data_repository_container import get_repository, get_database
 from .database import Database
 from .llm import LLMProviderConfigRepository, LLMModelConfigRepository
-from .message import ConversationRepository, MessageRepository
+from .message import ConversationRepository, MessageRepository, MessageSummaryRepository
 from .workspace import WorkspaceRepository
 
 database: Database = get_database()
@@ -28,6 +28,7 @@ llm_provider_config_repository: LLMProviderConfigRepository = get_repository('ll
 llm_model_config_repository: LLMModelConfigRepository = get_repository('llm_model_config')
 conversation_repository: ConversationRepository = get_repository('conversation')
 message_repository: MessageRepository = get_repository('message')
+message_summary_repository: MessageSummaryRepository = get_repository('message_summary')
 
 __all__ = [
     account_repository,
@@ -36,4 +37,5 @@ __all__ = [
     llm_model_config_repository,
     conversation_repository,
     message_repository,
+    message_summary_repository,
 ]

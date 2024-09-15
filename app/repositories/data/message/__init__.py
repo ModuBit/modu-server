@@ -16,8 +16,8 @@ limitations under the License.
 
 from .ConversationRepository import ConversationRepository
 from .ConversationRepositoryPostgres import ConversationRepositoryPostgres
-from .MessageRepository import  MessageRepository
-from .MessageRepositoryPostgres import MessageRepositoryPostgres
+from .MessageRepository import MessageRepository, MessageSummaryRepository
+from .MessageRepositoryPostgres import MessageRepositoryPostgres, MessageSummaryRepositoryPostgres
 
 __all__ = [
     'conversation_models',
@@ -26,4 +26,6 @@ __all__ = [
     'message_models',
     'MessageRepository',
     'MessageRepositoryPostgres',
+    'MessageSummaryRepository',
+    'MessageSummaryRepositoryPostgres'
 ]
