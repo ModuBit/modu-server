@@ -15,6 +15,7 @@ limitations under the License.
 """
 
 from repositories.data.account.account_models import Account
+from repositories.data.message.conversation_models import Conversation
 from repositories.data.message.message_models import Message, MessageEventData
 from services.llm.generate.llm_message_memory import ConversationSummaryBufferMemory
 
@@ -29,7 +30,7 @@ class LLMMessageCheckPointSaver:
     这里需要自定义处理逻辑
     """
 
-    def __init__(self, current_user: Account, workspace_uid: str, conversation_uid: str, assistant_uid: str):
+    def __init__(self, current_user: Account, workspace_uid: str, conversation: Conversation, assistant_uid: str):
         """
         LLMMessageCheckPointSaver
         :param conversation_uid: 会话 UID
@@ -40,7 +41,7 @@ class LLMMessageCheckPointSaver:
         self._current_user = current_user
         self.workspace_uid = workspace_uid
 
-        self._conversation_uid = conversation_uid
+        self._conversation = conversation
         self._assistant_uid = assistant_uid
 
         self._conversation_messages: list[Message] = []
@@ -49,7 +50,7 @@ class LLMMessageCheckPointSaver:
         self._conversationSummaryBufferMemory = ConversationSummaryBufferMemory(
             current_user=current_user,
             workspace_uid=workspace_uid,
-            conversation_uid=conversation_uid
+            conversation=conversation
         )
 
     def process(self, message_event: MessageEventData):
@@ -65,7 +66,7 @@ class LLMMessageCheckPointSaver:
         if not self._current_message or self._current_message.message_uid != message_event.message_uid:
             # 新消息
             self._current_message = Message(
-                conversation_uid=self._conversation_uid,
+                conversation_uid=self._conversation.conversation_uid,
                 message_uid=message_event.message_uid,
                 sender_uid=self._assistant_uid,
                 sender_role="assistant",

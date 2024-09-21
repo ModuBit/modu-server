@@ -15,7 +15,7 @@ limitations under the License.
 """
 from typing import Dict
 
-from sqlalchemy import PrimaryKeyConstraint, String
+from sqlalchemy import PrimaryKeyConstraint, String, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import Mapped, mapped_column
@@ -54,6 +54,15 @@ class ConversationRepositoryPostgres(ConversationRepository):
         session.add(conversation_po)
         conversation.conversation_uid = conversation_po.uid
         return conversation
+
+    @with_async_session
+    async def update_reset_message_uid(self, conversation_uid: str, reset_message_uid: str, session: AsyncSession):
+        stmt = (update(ConversationPO)
+                .where(ConversationPO.uid == conversation_uid)
+                .values(reset_message_uid=reset_message_uid))
+        await session.execute(stmt)
+
+        return reset_message_uid
 
 
 class ConversationPO(PostgresBasePO):

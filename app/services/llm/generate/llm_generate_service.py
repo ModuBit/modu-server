@@ -44,6 +44,7 @@ from services.llm.generate.llm_message_event_models import MessageStartEvent, Me
     AIMessageChunkEvent
 from services.llm.generate.llm_message_memory import ConversationSummaryBufferMemory
 from utils.dictionary import dict_merge
+from utils.errors.base_error import UnauthorizedError
 from utils.errors.llm_error import LLMExistsError
 from utils.iterator import single_element_async_iterator, merge_async_iterators
 from utils.pydantic import default_model_config
@@ -86,6 +87,45 @@ class GenerateCmd(BaseModel):
     model_config = default_model_config()
 
 
+async def clear_memory(current_user: Account, conversation_uid: str) -> list[Message]:
+    # TODO 这里需要考虑加锁
+
+    # 找到会话
+    conversation = await conversation_repository.get_by_uid(current_user.uid, conversation_uid)
+    if not conversation:
+        raise UnauthorizedError('找不到当前会话')
+
+    # 找到最后一条消息
+    latest_message = await message_repository.find_latest(conversation_uid, 1,
+                                                          reset_message_uid=conversation.reset_message_uid)
+    latest_message = latest_message[-1] if latest_message else None
+
+    if not latest_message or latest_message.message_uid == conversation.reset_message_uid:
+        # 还没有消息，或者 最后一条消息就是重置消息
+        # 防止重复重置
+        return []
+
+    # 保存消息
+    reset_message = Message(
+        conversation_uid=conversation_uid,
+        sender_uid="system",
+        sender_role="system",
+        messages=[MessageBlock(
+            type="system",
+            content_type="text",
+            content="以下为新对话",
+            section_uid=BasePO.uid_generate())
+        ],
+        message_time=int(datetime.now().timestamp()) * 1000
+    )
+    reset_message = await message_repository.add(reset_message)
+
+    # 更新会话
+    await conversation_repository.update_reset_message_uid(conversation_uid, reset_message.message_uid)
+
+    return [reset_message]
+
+
 async def generate(current_user: Account, workspace_uid: str, chat_generate_cmd: GenerateCmd) -> dict | ContentStream:
     """
     生成对话
@@ -106,7 +146,7 @@ async def generate(current_user: Account, workspace_uid: str, chat_generate_cmd:
     memory = ConversationSummaryBufferMemory(
         current_user=current_user,
         workspace_uid=workspace_uid,
-        conversation_uid=conversation.conversation_uid
+        conversation=conversation
     )
     summary_buffer_messages = await memory.get_summary_buffer_messages(to_langchain=True)
 
@@ -127,7 +167,7 @@ async def generate(current_user: Account, workspace_uid: str, chat_generate_cmd:
         sender_role="user",
         messages=question_messages,
         message_time=int(datetime.now().timestamp()) * 1000)
-    await _init_generate_message(user_message)
+    await message_repository.add(user_message)
 
     # 编译机器人
     chat_bot = await _make_graph_bot(current_user, workspace_uid, chat_generate_cmd)
@@ -151,7 +191,7 @@ async def generate(current_user: Account, workspace_uid: str, chat_generate_cmd:
         before_events, llm_message_events, after_events,
         yield_when_exception=lambda e: ErrorEvent(section_uid=str(ULID()), error=e))
 
-    return message_events_checkpoint(current_user, workspace_uid, message_events, conversation.conversation_uid, "")
+    return message_events_checkpoint(current_user, workspace_uid, message_events, conversation, "")
 
 
 async def _make_graph_bot(current_user: Account, workspace_uid: str, chat_generate_cmd: GenerateCmd) -> CompiledGraph:
@@ -213,10 +253,10 @@ async def _init_generate_records(conversation: Conversation, user_message: Messa
     :return: (conversation_uid, message_uid)
     """
 
-    conversation_uid = conversation.uid
+    conversation_uid = conversation.conversation_uid
     if not conversation_repository.get_by_uid(conversation_uid):
         _conversation = await conversation_repository.create(conversation)
-        conversation_uid = _conversation.uid
+        conversation_uid = _conversation.conversation_uid
 
     user_message.conversation_uid = conversation_uid
     await message_repository.add(user_message)
@@ -239,16 +279,6 @@ async def _init_generate_conversation(current_user: Account, conversation: Conve
         conversation = await conversation_repository.create(conversation)
 
     return conversation
-
-
-async def _init_generate_message(message: Message) -> Message:
-    """
-    初始化会话消息
-    :param message: 会话消息
-    :return: Message
-    """
-
-    return await message_repository.add(message)
 
 
 async def llm_stream_events(event_iter: AsyncIterator[StreamEvent]) -> AsyncIterator[MessageEvent]:
@@ -279,11 +309,11 @@ async def llm_stream_events(event_iter: AsyncIterator[StreamEvent]) -> AsyncIter
 
 async def message_events_checkpoint(current_user: Account, workspace_uid: str,
                                     event_iter: AsyncIterator[MessageEvent],
-                                    conversation_uid: str, assistant_uid: str):
+                                    conversation: Conversation, assistant_uid: str):
     checkpoint_saver = LLMMessageCheckPointSaver(
         current_user=current_user,
         workspace_uid=workspace_uid,
-        conversation_uid=conversation_uid,
+        conversation=conversation,
         assistant_uid=assistant_uid
     )
 
@@ -292,7 +322,7 @@ async def message_events_checkpoint(current_user: Account, workspace_uid: str,
     async for event in event_iter:
         if isinstance(event, MessageStartEvent):
             message = MessageEventData(
-                conversation_uid=conversation_uid,
+                conversation_uid=conversation.conversation_uid,
                 sender_uid=assistant_uid,
                 sender_role="assistant",
                 message_uid=message_uid,
@@ -309,7 +339,7 @@ async def message_events_checkpoint(current_user: Account, workspace_uid: str,
 
         if isinstance(event, AIMessageChunkEvent):
             message = MessageEventData(
-                conversation_uid=conversation_uid,
+                conversation_uid=conversation.conversation_uid,
                 sender_uid=assistant_uid,
                 sender_role="assistant",
                 message_uid=message_uid,
@@ -331,7 +361,7 @@ async def message_events_checkpoint(current_user: Account, workspace_uid: str,
 
         if isinstance(event, ErrorEvent):
             message = MessageEventData(
-                conversation_uid=conversation_uid,
+                conversation_uid=conversation.conversation_uid,
                 sender_uid=assistant_uid,
                 sender_role="assistant",
                 message_uid=message_uid,

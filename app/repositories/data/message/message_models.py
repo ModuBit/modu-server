@@ -26,7 +26,7 @@ class MessageBlock(BaseModel):
     消息块
     """
 
-    type: Literal["question", "answer"]
+    type: Literal["question", "answer", "system"]
     """
     消息类型
     - question 提问
@@ -97,7 +97,7 @@ class Message(BaseModel):
     sender_uid: str
     """发送者UID"""
 
-    sender_role: Literal["user", "assistant"]
+    sender_role: Literal["user", "assistant", "system"]
     """发送者角色"""
 
     messages: list[MessageBlock]

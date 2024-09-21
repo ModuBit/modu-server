@@ -48,3 +48,14 @@ class ConversationRepository(Repository):
         :param session: Session
         """
         raise NotImplementedError()
+
+    @abstractmethod
+    async def update_reset_message_uid(self, conversation_uid: str, reset_message_uid: str,
+                                       session: AsyncSession) -> str:
+        """
+        更新 重置/清楚记忆 时的消息UID
+        :param conversation_uid: 会话UID
+        :param reset_message_uid: 重置/清楚记忆 时的消息UID
+        :param session: Session
+        """
+        raise NotImplementedError()

@@ -25,6 +25,7 @@ from llm.model.entities.model import ModelType
 from llm.model.entities.models import TextGenerationModel
 from repositories.data import message_repository, message_summary_repository
 from repositories.data.account.account_models import Account
+from repositories.data.message.conversation_models import Conversation
 from repositories.data.message.message_models import Message, MessageBlock, MessageSummary
 from services.llm import llm_model_service, llm_provider_service
 from services.llm.generate.prompt import SUMMARY_PROMPT, SUMMARY_HISTORY_PROMPT
@@ -32,10 +33,10 @@ from utils.errors.llm_error import LLMExistsError
 
 
 class ConversationSummaryBufferMemory:
-    def __init__(self, current_user: Account, workspace_uid: str, conversation_uid: str):
+    def __init__(self, current_user: Account, workspace_uid: str, conversation: Conversation):
         self._current_user = current_user
         self._workspace_uid = workspace_uid
-        self._conversation_uid = conversation_uid
+        self._conversation = conversation
 
     async def get_summary_buffer_messages(self,
                                           to_langchain: bool = False) -> tuple[str, list[Message]] | list[BaseMessage]:
@@ -43,7 +44,7 @@ class ConversationSummaryBufferMemory:
         获取总结后的记忆消息
         :param to_langchain: 是否转为langchain兼容的消息类型
         """
-        message_summary = await message_summary_repository.get_latest(self._conversation_uid)
+        message_summary = await message_summary_repository.get_latest(self._conversation.conversation_uid)
 
         # 还没有总结过，取最近最多10条消息（5组对话）
         if not message_summary:
@@ -51,16 +52,19 @@ class ConversationSummaryBufferMemory:
             return latest_messages if to_langchain else ("", latest_messages)
 
         # 总结过，取总结后的最近最多10条消息（5组对话）
-        messages_after_summary = await message_repository.find_after_uid(self._conversation_uid,
-                                                                         message_summary.last_message_uid, 10)
+        messages_after_summary = await message_repository.find_after_uid(self._conversation.conversation_uid,
+                                                                         message_summary.last_message_uid, 10,
+                                                                         reset_message_uid=self._conversation.reset_message_uid)
         if not messages_after_summary:
             # 总结后还没有过对话，取最近最多4条消息（2组对话）
-            messages_after_summary = (await message_repository.find_latest(self._conversation_uid, 4)) or []
+            messages_after_summary = (await message_repository.find_latest(self._conversation.conversation_uid, 4,
+                                                                           reset_message_uid=self._conversation.reset_message_uid)) or []
         elif len(messages_after_summary) < 6:
             # 总结后的对话不足6条(3组对话），补齐
             need_count = 6 - len(messages_after_summary)
             messages_before_summary = (await message_repository.find_before_and_uid(
-                self._conversation_uid, message_summary.last_message_uid, need_count + (need_count & 1))) or []
+                self._conversation.conversation_uid, message_summary.last_message_uid, need_count + (need_count & 1),
+                reset_message_uid=self._conversation.reset_message_uid)) or []
             messages_after_summary = messages_before_summary + messages_after_summary
 
         return ([SystemMessage(content=SUMMARY_HISTORY_PROMPT.format(history=message_summary.summary))] +
@@ -74,7 +78,8 @@ class ConversationSummaryBufferMemory:
         :param latest_count: 获取的消息条数
         :param to_langchain: 是否转为langchain兼容的消息类型
         """
-        messages = (await message_repository.find_latest(self._conversation_uid, latest_count)) or []
+        messages = (await message_repository.find_latest(self._conversation.conversation_uid, latest_count,
+                                                         reset_message_uid=self._conversation.reset_message_uid)) or []
         return ConversationSummaryBufferMemory._messages_to_langchain(messages) if to_langchain else messages
 
     async def save_messages(self, messages: list[Message], prune_exec_background: bool = False):
@@ -84,7 +89,7 @@ class ConversationSummaryBufferMemory:
         :param prune_exec_background: 是否在后台执行消息总结
         """
         for message in messages:
-            message.conversation_uid = self._conversation_uid
+            message.conversation_uid = self._conversation.conversation_uid
 
         await message_repository.add_batch(messages)
 
@@ -97,20 +102,22 @@ class ConversationSummaryBufferMemory:
         """
         对消息进行总结
         """
-        message_summary = await message_summary_repository.get_latest(self._conversation_uid)
+        message_summary = await message_summary_repository.get_latest(self._conversation.conversation_uid)
         summary, summary_latest_message_uid = \
             (message_summary.summary, message_summary.last_message_uid) if message_summary else (None, None)
 
         # 待总结的消息数
-        messages_count_waiting_summary = await message_repository.count_after_uid(self._conversation_uid,
-                                                                                  summary_latest_message_uid)
+        messages_count_waiting_summary = await message_repository.count_after_uid(self._conversation.conversation_uid,
+                                                                                  summary_latest_message_uid,
+                                                                                  reset_message_uid=self._conversation.reset_message_uid)
         # 待总结的消息数小于10，则不进行总结
         if messages_count_waiting_summary < 10:
             return
 
         # 待总结的消息
-        messages_waiting_summary = await message_repository.find_after_uid(self._conversation_uid,
-                                                                           summary_latest_message_uid, 10)
+        messages_waiting_summary = await message_repository.find_after_uid(self._conversation.conversation_uid,
+                                                                           summary_latest_message_uid, 10,
+                                                                           reset_message_uid=self._conversation.reset_message_uid)
         if not messages_waiting_summary:
             return
 
@@ -127,7 +134,7 @@ class ConversationSummaryBufferMemory:
 
         # 保存总结
         await message_summary_repository.add(
-            MessageSummary(conversation_uid=self._conversation_uid,
+            MessageSummary(conversation_uid=self._conversation.conversation_uid,
                            summary=new_summary.content,
                            last_message_uid=messages_waiting_summary[-1].message_uid,
                            summary_order=(message_summary.summary_order or 0) + 1 if message_summary else 1))

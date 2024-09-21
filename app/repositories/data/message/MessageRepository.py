@@ -50,58 +50,68 @@ class MessageRepository(Repository):
 
     @abstractmethod
     async def find_latest(self, conversation_uid: str, latest_count: int,
+                          reset_message_uid: str,
                           session: AsyncSession) -> list[Message]:
         """
         查找最新的 n 条消息
         :param conversation_uid: 会话ID
         :param latest_count: 最新消息条数
+        :param reset_message_uid: 重置消息 UID
         :param session: Session
         """
         raise NotImplementedError()
 
     @abstractmethod
     async def find_after_time(self, conversation_uid: str, after_time: int, max_count: int,
+                              reset_message_uid: str,
                               session: AsyncSession) -> list[Message]:
         """
         查找某时间之后的所有消息
         :param conversation_uid: 会话ID
         :param after_time: 某时间后的消息
         :param max_count: 返回的最大条数
+        :param reset_message_uid: 重置消息 UID
         :param session: Session
         """
         raise NotImplementedError()
 
     @abstractmethod
     async def find_after_uid(self, conversation_uid: str, after_uid: str, max_count: int,
+                             reset_message_uid: str,
                              session: AsyncSession) -> list[Message]:
         """
         查找某条消息之后的所有消息
         :param conversation_uid: 会话ID
         :param after_uid: 某消息uid
         :param max_count: 返回的最大条数
+        :param reset_message_uid: 重置消息 UID
         :param session: Session
         """
         raise NotImplementedError()
 
     @abstractmethod
     async def find_before_and_uid(self, conversation_uid: str, before_and_uid: str, max_count: int,
+                                  reset_message_uid: str,
                                   session: AsyncSession) -> list[Message]:
         """
         查找某条消息及之前的所有消息
         :param conversation_uid: 会话ID
         :param before_and_uid: 某消息uid
         :param max_count: 返回的最大条数
+        :param reset_message_uid: 重置消息 UID
         :param session: Session
         """
         raise NotImplementedError()
 
     @abstractmethod
     async def count_after_uid(self, conversation_uid: str, after_uid: str | None,
+                              reset_message_uid: str,
                               session: AsyncSession) -> int:
         """
         查找某条消息之后的所有消息的数量
         :param conversation_uid: 会话ID
         :param after_uid: 某消息uid
+        :param reset_message_uid: 重置消息 UID
         :param session: Session
         """
         raise NotImplementedError()

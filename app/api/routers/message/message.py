@@ -22,6 +22,7 @@ from starlette.responses import ContentStream
 
 from api.dependencies.principal import current_account
 from repositories.data.account.account_models import Account
+from repositories.data.message.message_models import Message
 from services import llm_generate_service, workspace_service
 from services.llm.generate.llm_generate_service import GenerateCmd
 from utils.errors.base_error import UnauthorizedError
@@ -45,7 +46,7 @@ def compact_async_generate_response(response: dict | ContentStream) -> Response:
 
 
 @logger.catch()
-@router.post(path='/{workspace_uid}/chat')
+@router.post(path='/chat')
 async def chat(workspace_uid: str | None, chat_generate_cmd: GenerateCmd,
                current_user: Account = Depends(current_account)):
     if not workspace_uid:
@@ -61,3 +62,12 @@ async def chat(workspace_uid: str | None, chat_generate_cmd: GenerateCmd,
     generator = await llm_generate_service.generate(current_user, workspace_uid, chat_generate_cmd)
     response = compact_async_generate_response(generator)
     return response
+
+
+@logger.catch()
+@router.post(path='/chat/{conversation_uid}/message/clear')
+async def clear_memory(conversation_uid: str, current_user: Account = Depends(current_account)) -> list[Message]:
+    """
+    清除会话记忆
+    """
+    return await llm_generate_service.clear_memory(current_user, conversation_uid)
