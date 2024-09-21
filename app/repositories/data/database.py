@@ -25,6 +25,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session, DeclarativeBase
 from ulid import ULID
 
+from utils.pydantic import default_model_config
+
 T = TypeVar('T')
 
 
@@ -105,6 +107,9 @@ class AliasMapper(BaseModel):
 
     value: Callable[[Any], Any] = lambda v: v
     """值映射"""
+
+    # 定义配置
+    model_config = default_model_config()
 
 
 class BasePO(DeclarativeBase):

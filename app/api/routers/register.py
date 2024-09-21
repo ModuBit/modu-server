@@ -90,7 +90,7 @@ def exception_handler(app: FastAPI):
             'success': False,
             'code': exc.status_code,
             'message': exc.message,
-            'show_type': exc.show_type,
+            'showType': exc.show_type,
             'target': exc.target
         }, status_code=exc.status_code)
 

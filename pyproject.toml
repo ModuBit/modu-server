@@ -88,15 +88,15 @@ opentelemetry-instrumentation-fastapi = "^0.46b0"
 # LLM
 [tool.poetry.group.llm.dependencies]
 ## [LangChain](https://python.langchain.com/docs)
-langchain = "^0.2.7"
-langchain-core = "^0.2.18"
-langchain-community = "^0.2.7"
-langchain-experimental = "^0.0.62"
+langchain = "^0.3.0"
+langchain-core = "^0.3.0"
+langchain-community = "^0.3.0"
+langchain-experimental = "^0.3.0"
 ## trace
-langgraph = "^0.1.8"
+langgraph = "^0.2.20"
 langfuse = "^2.44.1"
 ## [OpenAI]
-langchain-openai = "^0.1.16"
+langchain-openai = "^0.2.0"
 ## [阿里云dashscope]
 dashscope = "^1.20.1"
 ## [百度千帆]

@@ -19,21 +19,27 @@ from loguru import logger
 from pydantic import BaseModel, EmailStr, constr
 
 from services import init_service
+from utils.pydantic import default_model_config, CamelCaseJSONResponse
 
 router = APIRouter()
 
 
 class InitializeCmd(BaseModel):
-    # 账号名称
     name: constr(min_length=3, max_length=32, strip_whitespace=True)
-    # 账号邮箱
+    """账号名称"""
+
     email: EmailStr
-    # 账号密码
+    """账号邮箱"""
+
     password: constr(min_length=6, max_length=32, strip_whitespace=True, pattern=r'^[a-zA-Z][a-zA-Z0-9_!@#$%&*]{5,31}$')
+    """账号密码"""
+
+    # 定义配置
+    model_config = default_model_config()
 
 
 @logger.catch()
-@router.get('/setup')
+@router.get('/setup', response_class=CamelCaseJSONResponse)
 async def initialized_status():
     """
     获取初始化信息
@@ -42,7 +48,7 @@ async def initialized_status():
 
 
 @logger.catch()
-@router.post('/setup')
+@router.post('/setup', response_class=CamelCaseJSONResponse)
 async def initialize(init_data: InitializeCmd):
     """
     初始化

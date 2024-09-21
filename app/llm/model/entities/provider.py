@@ -22,6 +22,7 @@ from importlib.resources import files
 import yaml
 from pydantic import BaseModel
 
+from utils.pydantic import default_model_config
 from utils.reflect.module_scan import load_classes
 from .commons import I18nOption, IconOption, HelpOption
 from .form import FormSchema
@@ -60,6 +61,9 @@ class ProviderInfo(BaseModel):
     supported_model_types: list[ModelType] = []
     """支持的模型类型"""
 
+    # 定义配置
+    model_config = default_model_config()
+
 
 class ProviderSchema(ProviderInfo):
     """
@@ -73,6 +77,9 @@ class ProviderSchema(ProviderInfo):
 
     credential_schemas: list[FormSchema] = []
     """凭证"""
+
+    # 定义配置
+    model_config = default_model_config()
 
 
 class ProviderWithModelsSchema(BaseModel):
@@ -88,6 +95,9 @@ class ProviderWithModelsSchema(BaseModel):
 
     status: ProviderStatus
     """状态"""
+
+    # 定义配置
+    model_config = default_model_config()
 
     def get_grouped_models_by_type(self) -> dict[ModelType, list[ModelSchema]]:
         """

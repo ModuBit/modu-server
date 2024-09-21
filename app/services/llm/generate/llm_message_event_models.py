@@ -20,6 +20,8 @@ from typing import Any
 from pydantic import BaseModel
 from ulid import ULID
 
+from utils.pydantic import default_model_config
+
 
 class Event(str, Enum):
     MESSAGE_START = "MESSAGE_START"
@@ -46,8 +48,11 @@ class MessageEvent(BaseModel):
     event: Event
     """事件类型"""
 
-    section_uid: str = str(ULID())
+    section_uid: str
     """内容块ID"""
+
+    # 定义配置
+    model_config = default_model_config()
 
 
 class MessageStartEvent(MessageEvent):

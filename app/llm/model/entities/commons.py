@@ -16,6 +16,8 @@ limitations under the License.
 
 from pydantic import BaseModel
 
+from utils.pydantic import default_model_config
+
 
 class I18nOption(BaseModel):
     """
@@ -24,6 +26,9 @@ class I18nOption(BaseModel):
     default: str
     en_us: str | None = None
     zh_cn: str | None = None
+
+    # 定义配置
+    model_config = default_model_config()
 
 
 class IconOption(BaseModel):
@@ -35,6 +40,9 @@ class IconOption(BaseModel):
     combine: str | None = None
     color: str | None = None
 
+    # 定义配置
+    model_config = default_model_config()
+
 
 class HelpOption(BaseModel):
     """
@@ -44,3 +52,6 @@ class HelpOption(BaseModel):
     """标题"""
     url: str
     """链接"""
+
+    # 定义配置
+    model_config = default_model_config()

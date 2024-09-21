@@ -22,6 +22,7 @@ from loguru import logger
 from llm.model.entities.models import TextGenerationModel
 from utils.dictionary import dict_get, dict_exclude_keys, dict_map_values, dict_filter_none_values, dict_merge
 from utils.errors.llm_error import LLMValidateError
+import openai
 
 
 class OpenAITextGenerationModel(TextGenerationModel):

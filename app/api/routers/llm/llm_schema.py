@@ -19,12 +19,13 @@ from loguru import logger
 
 from llm.model import model_provider_factory
 from llm.model.entities.provider import ProviderSchema
+from utils.pydantic import CamelCaseJSONResponse
 
 router = APIRouter()
 
 
 @logger.catch()
-@router.get('/providers')
+@router.get('/providers', response_class=CamelCaseJSONResponse)
 async def providers() -> list[ProviderSchema]:
     """
     系统中注册的LLM提供商

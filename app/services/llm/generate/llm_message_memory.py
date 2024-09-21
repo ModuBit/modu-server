@@ -17,9 +17,8 @@ limitations under the License.
 import asyncio
 import itertools
 
-from langchain.chains.llm import LLMChain
 from langchain_core.language_models import BaseChatModel
-from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, get_buffer_string
+from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, get_buffer_string, SystemMessage
 
 from llm.model import model_provider_factory
 from llm.model.entities.model import ModelType
@@ -28,7 +27,7 @@ from repositories.data import message_repository, message_summary_repository
 from repositories.data.account.account_models import Account
 from repositories.data.message.message_models import Message, MessageBlock, MessageSummary
 from services.llm import llm_model_service, llm_provider_service
-from services.llm.generate.prompt import SUMMARY_PROMPT
+from services.llm.generate.prompt import SUMMARY_PROMPT, SUMMARY_HISTORY_PROMPT
 from utils.errors.llm_error import LLMExistsError
 
 
@@ -37,6 +36,46 @@ class ConversationSummaryBufferMemory:
         self._current_user = current_user
         self._workspace_uid = workspace_uid
         self._conversation_uid = conversation_uid
+
+    async def get_summary_buffer_messages(self,
+                                          to_langchain: bool = False) -> tuple[str, list[Message]] | list[BaseMessage]:
+        """
+        获取总结后的记忆消息
+        :param to_langchain: 是否转为langchain兼容的消息类型
+        """
+        message_summary = await message_summary_repository.get_latest(self._conversation_uid)
+
+        # 还没有总结过，取最近最多10条消息（5组对话）
+        if not message_summary:
+            latest_messages = await self.get_latest_messages(10, to_langchain)
+            return latest_messages if to_langchain else ("", latest_messages)
+
+        # 总结过，取总结后的最近最多10条消息（5组对话）
+        messages_after_summary = await message_repository.find_after_uid(self._conversation_uid,
+                                                                         message_summary.last_message_uid, 10)
+        if not messages_after_summary:
+            # 总结后还没有过对话，取最近最多4条消息（2组对话）
+            messages_after_summary = (await message_repository.find_latest(self._conversation_uid, 4)) or []
+        elif len(messages_after_summary) < 6:
+            # 总结后的对话不足6条(3组对话），补齐
+            need_count = 6 - len(messages_after_summary)
+            messages_before_summary = (await message_repository.find_before_and_uid(
+                self._conversation_uid, message_summary.last_message_uid, need_count + (need_count & 1))) or []
+            messages_after_summary = messages_before_summary + messages_after_summary
+
+        return ([SystemMessage(content=SUMMARY_HISTORY_PROMPT.format(history=message_summary.summary))] +
+                ConversationSummaryBufferMemory._messages_to_langchain(messages_after_summary)) \
+            if to_langchain else (message_summary.summary, messages_after_summary)
+
+    async def get_latest_messages(self, latest_count: int = 10,
+                                  to_langchain: bool = False) -> list[Message] | list[BaseMessage]:
+        """
+        获取最后n条消息
+        :param latest_count: 获取的消息条数
+        :param to_langchain: 是否转为langchain兼容的消息类型
+        """
+        messages = (await message_repository.find_latest(self._conversation_uid, latest_count)) or []
+        return ConversationSummaryBufferMemory._messages_to_langchain(messages) if to_langchain else messages
 
     async def save_messages(self, messages: list[Message], prune_exec_background: bool = False):
         """
@@ -70,31 +109,33 @@ class ConversationSummaryBufferMemory:
             return
 
         # 待总结的消息
-        messages_waiting_summary = await message_repository.find_all_after_uid(self._conversation_uid,
-                                                                               summary_latest_message_uid, 10)
+        messages_waiting_summary = await message_repository.find_after_uid(self._conversation_uid,
+                                                                           summary_latest_message_uid, 10)
         if not messages_waiting_summary:
             return
 
         # 转换成 langchain BaseMessage
-        base_messages_waiting_summary = [
-            ConversationSummaryBufferMemory._message_to_base_message(message_waiting_summary)
-            for message_waiting_summary in messages_waiting_summary]
-        base_messages_waiting_summary = list(itertools.chain.from_iterable(base_messages_waiting_summary))
-
+        base_messages_waiting_summary = ConversationSummaryBufferMemory._messages_to_langchain(messages_waiting_summary)
         # 转换成 prompt 中可识别的内容
         new_messages = get_buffer_string(base_messages_waiting_summary)
 
         # 使用 系统设置中的 文本生成模型 生成新的总结
         chat_model = await self._system_chat_model()
-        chain = LLMChain(llm=chat_model, prompt=SUMMARY_PROMPT)
-        new_summary = await chain.apredict(summary=summary, new_lines=new_messages)
+        summary_prompt = SUMMARY_PROMPT
+        chain = summary_prompt | chat_model
+        new_summary = await chain.ainvoke({"summary": summary, "new_message": new_messages})
 
         # 保存总结
-        await message_summary_repository.add(MessageSummary(conversation_uid=self._conversation_uid,
-                                                            summary=new_summary,
-                                                            last_message_uid=messages_waiting_summary[-1].message_uid))
+        await message_summary_repository.add(
+            MessageSummary(conversation_uid=self._conversation_uid,
+                           summary=new_summary.content,
+                           last_message_uid=messages_waiting_summary[-1].message_uid,
+                           summary_order=(message_summary.summary_order or 0) + 1 if message_summary else 1))
 
     async def _system_chat_model(self) -> BaseChatModel:
+        """
+        获取系统模型设置中的推理模型
+        """
         system_models = await llm_model_service.get_system_config(self._current_user, self._workspace_uid)
         if not system_models or ModelType.TEXT_GENERATION not in system_models:
             raise LLMExistsError(
@@ -119,15 +160,21 @@ class ConversationSummaryBufferMemory:
                                 max_retries=0) if model else None
 
     @staticmethod
-    def _message_to_base_message(message: Message) -> list[BaseMessage]:
+    def _messages_to_langchain(messages: list[Message]) -> list[BaseMessage]:
+        base_messages_waiting_summary = [ConversationSummaryBufferMemory._message_to_langchain(message)
+                                         for message in (messages or [])]
+        return list(itertools.chain.from_iterable(base_messages_waiting_summary))
+
+    @staticmethod
+    def _message_to_langchain(message: Message) -> list[BaseMessage]:
         """
-        把存储的消息转为langchain 兼容的消息类型
+        把存储的消息转为langchain兼容的消息类型
         :param message: 存储的消息
         """
         if message.sender_role == "user":
             contents = [ConversationSummaryBufferMemory._message_block_content(block) for block in message.messages]
             contents = list(filter(lambda x: x is not None, contents))
-            return [HumanMessage(content=contents)]
+            return [HumanMessage(content='\n'.join(contents))]
         if message.sender_role == "assistant":
             contents = [ConversationSummaryBufferMemory._message_block_content(block) for block in message.messages]
             contents = list(filter(lambda x: x is not None, contents))

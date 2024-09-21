@@ -22,6 +22,7 @@ from api.dependencies.principal import current_account
 from repositories.data.account.account_models import Account
 from repositories.data.workspace.workspace_models import Workspace, WorkspaceType, WorkspaceMemberRole
 from services import workspace_service
+from utils.pydantic import default_model_config, CamelCaseJSONResponse
 
 router = APIRouter()
 
@@ -29,20 +30,28 @@ router = APIRouter()
 class WorkspaceDTO(BaseModel):
     uid: str
     """空间ID"""
+
     creator_uid: str
     """创建人"""
+
     name: str
     """空间名称"""
+
     description: str | None = None
     """空间简介"""
+
     type: WorkspaceType
     """空间类型"""
+
     member_role: WorkspaceMemberRole
     """空间角色"""
 
+    # 定义配置
+    model_config = default_model_config()
+
 
 @logger.catch()
-@router.get(path='', response_model=list[WorkspaceDTO])
+@router.get(path='', response_model=list[WorkspaceDTO], response_class=CamelCaseJSONResponse)
 async def list_related(current_user: Account = Depends(current_account)) -> list[Workspace]:
     """
     当前登录人相关的空间列表
@@ -54,7 +63,7 @@ async def list_related(current_user: Account = Depends(current_account)) -> list
 
 
 @logger.catch()
-@router.get(path='/{workspace_uid}', response_model=WorkspaceDTO)
+@router.get(path='/{workspace_uid}', response_model=WorkspaceDTO, response_class=CamelCaseJSONResponse)
 async def detail(workspace_uid: str, current_user: Account = Depends(current_account)) -> Workspace:
     """
     获取空间详情

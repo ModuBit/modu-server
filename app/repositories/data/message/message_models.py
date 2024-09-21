@@ -13,10 +13,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-from datetime import datetime
+
 from typing import Literal
 
 from pydantic import BaseModel
+
+from utils.pydantic import default_model_config
 
 
 class MessageBlock(BaseModel):
@@ -44,6 +46,9 @@ class MessageBlock(BaseModel):
     section_uid: str
     """该部分内容ID"""
 
+    # 定义配置
+    model_config = default_model_config()
+
 
 class MessageEventData(BaseModel):
     """
@@ -56,7 +61,7 @@ class MessageEventData(BaseModel):
     message_uid: str
     """消息ID"""
 
-    message_time: int = int(datetime.now().timestamp()) * 1000
+    message_time: int
     """消息时间戳"""
 
     sender_uid: str
@@ -71,6 +76,9 @@ class MessageEventData(BaseModel):
     is_finished: bool
     """消息是否结束"""
 
+    # 定义配置
+    model_config = default_model_config()
+
 
 class Message(BaseModel):
     """
@@ -83,7 +91,7 @@ class Message(BaseModel):
     message_uid: str = ""
     """消息ID"""
 
-    message_time: int = int(datetime.now().timestamp()) * 1000
+    message_time: int
     """消息时间戳"""
 
     sender_uid: str
@@ -94,6 +102,9 @@ class Message(BaseModel):
 
     messages: list[MessageBlock]
     """消息内容"""
+
+    # 定义配置
+    model_config = default_model_config()
 
 class MessageSummary(BaseModel):
     """
@@ -106,5 +117,11 @@ class MessageSummary(BaseModel):
     summary: str
     """会话摘要总结"""
 
+    summary_order: int
+    """会话摘要排序"""
+
     last_message_uid: str
     """会话总结时最后一条消息uid"""
+
+    # 定义配置
+    model_config = default_model_config()

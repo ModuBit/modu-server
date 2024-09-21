@@ -18,6 +18,8 @@ import enum
 
 from pydantic import BaseModel
 
+from utils.pydantic import default_model_config
+
 
 class AccountStatus(str, enum.Enum):
     """
@@ -51,3 +53,6 @@ class Account(BaseModel):
     """账号头像"""
     status: AccountStatus
     """账号状态"""
+
+    # 定义配置
+    model_config = default_model_config()

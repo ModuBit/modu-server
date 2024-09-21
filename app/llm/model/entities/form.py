@@ -19,6 +19,7 @@ from collections.abc import Mapping
 
 from pydantic import BaseModel
 
+from utils.pydantic import default_model_config
 from .commons import I18nOption
 
 
@@ -41,6 +42,9 @@ class FormFieldRule(BaseModel):
 
     message: I18nOption | None = None
     """规则消息"""
+
+    # 定义配置
+    model_config = default_model_config()
 
 
 class FormFieldValueStatusEnum(str, enum.Enum):
@@ -67,6 +71,9 @@ class FormFieldValueEnum(BaseModel):
 
     disabled: bool = False
     """是否禁用"""
+
+    # 定义配置
+    model_config = default_model_config()
 
 
 class FormSchema(BaseModel):
@@ -102,3 +109,6 @@ class FormSchema(BaseModel):
 
     template: str | None = None
     """模板"""
+
+    # 定义配置
+    model_config = default_model_config()

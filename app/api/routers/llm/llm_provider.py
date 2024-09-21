@@ -21,12 +21,13 @@ from api.dependencies.principal import current_account
 from repositories.data.account.account_models import Account
 from repositories.data.llm.llm_models import LLMProviderConfig
 from services import llm_provider_service
+from utils.pydantic import CamelCaseJSONResponse
 
 router = APIRouter()
 
 
 @logger.catch()
-@router.post('/provider/{provider_name}/config')
+@router.post('/provider/{provider_name}/config', response_class=CamelCaseJSONResponse)
 async def add(workspace_uid: str, provider_name: str, llm_provider_config: LLMProviderConfig,
               current_user: Account = Depends(current_account)) -> LLMProviderConfig:
     """
@@ -42,7 +43,7 @@ async def add(workspace_uid: str, provider_name: str, llm_provider_config: LLMPr
 
 
 @logger.catch()
-@router.delete('/provider/{provider_name}/config')
+@router.delete('/provider/{provider_name}/config', response_class=CamelCaseJSONResponse)
 async def delete(workspace_uid: str, provider_name: str, current_user: Account = Depends(current_account)) -> bool:
     """
     删除LLM Provider配置
@@ -55,7 +56,7 @@ async def delete(workspace_uid: str, provider_name: str, current_user: Account =
 
 
 @logger.catch()
-@router.get('/provider/all/config')
+@router.get('/provider/all/config', response_class=CamelCaseJSONResponse)
 async def all_configured_provider_configs(workspace_uid: str,
                                           current_user: Account = Depends(current_account)) -> list[LLMProviderConfig]:
     """
@@ -70,7 +71,7 @@ async def all_configured_provider_configs(workspace_uid: str,
 
 
 @logger.catch()
-@router.get('/provider/{provider_name}/config')
+@router.get('/provider/{provider_name}/config', response_class=CamelCaseJSONResponse)
 async def config_detail(workspace_uid: str, provider_name: str,
                         current_user: Account = Depends(current_account)) -> LLMProviderConfig | None:
     """

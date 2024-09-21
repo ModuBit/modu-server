@@ -70,11 +70,11 @@ class MessageRepositoryPostgres(MessageRepository):
                 .order_by(MessagePO.message_time.desc())
                 .limit(latest_count))
         select_result = await session.execute(stmt)
-        return [Message(**message.as_dict(alias_mapping=_alias_mapping)) for message in select_result.scalars()]
+        return [Message.model_validate(message.as_dict(alias_mapping=_alias_mapping)) for message in select_result.scalars()][::-1]
 
     @with_async_session
-    async def find_all_after_time(self, conversation_uid: str, after_time: int | None, max_count: int,
-                                  session: AsyncSession) -> list[Message]:
+    async def find_after_time(self, conversation_uid: str, after_time: int | None, max_count: int,
+                              session: AsyncSession) -> list[Message]:
         stmt = (select(MessagePO)
                 .where(MessagePO.conversation_uid == conversation_uid)
                 .where(MessagePO.is_deleted == False))
@@ -85,27 +85,46 @@ class MessageRepositoryPostgres(MessageRepository):
         stmt = stmt.order_by(MessagePO.message_time.desc()).limit(max_count)
 
         select_result = await session.execute(stmt)
-        return [Message(**message.as_dict(alias_mapping=_alias_mapping)) for message in select_result.scalars()]
+        return [Message(**message.as_dict(alias_mapping=_alias_mapping)) for message in select_result.scalars()][::-1]
 
     @with_async_session
-    async def find_all_after_uid(self, conversation_uid: str, after_uid: str | None , max_count: int,
-                                 session: AsyncSession) -> list[Message]:
+    async def find_after_uid(self, conversation_uid: str, after_uid: str | None, max_count: int,
+                             session: AsyncSession) -> list[Message]:
         stmt = (select(MessagePO)
                 .where(MessagePO.conversation_uid == conversation_uid)
                 .where(MessagePO.is_deleted == False))
 
-        if not after_uid:
+        if after_uid:
             message_time_subquery = (
                 select(MessagePO.message_time)
                 .where(MessagePO.uid == after_uid)
                 .where(MessagePO.is_deleted == False)
-            ).subquery()
+            ).scalar_subquery()
             stmt = stmt.where(MessagePO.message_time > message_time_subquery)
 
         stmt = stmt.order_by(MessagePO.message_time.desc()).limit(max_count)
 
         select_result = await session.execute(stmt)
-        return [Message(**message.as_dict(alias_mapping=_alias_mapping)) for message in select_result.scalars()]
+        return [Message(**message.as_dict(alias_mapping=_alias_mapping)) for message in select_result.scalars()][::-1]
+
+    @with_async_session
+    async def find_before_and_uid(self, conversation_uid: str, before_and_uid: str | None, max_count: int,
+                                  session: AsyncSession) -> list[Message]:
+        stmt = (select(MessagePO)
+                .where(MessagePO.conversation_uid == conversation_uid)
+                .where(MessagePO.is_deleted == False))
+
+        if before_and_uid:
+            message_time_subquery = (
+                select(MessagePO.message_time)
+                .where(MessagePO.uid == before_and_uid)
+                .where(MessagePO.is_deleted == False)
+            ).scalar_subquery()
+            stmt = stmt.where(MessagePO.message_time <= message_time_subquery)
+
+        stmt = stmt.order_by(MessagePO.message_time.desc()).limit(max_count)
+        select_result = await session.execute(stmt)
+        return [Message(**message.as_dict(alias_mapping=_alias_mapping)) for message in select_result.scalars()][::-1]
 
     @with_async_session
     async def count_after_uid(self, conversation_uid: str, after_uid: str | None,
@@ -114,7 +133,7 @@ class MessageRepositoryPostgres(MessageRepository):
             select(MessagePO.message_time)
             .where(MessagePO.uid == after_uid)
             .where(MessagePO.is_deleted == False)
-        ).subquery()
+        ).scalar_subquery()
 
         stmt = (select(func.count()).select_from(MessagePO)
                 .where(MessagePO.conversation_uid == conversation_uid)
@@ -142,7 +161,7 @@ class MessageSummaryRepositoryPostgres(MessageSummaryRepository):
                 .order_by(MessageSummaryPO.summary_order.desc())
                 .limit(1))
         select_result = await session.execute(stmt)
-        message_summary = select_result.one_or_none()
+        message_summary = select_result.scalars().one_or_none()
         return MessageSummary(**message_summary.as_dict()) if message_summary else None
 
 
@@ -162,7 +181,7 @@ class MessageBlocks2Jsonb(TypeDecorator):
         Convert database jsonb to Python list[MessageContent]
         """
         if value is not None:
-            value = [MessageBlock.model_validate_json(json_obj) for json_obj in value],
+            value = [MessageBlock.model_validate(json_obj) for json_obj in value]
         return value
 
 

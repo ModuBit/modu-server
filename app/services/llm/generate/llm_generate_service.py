@@ -22,7 +22,8 @@ from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_core.runnables import RunnableConfig
 from langchain_core.runnables.schema import StreamEvent
-from langgraph.graph import START, StateGraph, MessagesState, END
+from langgraph.constants import START
+from langgraph.graph import StateGraph, MessagesState, END
 from langgraph.graph.graph import CompiledGraph
 from loguru import logger
 from pydantic import BaseModel
@@ -37,15 +38,15 @@ from repositories.data.account.account_models import Account
 from repositories.data.database import BasePO
 from repositories.data.message.conversation_models import Conversation
 from repositories.data.message.message_models import MessageBlock, MessageEventData, Message
-from services import workspace_service
 from services.llm import llm_model_service, llm_provider_service
 from services.llm.generate.llm_message_checkpoint import LLMMessageCheckPointSaver
 from services.llm.generate.llm_message_event_models import MessageStartEvent, MessageEndEvent, ErrorEvent, MessageEvent, \
     AIMessageChunkEvent
+from services.llm.generate.llm_message_memory import ConversationSummaryBufferMemory
 from utils.dictionary import dict_merge
 from utils.errors.llm_error import LLMExistsError
-from utils.errors.space_error import SpaceExistsError
 from utils.iterator import single_element_async_iterator, merge_async_iterators
+from utils.pydantic import default_model_config
 
 
 class Item(BaseModel):
@@ -56,8 +57,8 @@ class Item(BaseModel):
     """内容"""
 
     # 设置允许额外字段
-    class Config:
-        extra = 'allow'
+    # 定义配置
+    model_config = default_model_config({"extra": "allow"})
 
 
 class Query(BaseModel):
@@ -67,9 +68,12 @@ class Query(BaseModel):
     refers: list[Item] = []
     """引用的内容"""
 
+    # 定义配置
+    model_config = default_model_config()
+
 
 class GenerateCmd(BaseModel):
-    conversation_id: str | None = None
+    conversation_uid: str | None = None
     """会话ID"""
 
     query: Query
@@ -77,6 +81,9 @@ class GenerateCmd(BaseModel):
 
     mentions: list[str] = []
     """@的机器人"""
+
+    # 定义配置
+    model_config = default_model_config()
 
 
 async def generate(current_user: Account, workspace_uid: str, chat_generate_cmd: GenerateCmd) -> dict | ContentStream:
@@ -91,8 +98,17 @@ async def generate(current_user: Account, workspace_uid: str, chat_generate_cmd:
     # 初始化 conversation
     first_text_message = next(filter(lambda item: item.type == "text", chat_generate_cmd.query.inputs)).content
     conversation_name = multi_replace(first_text_message, {'\n': ' '})[:30] if first_text_message else "对话"
-    conversation = Conversation(creator_uid=current_user.uid, name=conversation_name)
-    await _init_generate_conversation(current_user, conversation)
+    conversation = Conversation(conversation_uid=chat_generate_cmd.conversation_uid or "",
+                                creator_uid=current_user.uid, name=conversation_name)
+    conversation = await _init_generate_conversation(current_user, conversation)
+
+    # 历史会话
+    memory = ConversationSummaryBufferMemory(
+        current_user=current_user,
+        workspace_uid=workspace_uid,
+        conversation_uid=conversation.conversation_uid
+    )
+    summary_buffer_messages = await memory.get_summary_buffer_messages(to_langchain=True)
 
     # 存储 user message
     question_messages = ([MessageBlock(type="question",
@@ -109,29 +125,31 @@ async def generate(current_user: Account, workspace_uid: str, chat_generate_cmd:
         conversation_uid=conversation.conversation_uid,
         sender_uid=current_user.uid,
         sender_role="user",
-        messages=question_messages)
+        messages=question_messages,
+        message_time=int(datetime.now().timestamp()) * 1000)
     await _init_generate_message(user_message)
 
     # 编译机器人
     chat_bot = await _make_graph_bot(current_user, workspace_uid, chat_generate_cmd)
 
     # 机器人对话
-    llm_event_stream = chat_bot.astream_events({"messages": [HumanMessage(content=first_text_message)]},
-                                               {"configurable": {"thread_id": "1"}}, version="v2")
+    llm_event_stream = chat_bot.astream_events(
+        {"messages": summary_buffer_messages + [HumanMessage(content=first_text_message)]},
+        {"configurable": {"thread_id": "1"}}, version="v2")
 
     # 前置内容
-    before_events = single_element_async_iterator(MessageStartEvent())
+    before_events = single_element_async_iterator(MessageStartEvent(section_uid=str(ULID())))
 
     # 生成内容
     llm_message_events = llm_stream_events(llm_event_stream)
 
     # 后置内容
-    after_events = single_element_async_iterator(MessageEndEvent())
+    after_events = single_element_async_iterator(MessageEndEvent(section_uid=str(ULID())))
 
     # 合并内容
     message_events = merge_async_iterators(
         before_events, llm_message_events, after_events,
-        yield_when_exception=lambda e: ErrorEvent(error=e))
+        yield_when_exception=lambda e: ErrorEvent(section_uid=str(ULID()), error=e))
 
     return message_events_checkpoint(current_user, workspace_uid, message_events, conversation.conversation_uid, "")
 
@@ -166,33 +184,24 @@ async def _make_graph_bot(current_user: Account, workspace_uid: str, chat_genera
     if not chat_model:
         raise LLMExistsError(message=f'您在{model_config.provider_name}中还未配置任何{ModelType.TEXT_GENERATION}模型')
 
-    async def explain(state: MessagesState, config: RunnableConfig):
-        message = state["messages"][-1]
-        response = await chat_model.ainvoke([
-            SystemMessage(
-                content="你是文学大师，帮助用户解释文字的含义，请直接给出释义"),
-            message
-        ], dict_merge(config, {'tags': ['explain_tag']}))
-        return {"messages": response}
-
-    async def translate(state: MessagesState, config: RunnableConfig):
-        message = state["messages"][-1]
-        response = await chat_model.ainvoke([
-            SystemMessage(
-                content="Translate the following from Chinese into English."),
-            message
-        ], dict_merge(config, {'tags': ['translate_tag']}))
+    async def chat(state: MessagesState, config: RunnableConfig):
+        system_message = SystemMessage(content="你是墨读助理，由墨读科技(MODU)创建，旨在帮助用户使用墨读产品。"
+                                               "墨读是一款AI聊天机器人开发平台，它允许用户通过直观的拖放界面和丰富的插件库来快速构建、调试和优化AI聊天机器人，而无需具备专业的编程知识。"
+                                               "用户可以根据自己的需求定制聊天机器人的功能，例如用于寻找热点信息、撰写报告或是规划旅行等。"
+                                               "墨读产品官网是https://modu.manerfan.com，项目开源地址https://github.com/modubit。")
+        messages = state["messages"] or []
+        if messages and isinstance(messages[0], SystemMessage):
+            system_message = SystemMessage(content=f'{system_message.content}\n\n{messages[0].content}')
+            messages = messages[1:]
+        response = await chat_model.ainvoke([system_message] + messages,
+                                            dict_merge(config, {'tags': ['explain_tag']}))
         return {"messages": response}
 
     workflow = StateGraph(MessagesState)
-    workflow.add_node("explain", explain)
-    workflow.add_node("translate", translate)
-    workflow.add_edge(START, "explain")
-    workflow.add_edge("explain", "translate")
-    workflow.add_edge("translate", END)
+    workflow.add_node("chat", chat)
+    workflow.add_edge(START, "chat")
+    workflow.add_edge("chat", END)
 
-    # langgraph.graph.state.StateGraph.compile(checkpoint=)
-    # https://langchain-ai.github.io/langgraph/how-tos/persistence/
     return workflow.compile()
 
 
@@ -200,8 +209,8 @@ async def _init_generate_records(conversation: Conversation, user_message: Messa
     """
     初始化会话消息
     :param conversation: 当前用户
-    :param chat_generate_cmd: 会话指令
-    :return: (conversation_id, message_id)
+    :param user_message: 会话内容
+    :return: (conversation_uid, message_uid)
     """
 
     conversation_uid = conversation.uid
@@ -223,8 +232,10 @@ async def _init_generate_conversation(current_user: Account, conversation: Conve
     :return: Conversation
     """
 
-    conversation_uid = conversation.conversation_uid
-    if not conversation_uid and not await conversation_repository.get_by_uid(current_user.uid, conversation_uid):
+    if conversation.conversation_uid:
+        conversation = await conversation_repository.get_by_uid(current_user.uid, conversation.conversation_uid)
+
+    if not conversation or not conversation.conversation_uid:
         conversation = await conversation_repository.create(conversation)
 
     return conversation
@@ -254,12 +265,16 @@ async def llm_stream_events(event_iter: AsyncIterator[StreamEvent]) -> AsyncIter
     """
 
     section_uid = str(ULID())
-    async for event in event_iter:
-        logger.debug(event)
-        if event['event'] == 'on_chat_model_stream':
-            chunk_event = AIMessageChunkEvent(section_uid=section_uid, chunk=event['data']['chunk'])
-            yield chunk_event
-        # TODO 其他类型判断
+    try:
+        async for event in event_iter:
+            logger.debug(event)
+            if event['event'] == 'on_chat_model_stream':
+                chunk_event = AIMessageChunkEvent(section_uid=section_uid, chunk=event['data']['chunk'])
+                yield chunk_event
+            # TODO 其他类型判断
+    except Exception as e:
+        logger.exception(f"invoke llm stream error: {str(e)}")
+        yield ErrorEvent(section_uid=str(ULID()), error=e)
 
 
 async def message_events_checkpoint(current_user: Account, workspace_uid: str,
@@ -290,8 +305,7 @@ async def message_events_checkpoint(current_user: Account, workspace_uid: str,
                 ),
                 is_finished=False,
             )
-            checkpoint_saver.process(message)
-            yield f'event: message\ndata: {message.model_dump_json()}\n\n'
+            yield f'event: message\ndata: {message.model_dump_json(by_alias=True)}\n\n'
 
         if isinstance(event, AIMessageChunkEvent):
             message = MessageEventData(
@@ -299,7 +313,7 @@ async def message_events_checkpoint(current_user: Account, workspace_uid: str,
                 sender_uid=assistant_uid,
                 sender_role="assistant",
                 message_uid=message_uid,
-                message_time=int(datetime.now().timestamp()),
+                message_time=int(datetime.now().timestamp()) * 1000,
                 message=MessageBlock(
                     type="answer",
                     content_type="text",
@@ -309,7 +323,7 @@ async def message_events_checkpoint(current_user: Account, workspace_uid: str,
                 is_finished=False,
             )
             checkpoint_saver.process(message)
-            yield f'event: message\ndata: {message.model_dump_json()}\n\n'
+            yield f'event: message\ndata: {message.model_dump_json(by_alias=True)}\n\n'
 
         if isinstance(event, MessageEndEvent):
             await checkpoint_saver.save()
@@ -321,7 +335,7 @@ async def message_events_checkpoint(current_user: Account, workspace_uid: str,
                 sender_uid=assistant_uid,
                 sender_role="assistant",
                 message_uid=message_uid,
-                message_time=int(datetime.now().timestamp()),
+                message_time=int(datetime.now().timestamp()) * 1000,
                 message=MessageBlock(
                     type="answer",
                     content_type="error",
@@ -332,4 +346,4 @@ async def message_events_checkpoint(current_user: Account, workspace_uid: str,
             )
             checkpoint_saver.process(message)
             await checkpoint_saver.save()
-            yield f'event: error\ndata: {message.model_dump_json()}\n\n'
+            yield f'event: error\ndata: {message.model_dump_json(by_alias=True)}\n\n'

@@ -23,12 +23,13 @@ from llm.model.entities.provider import ProviderWithModelsSchema
 from repositories.data.account.account_models import Account
 from repositories.data.llm.llm_models import LLMModelConfig
 from services import llm_model_service
+from utils.pydantic import CamelCaseJSONResponse
 
 router = APIRouter()
 
 
 @logger.catch()
-@router.get('/provider/{provider_name}/model')
+@router.get('/provider/{provider_name}/model', response_class=CamelCaseJSONResponse)
 async def all_models_on_provider(workspace_uid: str, provider_name: str,
                                  current_user: Account = Depends(current_account)
                                  ) -> dict[ModelType, list[ModelSchema]]:
@@ -47,7 +48,9 @@ async def all_models_on_provider(workspace_uid: str, provider_name: str,
 
 
 @logger.catch()
-@router.get(path='/model/type/{model_type}', response_model=list[ProviderWithModelsSchema])
+@router.get(path='/model/type/{model_type}',
+            response_model=list[ProviderWithModelsSchema],
+            response_class=CamelCaseJSONResponse)
 async def all_models_on_type(workspace_uid: str, model_type: ModelType,
                              current_user: Account = Depends(current_account)) -> list[ProviderWithModelsSchema]:
     """
@@ -61,7 +64,7 @@ async def all_models_on_type(workspace_uid: str, model_type: ModelType,
 
 
 @logger.catch()
-@router.post(path='/model/system/config')
+@router.post(path='/model/system/config', response_class=CamelCaseJSONResponse)
 async def add_system_config(workspace_uid: str, llm_model_config: dict[ModelType, LLMModelConfig],
                             current_user: Account = Depends(current_account)) -> dict[ModelType, LLMModelConfig]:
     """
@@ -75,7 +78,7 @@ async def add_system_config(workspace_uid: str, llm_model_config: dict[ModelType
 
 
 @logger.catch()
-@router.get(path='/model/system/config')
+@router.get(path='/model/system/config', response_class=CamelCaseJSONResponse)
 async def get_system_config(workspace_uid: str,
                             current_user: Account = Depends(current_account)) -> dict[ModelType, LLMModelConfig]:
     """

@@ -22,8 +22,9 @@ from starlette.responses import ContentStream
 
 from api.dependencies.principal import current_account
 from repositories.data.account.account_models import Account
-from services import llm_generate_service
+from services import llm_generate_service, workspace_service
 from services.llm.generate.llm_generate_service import GenerateCmd
+from utils.errors.base_error import UnauthorizedError
 
 router = APIRouter()
 
@@ -45,7 +46,18 @@ def compact_async_generate_response(response: dict | ContentStream) -> Response:
 
 @logger.catch()
 @router.post(path='/{workspace_uid}/chat')
-async def chat(workspace_uid: str, chat_generate_cmd: GenerateCmd, current_user: Account = Depends(current_account)):
+async def chat(workspace_uid: str | None, chat_generate_cmd: GenerateCmd,
+               current_user: Account = Depends(current_account)):
+    if not workspace_uid:
+        mine_workspace = await workspace_service.mine(current_user)
+        if not mine_workspace:
+            raise UnauthorizedError('找不到您的个人空间，请联系管理员')
+        workspace_uid = mine_workspace.uid
+    else:
+        member_role = await workspace_service.member_role(current_user, workspace_uid)
+        if member_role is None:
+            raise UnauthorizedError('您无该使用该空间')
+
     generator = await llm_generate_service.generate(current_user, workspace_uid, chat_generate_cmd)
     response = compact_async_generate_response(generator)
     return response

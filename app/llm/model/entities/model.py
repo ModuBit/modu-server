@@ -27,6 +27,7 @@ from pydantic import BaseModel
 from llm.model.entities.commons import I18nOption, HelpOption
 from llm.model.entities.form import FormSchema
 from utils.dictionary import dict_get, dict_merge
+from utils.pydantic import default_model_config
 
 
 class ModelType(str, enum.Enum):
@@ -108,6 +109,9 @@ class ModelSchema(BaseModel):
 
     deprecated: bool = False
     """是否已过期不再可用"""
+
+    # 定义配置
+    model_config = default_model_config()
 
 
 T = TypeVar('T')

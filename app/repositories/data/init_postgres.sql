@@ -130,9 +130,11 @@ CREATE TABLE modu_conversations
     creator_uid         VARCHAR(32)                                             NOT NULL,
     workspace_uid       VARCHAR(32)                                             NOT NULL,
     name                VARCHAR(64)                                             NOT NULL,
+    reset_message_uid   VARCHAR(64)                                                     ,
     is_deleted          SMALLINT                 DEFAULT '0'::SMALLINT          NOT NULL
 );
 CREATE UNIQUE INDEX uk_modu_conversations_uid ON modu_conversations (uid);
+CREATE INDEX idx_modu_conversations_creator ON modu_conversations (uid, creator_uid, reset_message_uid);
 CREATE TRIGGER set_modu_conversations_updated_at
     BEFORE UPDATE
     ON modu_conversations
@@ -175,6 +177,7 @@ CREATE TABLE modu_messages_summary
     is_deleted          SMALLINT                 DEFAULT '0'::SMALLINT          NOT NULL
 );
 CREATE UNIQUE INDEX uk_modu_messages_summary_uid ON modu_messages_summary (uid);
+CREATE UNIQUE INDEX uk_modu_messages_summary_conversation_order ON modu_messages_summary (conversation_uid, summary_order);
 CREATE INDEX idx_modu_messages_summary_conversation ON modu_messages_summary (conversation_uid, last_message_uid, summary_order);
 CREATE TRIGGER set_modu_messages_summary_updated_at
     BEFORE UPDATE

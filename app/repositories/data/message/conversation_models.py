@@ -16,6 +16,8 @@ limitations under the License.
 
 from pydantic import BaseModel
 
+from utils.pydantic import default_model_config
+
 
 class Conversation(BaseModel):
     """
@@ -33,3 +35,9 @@ class Conversation(BaseModel):
 
     name: str
     """会话名"""
+
+    reset_message_uid: str | None = None
+    """重置/清楚记忆 时的消息UID"""
+
+    # 定义配置
+    model_config = default_model_config()

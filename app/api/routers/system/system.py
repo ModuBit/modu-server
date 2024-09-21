@@ -18,16 +18,17 @@ from fastapi import APIRouter
 from loguru import logger
 
 from config import app_config
+from utils.pydantic import CamelCaseJSONResponse
 
 router = APIRouter()
 
 
 @logger.catch()
-@router.get('/profile')
+@router.get('/profile', response_class=CamelCaseJSONResponse)
 async def profile():
     """
     系统信息
     """
     return {
-        'app_info': app_config.get('app', {})
+        'appInfo': app_config.get('app', {})
     }

@@ -69,3 +69,4 @@ class ConversationPO(PostgresBasePO):
     creator_uid: Mapped[str] = mapped_column(String(32), nullable=False, comment='创建者uid')
     workspace_uid: Mapped[str] = mapped_column(String(32), nullable=False, comment='空间uid')
     name: Mapped[str] = mapped_column(String(64), nullable=False, comment='会话名')
+    reset_message_uid: Mapped[str] = mapped_column(String(32), nullable=True, comment='重置/清楚记忆 时的消息UID')

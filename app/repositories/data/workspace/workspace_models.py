@@ -18,6 +18,8 @@ import enum
 
 from pydantic import BaseModel, Field
 
+from utils.pydantic import default_model_config
+
 
 class WorkspaceType(str, enum.Enum):
     """
@@ -48,9 +50,8 @@ class Workspace(BaseModel):
     is_deleted: bool = Field(default=False)
     """是否删除"""
 
-    # 设置允许额外字段
-    class Config:
-        extra = 'allow'
+    # 定义配置
+    model_config = default_model_config({"extra": "allow"})
 
 
 class WorkspaceMemberStatus(str, enum.Enum):
@@ -86,9 +87,15 @@ class WorkspaceMembership(BaseModel):
 
     workspace_uid: str
     """空间ID"""
+
     member_uid: str
     """成员ID"""
+
     member_role: WorkspaceMemberRole
     """成员角色"""
+
     member_status: WorkspaceMemberStatus
     """成员状态"""
+
+    # 定义配置
+    model_config = default_model_config()

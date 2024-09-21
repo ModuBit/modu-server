@@ -20,25 +20,33 @@ from pydantic import BaseModel
 
 from api.dependencies.principal import current_account
 from repositories.data.account.account_models import Account, AccountStatus
+from utils.pydantic import CamelCaseJSONResponse, default_model_config
 
 router = APIRouter()
 
 
 class AccountDTO(BaseModel):
-    # 账号ID
     uid: str
-    # 账号名称
+    """账号ID"""
+
     name: str
-    # 账号邮箱
+    """账号名称"""
+
     email: str
-    # 账号头像
+    """账号邮箱"""
+
     avatar: str | None
-    # 账号状态
+    """账号头像"""
+
     status: AccountStatus
+    """账号状态"""
+
+    # 定义配置
+    model_config = default_model_config()
 
 
 @logger.catch()
-@router.get(path='/me', response_model=AccountDTO)
+@router.get(path='/me', response_model=AccountDTO, response_class=CamelCaseJSONResponse)
 async def me(current_user: Account = Depends(current_account)) -> Account:
     """
     当前登录人信息

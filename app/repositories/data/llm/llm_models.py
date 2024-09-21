@@ -20,6 +20,7 @@ from pydantic import BaseModel
 
 from config import app_config
 from utils.crypto import composition
+from utils.pydantic import default_model_config
 
 
 class LLMProviderConfig(BaseModel):
@@ -38,6 +39,9 @@ class LLMProviderConfig(BaseModel):
 
     provider_credential: dict | str
     """Provider 凭证"""
+
+    # 定义配置
+    model_config = default_model_config()
 
     def encrypt_credential(self):
         if isinstance(self.provider_credential, str):
@@ -71,8 +75,9 @@ class LLMModelConfig(BaseModel):
     """Model 参数"""
 
     # 定义配置
-    class Config:
+    model_config = default_model_config({
         # 设置 protected_namespaces
         # UserWarning: Field "model_name" has conflict with protected namespace "model_".
         # UserWarning: Field "model_parameters" has conflict with protected namespace "model_".
-        protected_namespaces = ("_", "__")
+        "protected_namespaces": ("_", "__")
+    })
