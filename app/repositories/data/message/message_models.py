@@ -67,7 +67,7 @@ class MessageEventData(BaseModel):
     sender_uid: str
     """发送者UID"""
 
-    sender_role: Literal["user", "assistant"]
+    sender_role: Literal["user", "assistant", "system"]
     """发送者角色"""
 
     message: MessageBlock

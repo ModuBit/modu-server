@@ -48,6 +48,10 @@ from utils.errors.base_error import UnauthorizedError
 from utils.errors.llm_error import LLMExistsError
 from utils.iterator import single_element_async_iterator, merge_async_iterators
 from utils.pydantic import default_model_config
+from cachetools import TTLCache
+
+# 记录正在运行的generator，用于控制是否要中断运行
+generate_runner = TTLCache(maxsize=64, ttl=10 * 60)
 
 
 class Item(BaseModel):
@@ -88,6 +92,11 @@ class GenerateCmd(BaseModel):
 
 
 async def clear_memory(current_user: Account, conversation_uid: str) -> list[Message]:
+    """
+    清除记忆
+    :param current_user: 当前用户
+    :param conversation_uid: 会话 ID
+    """
     # TODO 这里需要考虑加锁
 
     # 找到会话
@@ -192,6 +201,23 @@ async def generate(current_user: Account, workspace_uid: str, chat_generate_cmd:
         yield_when_exception=lambda e: ErrorEvent(section_uid=str(ULID()), error=e))
 
     return message_events_checkpoint(current_user, workspace_uid, message_events, conversation, "")
+
+
+async def stop_generate(current_user: Account, conversation_uid: str) -> bool:
+    """
+    停止消息生成
+    :param current_user: 当前用户
+    :param conversation_uid: 会话 ID
+    """
+
+    # 找到会话
+    conversation = await conversation_repository.get_by_uid(current_user.uid, conversation_uid)
+    if not conversation:
+        raise UnauthorizedError('找不到当前会话')
+
+    # TODO 当前只支持单机local，需要考虑分布式集群部署的情况，将 stop 指令广播到所有进程进行处理
+    generate_runner[conversation_uid] = False
+    return True
 
 
 async def _make_graph_bot(current_user: Account, workspace_uid: str, chat_generate_cmd: GenerateCmd) -> CompiledGraph:
@@ -319,7 +345,34 @@ async def message_events_checkpoint(current_user: Account, workspace_uid: str,
 
     message_uid = BasePO.uid_generate()
 
+    generate_runner[conversation.conversation_uid] = True
     async for event in event_iter:
+        if not generate_runner.get(conversation.conversation_uid, True):
+            # 用户停止了任务
+            generate_runner.pop(conversation.conversation_uid, True)
+
+            message = MessageEventData(
+                conversation_uid=conversation.conversation_uid,
+                sender_uid="system",
+                sender_role="system",
+                message_uid=BasePO.uid_generate(),
+                message_time=int(datetime.now().timestamp()) * 1000,
+                message=MessageBlock(
+                    type="system",
+                    content_type="text",
+                    content="用户终止了生成",
+                    section_uid=BasePO.uid_generate()
+                ),
+                is_finished=True,
+            )
+            checkpoint_saver.process(message)
+            await checkpoint_saver.save()
+            yield f'event: message\ndata: {message.model_dump_json(by_alias=True)}\n\n'
+            yield f'event: done\n\n'
+
+            # FIXME 虽然不再向端推送，但是llm的请求并未终止，依然在持续生成（持续消耗token）
+            return
+
         if isinstance(event, MessageStartEvent):
             message = MessageEventData(
                 conversation_uid=conversation.conversation_uid,
@@ -356,10 +409,12 @@ async def message_events_checkpoint(current_user: Account, workspace_uid: str,
             yield f'event: message\ndata: {message.model_dump_json(by_alias=True)}\n\n'
 
         if isinstance(event, MessageEndEvent):
+            generate_runner.pop(conversation.conversation_uid, True)
             await checkpoint_saver.save()
             yield f'event: done\n\n'
 
         if isinstance(event, ErrorEvent):
+            generate_runner.pop(conversation.conversation_uid, True)
             message = MessageEventData(
                 conversation_uid=conversation.conversation_uid,
                 sender_uid=assistant_uid,
