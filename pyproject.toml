@@ -72,8 +72,9 @@ loguru = "^0.7.2"
 ## [工具大全](https://boltons.readthedocs.io/)
 boltons = "^24.0.0"
 ## [Eventbus Blinker](https://blinker.readthedocs.io/)
-# blinker
-
+blinker = "^1.8.2"
+## [Local Cache](https://cachetools.readthedocs.io)
+cachetools = "^5.5.0"
 
 # 链路
 [tool.poetry.group.trace.dependencies]

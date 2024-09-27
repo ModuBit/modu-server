@@ -68,6 +68,17 @@ async def chat(workspace_uid: str | None, chat_generate_cmd: GenerateCmd,
 
 
 @logger.catch()
+@router.put(path='/chat/{conversation_uid}/stop')
+async def chat(conversation_uid: str, current_user: Account = Depends(current_account)) -> bool:
+    """
+    停止生成
+    :param conversation_uid: 会话 ID
+    :param current_user: 当前用户
+    """
+    return await llm_generate_service.stop_generate(current_user, conversation_uid)
+
+
+@logger.catch()
 @router.post(path='/chat/{conversation_uid}/message/clear')
 async def clear_memory(conversation_uid: str, current_user: Account = Depends(current_account)) -> list[Message]:
     """
@@ -117,6 +128,7 @@ async def latest_conversation(current_user: Account = Depends(current_account)) 
     """
     return await message_service.latest_conversations(current_user)
 
+
 @logger.catch()
 @router.delete(path='/chat/conversation/all')
 async def delete_all_conversations(current_user: Account = Depends(current_account)) -> bool:
@@ -125,6 +137,7 @@ async def delete_all_conversations(current_user: Account = Depends(current_accou
     :param current_user: 当前用户
     """
     return await message_service.delete_all_conversations(current_user)
+
 
 @logger.catch()
 @router.delete(path='/chat/conversation/{conversation_uid}')

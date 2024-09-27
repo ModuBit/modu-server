@@ -68,8 +68,8 @@ class LLMMessageCheckPointSaver:
             self._current_message = Message(
                 conversation_uid=self._conversation.conversation_uid,
                 message_uid=message_event.message_uid,
-                sender_uid=self._assistant_uid,
-                sender_role="assistant",
+                sender_uid=message_event.sender_uid or self._assistant_uid,
+                sender_role=message_event.sender_role or "assistant",
                 message_time=message_event.message_time,
                 messages=[message_event.message])
 
