@@ -65,6 +65,7 @@ class LLMProviderConfigRepositoryPostgres(LLMProviderConfigRepository):
         stmt = (select(LLMProviderConfigPO)
                 .where(LLMProviderConfigPO.workspace_uid == workspace_uid)
                 .where(LLMProviderConfigPO.provider_name == provider_name)
+                .where(LLMProviderConfigPO.is_deleted == False)
                 .limit(1))
         select_result = await session.execute(stmt)
         provider_config = select_result.scalars().one_or_none()
@@ -77,6 +78,7 @@ class LLMProviderConfigRepositoryPostgres(LLMProviderConfigRepository):
     async def list_all(self, workspace_uid: str, session: AsyncSession) -> list[LLMProviderConfig]:
         stmt = (select(LLMProviderConfigPO)
                 .where(LLMProviderConfigPO.workspace_uid == workspace_uid)
+                .where(LLMProviderConfigPO.is_deleted == False)
                 .order_by(LLMProviderConfigPO.created_at.desc()))
         select_result = await session.execute(stmt)
         return [config.to_llm_provider_config() for config in select_result.scalars()]

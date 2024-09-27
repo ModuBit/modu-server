@@ -78,7 +78,7 @@ class MessageRepositoryPostgres(MessageRepository):
             ).scalar_subquery()
             stmt = stmt.where(MessagePO.message_time > reset_message_uid_subquery)
 
-        stmt = stmt.order_by(MessagePO.message_time.desc()).limit(latest_count)
+        stmt = stmt.where(MessagePO.is_deleted == False).order_by(MessagePO.message_time.desc()).limit(latest_count)
 
         select_result = await session.execute(stmt)
         return [Message.model_validate(message.as_dict(alias_mapping=_alias_mapping)) for message in select_result.scalars()][::-1]
@@ -102,13 +102,13 @@ class MessageRepositoryPostgres(MessageRepository):
             ).scalar_subquery()
             stmt = stmt.where(MessagePO.message_time > reset_message_uid_subquery)
 
-        stmt = stmt.order_by(MessagePO.message_time.desc()).limit(max_count)
+        stmt = stmt.where(MessagePO.is_deleted == False).order_by(MessagePO.message_time.desc()).limit(max_count)
 
         select_result = await session.execute(stmt)
         return [Message(**message.as_dict(alias_mapping=_alias_mapping)) for message in select_result.scalars()][::-1]
 
     @with_async_session
-    async def find_after_uid(self, conversation_uid: str, after_uid: str | None, max_count: int,
+    async def find_after_uid(self, conversation_uid: str, after_uid: str | None, include_this: bool, max_count: int,
                              reset_message_uid: str | None,
                              session: AsyncSession) -> list[Message]:
         stmt = (select(MessagePO)
@@ -121,7 +121,8 @@ class MessageRepositoryPostgres(MessageRepository):
                 .where(MessagePO.uid == after_uid)
                 .where(MessagePO.is_deleted == False)
             ).scalar_subquery()
-            stmt = stmt.where(MessagePO.message_time > after_uid_subquery)
+            stmt = stmt.where(MessagePO.message_time >= after_uid_subquery) \
+                if include_this else stmt.where(MessagePO.message_time > after_uid_subquery)
 
         if reset_message_uid:
             reset_message_uid_subquery = (
@@ -131,26 +132,28 @@ class MessageRepositoryPostgres(MessageRepository):
             ).scalar_subquery()
             stmt = stmt.where(MessagePO.message_time > reset_message_uid_subquery)
 
-        stmt = stmt.order_by(MessagePO.message_time.desc()).limit(max_count)
+        stmt = stmt.where(MessagePO.is_deleted == False).order_by(MessagePO.message_time.desc()).limit(max_count)
 
         select_result = await session.execute(stmt)
         return [Message(**message.as_dict(alias_mapping=_alias_mapping)) for message in select_result.scalars()][::-1]
 
     @with_async_session
-    async def find_before_and_uid(self, conversation_uid: str, before_and_uid: str | None, max_count: int,
-                                  reset_message_uid: str | None,
-                                  session: AsyncSession) -> list[Message]:
+    async def find_before_uid(self, conversation_uid: str, before_uid: str | None,
+                              include_this: bool, max_count: int,
+                              reset_message_uid: str | None,
+                              session: AsyncSession) -> list[Message]:
         stmt = (select(MessagePO)
                 .where(MessagePO.conversation_uid == conversation_uid)
                 .where(MessagePO.is_deleted == False))
 
-        if before_and_uid:
-            before_and_uid_subquery = (
+        if before_uid:
+            before_uid_subquery = (
                 select(MessagePO.message_time)
-                .where(MessagePO.uid == before_and_uid)
+                .where(MessagePO.uid == before_uid)
                 .where(MessagePO.is_deleted == False)
             ).scalar_subquery()
-            stmt = stmt.where(MessagePO.message_time <= before_and_uid_subquery)
+            stmt = stmt.where(MessagePO.message_time <= before_uid_subquery) \
+                if include_this else stmt.where(MessagePO.message_time < before_uid_subquery)
 
         if reset_message_uid:
             reset_message_uid_subquery = (

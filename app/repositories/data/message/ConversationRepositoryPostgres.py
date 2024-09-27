@@ -15,7 +15,7 @@ limitations under the License.
 """
 from typing import Dict
 
-from sqlalchemy import PrimaryKeyConstraint, String, update
+from sqlalchemy import PrimaryKeyConstraint, String, update, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import Mapped, mapped_column
@@ -27,7 +27,8 @@ from repositories.data.postgres_database import PostgresBasePO
 from utils.dictionary import dict_exclude_keys
 
 _alias_mapping: Dict[str, AliasMapper] = {
-    'uid': AliasMapper(alias='conversation_uid')
+    'uid': AliasMapper(alias='conversation_uid'),
+    'created_at': AliasMapper(alias='created_at', value=lambda created_at: created_at.timestamp() * 1000),
 }
 
 
@@ -48,8 +49,28 @@ class ConversationRepositoryPostgres(ConversationRepository):
         return Conversation(**conversation_model.as_dict(alias_mapping=_alias_mapping)) if conversation_model else None
 
     @with_async_session
+    async def find_before_uid(self, creator_uid: str, before_uid: str | None, include_this: bool, max_count: int,
+                              session: AsyncSession) -> list[Conversation]:
+        stmt = (select(ConversationPO)
+                .where(ConversationPO.creator_uid == creator_uid)
+                .where(ConversationPO.is_deleted == False))
+
+        if before_uid:
+            before_uid_subquery = (
+                select(ConversationPO.created_at)
+                .where(ConversationPO.uid == before_uid)
+                .where(ConversationPO.is_deleted == False)
+            ).scalar_subquery()
+            stmt = stmt.where(ConversationPO.created_at <= before_uid_subquery) \
+                if include_this else stmt.where(ConversationPO.created_at < before_uid_subquery)
+
+        stmt = stmt.order_by(ConversationPO.created_at.desc()).limit(max_count)
+        select_result = await session.execute(stmt)
+        return [Conversation(**conv.as_dict(alias_mapping=_alias_mapping)) for conv in select_result.scalars()]
+
+    @with_async_session
     async def create(self, conversation: Conversation, session: AsyncSession) -> Conversation:
-        conversation_po = ConversationPO(**dict_exclude_keys(vars(conversation), ['conversation_uid']))
+        conversation_po = ConversationPO(**dict_exclude_keys(vars(conversation), ['conversation_uid', 'create_at']))
         conversation_po.uid = BasePO.uid_generate()
         session.add(conversation_po)
         conversation.conversation_uid = conversation_po.uid
@@ -63,6 +84,26 @@ class ConversationRepositoryPostgres(ConversationRepository):
         await session.execute(stmt)
 
         return reset_message_uid
+
+    @with_async_session
+    async def delete_by_uid(self, conversation_uid: str, session: AsyncSession) -> bool:
+        stmt = delete(ConversationPO).where(ConversationPO.uid == conversation_uid)
+        await session.execute(stmt)
+        return True
+
+    @with_async_session
+    async def delete_all_by_creator(self, creator_uid: str, session: AsyncSession) -> bool:
+        stmt = delete(ConversationPO).where(ConversationPO.creator_uid == creator_uid)
+        await session.execute(stmt)
+        return True
+
+    @with_async_session
+    async def update_name(self, conversation_uid: str, name: str, session: AsyncSession) -> str:
+        stmt = (update(ConversationPO)
+                .where(ConversationPO.uid == conversation_uid)
+                .values(name=name))
+        await session.execute(stmt)
+        return name
 
 
 class ConversationPO(PostgresBasePO):

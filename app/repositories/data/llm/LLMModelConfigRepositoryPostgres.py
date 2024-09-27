@@ -52,7 +52,10 @@ class LLMModelConfigRepositoryPostgres(LLMModelConfigRepository):
     @with_async_session
     async def find_system_models_by_workspace(
             self, workspace_uid: str, session: AsyncSession) -> dict[ModelType, LLMModelConfig] | None:
-        stmt = select(LLMSystemModelConfigPO).where(LLMSystemModelConfigPO.workspace_uid == workspace_uid).limit(1)
+        stmt = (select(LLMSystemModelConfigPO)
+                .where(LLMSystemModelConfigPO.workspace_uid == workspace_uid)
+                .where(LLMSystemModelConfigPO.is_deleted == False)
+                .limit(1))
         select_result = await session.execute(stmt)
         system_model = select_result.scalars().one_or_none()
         if system_model is None:

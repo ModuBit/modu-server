@@ -35,8 +35,22 @@ class ConversationRepository(Repository):
         通过uid查询会话
         :param creator_uid: 用户 uid
         :param conversation_uid: 会话uid
-        :return Conversation
         :param session: Session
+        :return Conversation
+        """
+        raise NotImplementedError()
+
+    @abstractmethod
+    async def find_before_uid(self, creator_uid: str, before_uid: str, include_this: bool, max_count: int,
+                              session: AsyncSession) -> list[Conversation]:
+        """
+        查询某会话前的会话
+        :param creator_uid: 用户 uid
+        :param before_uid: 指定会话uid
+        :param include_this: 是否包含该条
+        :param max_count: 返回的最大条数
+        :param session: Session
+        :return Conversation
         """
         raise NotImplementedError()
 
@@ -56,6 +70,34 @@ class ConversationRepository(Repository):
         更新 重置/清楚记忆 时的消息UID
         :param conversation_uid: 会话UID
         :param reset_message_uid: 重置/清楚记忆 时的消息UID
+        :param session: Session
+        """
+        raise NotImplementedError()
+
+    @abstractmethod
+    async def delete_by_uid(self, conversation_uid: str, session: AsyncSession) -> bool:
+        """
+        删除会话
+        :param conversation_uid: 会话 UID
+        :param session: Session
+        """
+        raise NotImplementedError()
+
+    @abstractmethod
+    async def delete_all_by_creator(self, creator_uid: str, session: AsyncSession) -> bool:
+        """
+        删除所有会话
+        :param creator_uid: 用户 uid
+        :param session: Session
+        """
+        raise NotImplementedError()
+
+    @abstractmethod
+    async def update_name(self, conversation_uid: str, name: str, session: AsyncSession) -> str:
+        """
+        更新会话名称
+        :param conversation_uid: 会话 UID
+        :param name: 会话名称
         :param session: Session
         """
         raise NotImplementedError()

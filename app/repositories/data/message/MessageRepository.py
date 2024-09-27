@@ -76,13 +76,14 @@ class MessageRepository(Repository):
         raise NotImplementedError()
 
     @abstractmethod
-    async def find_after_uid(self, conversation_uid: str, after_uid: str, max_count: int,
+    async def find_after_uid(self, conversation_uid: str, after_uid: str, include_this: bool, max_count: int,
                              reset_message_uid: str,
                              session: AsyncSession) -> list[Message]:
         """
         查找某条消息之后的所有消息
         :param conversation_uid: 会话ID
         :param after_uid: 某消息uid
+        :param include_this: 是否包含该条
         :param max_count: 返回的最大条数
         :param reset_message_uid: 重置消息 UID
         :param session: Session
@@ -90,13 +91,14 @@ class MessageRepository(Repository):
         raise NotImplementedError()
 
     @abstractmethod
-    async def find_before_and_uid(self, conversation_uid: str, before_and_uid: str, max_count: int,
-                                  reset_message_uid: str,
-                                  session: AsyncSession) -> list[Message]:
+    async def find_before_uid(self, conversation_uid: str, before_uid: str, include_this: bool, max_count: int,
+                              reset_message_uid: str,
+                              session: AsyncSession) -> list[Message]:
         """
-        查找某条消息及之前的所有消息
+        查找某条消息之前的所有消息
         :param conversation_uid: 会话ID
-        :param before_and_uid: 某消息uid
+        :param before_uid: 某消息uid
+        :param include_this: 是否包含该条
         :param max_count: 返回的最大条数
         :param reset_message_uid: 重置消息 UID
         :param session: Session

@@ -53,7 +53,7 @@ class ConversationSummaryBufferMemory:
 
         # 总结过，取总结后的最近最多10条消息（5组对话）
         messages_after_summary = await message_repository.find_after_uid(self._conversation.conversation_uid,
-                                                                         message_summary.last_message_uid, 10,
+                                                                         message_summary.last_message_uid, False,10,
                                                                          reset_message_uid=self._conversation.reset_message_uid)
         if not messages_after_summary:
             # 总结后还没有过对话，取最近最多4条消息（2组对话）
@@ -62,8 +62,8 @@ class ConversationSummaryBufferMemory:
         elif len(messages_after_summary) < 6:
             # 总结后的对话不足6条(3组对话），补齐
             need_count = 6 - len(messages_after_summary)
-            messages_before_summary = (await message_repository.find_before_and_uid(
-                self._conversation.conversation_uid, message_summary.last_message_uid, need_count + (need_count & 1),
+            messages_before_summary = (await message_repository.find_before_uid(
+                self._conversation.conversation_uid, message_summary.last_message_uid, True, need_count + (need_count & 1),
                 reset_message_uid=self._conversation.reset_message_uid)) or []
             messages_after_summary = messages_before_summary + messages_after_summary
 
@@ -116,7 +116,7 @@ class ConversationSummaryBufferMemory:
 
         # 待总结的消息
         messages_waiting_summary = await message_repository.find_after_uid(self._conversation.conversation_uid,
-                                                                           summary_latest_message_uid, 10,
+                                                                           summary_latest_message_uid, False,10,
                                                                            reset_message_uid=self._conversation.reset_message_uid)
         if not messages_waiting_summary:
             return

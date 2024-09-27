@@ -14,7 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from fastapi import APIRouter, Depends
+from typing import Optional
+
+from fastapi import APIRouter, Depends, Query
 from fastapi.responses import JSONResponse, Response
 from fastapi.responses import StreamingResponse
 from loguru import logger
@@ -22,8 +24,9 @@ from starlette.responses import ContentStream
 
 from api.dependencies.principal import current_account
 from repositories.data.account.account_models import Account
+from repositories.data.message.conversation_models import Conversation
 from repositories.data.message.message_models import Message
-from services import llm_generate_service, workspace_service
+from services import llm_generate_service, workspace_service, message_service
 from services.llm.generate.llm_generate_service import GenerateCmd
 from utils.errors.base_error import UnauthorizedError
 
@@ -69,5 +72,79 @@ async def chat(workspace_uid: str | None, chat_generate_cmd: GenerateCmd,
 async def clear_memory(conversation_uid: str, current_user: Account = Depends(current_account)) -> list[Message]:
     """
     清除会话记忆
+    :param conversation_uid: 会话ID
+    :param current_user: 当前用户
     """
     return await llm_generate_service.clear_memory(current_user, conversation_uid)
+
+
+@logger.catch()
+@router.get(path='/chat/{conversation_uid}/messages')
+async def messages(conversation_uid: str,
+                   before_message_uid: Optional[str] = Query(None, alias="beforeMessageUid"),
+                   max_count: int = Query(..., alias="maxCount"),
+                   current_user: Account = Depends(current_account)) -> list[Message]:
+    """
+    查询会话消息
+    :param conversation_uid: 会话 ID
+    :param before_message_uid: 查询该消息之前的
+    :param max_count: 返回多少条
+    :param current_user: 当前用户
+    """
+    return await message_service.messages(current_user, conversation_uid, before_message_uid, max_count)
+
+
+@logger.catch()
+@router.get(path='/chat/conversations')
+async def conversations(before_conversation_uid: Optional[str] = Query(None, alias="beforeConversationUid"),
+                        max_count: int = Query(..., alias="maxCount"),
+                        current_user: Account = Depends(current_account)) -> list[Conversation]:
+    """
+    查询会话
+    :param before_conversation_uid: 查询该会话之前的
+    :param max_count: 返回多少条
+    :param current_user: 当前用户
+    """
+    return await message_service.conversations(current_user, before_conversation_uid, max_count)
+
+
+@logger.catch()
+@router.get(path='/chat/conversation/latest')
+async def latest_conversation(current_user: Account = Depends(current_account)) -> Conversation:
+    """
+    查询最新会话
+    :param current_user: 当前用户
+    """
+    return await message_service.latest_conversations(current_user)
+
+@logger.catch()
+@router.delete(path='/chat/conversation/all')
+async def delete_all_conversations(current_user: Account = Depends(current_account)) -> bool:
+    """
+    删除所有会话
+    :param current_user: 当前用户
+    """
+    return await message_service.delete_all_conversations(current_user)
+
+@logger.catch()
+@router.delete(path='/chat/conversation/{conversation_uid}')
+async def delete_conversation(conversation_uid: str, current_user: Account = Depends(current_account)) -> bool:
+    """
+    删除会话
+    :param conversation_uid: 会话 ID
+    :param current_user: 当前用户
+    """
+    return await message_service.delete_conversation(current_user, conversation_uid)
+
+
+@logger.catch()
+@router.put(path='/chat/conversation/{conversation_uid}/rename')
+async def rename_conversation(conversation_uid: str, name: str,
+                              current_user: Account = Depends(current_account)) -> str:
+    """
+    修改会话名
+    :param conversation_uid: 会话 ID
+    :param name: 会话名
+    :param current_user: 当前用户
+    """
+    return await message_service.rename_conversation(current_user, conversation_uid, name)

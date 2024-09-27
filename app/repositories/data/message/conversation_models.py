@@ -39,5 +39,8 @@ class Conversation(BaseModel):
     reset_message_uid: str | None = None
     """重置/清楚记忆 时的消息UID"""
 
+    created_at: int | None = None
+    """创建时间"""
+
     # 定义配置
     model_config = default_model_config()

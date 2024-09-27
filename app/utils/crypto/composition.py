@@ -66,12 +66,12 @@ def decrypt(secret: bytes, key: bytes, cipher_bytes: bytes) -> bytes:
 
 def decrypt_str(secret: str, key: str, cipher_content: str) -> str:
     """
-        解密
-        :param secret: 密钥
-        :param key: 密钥
-        :param cipher_content: 待解密内容
-        :return: 解密后的内容
-        """
+    解密
+    :param secret: 密钥
+    :param key: 密钥
+    :param cipher_content: 待解密内容
+    :return: 解密后的内容
+    """
     plain_bytes = decrypt(secret.encode('utf-8'), key.encode('utf-8'), bytearray.fromhex(cipher_content))
     return plain_bytes.decode('utf-8')
 
