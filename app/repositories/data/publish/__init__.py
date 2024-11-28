@@ -14,6 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from .PublishConfigRepository import PublishConfigRepository
+from .PublishConfigRepositoryPostgres import PublishConfigRepositoryPostgres
+
 __all__ = [
-    'bot',
+    "publish_config",
+    "PublishConfigRepository",
+    "PublishConfigRepositoryPostgres"
 ]

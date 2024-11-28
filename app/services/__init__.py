@@ -23,4 +23,5 @@ __all__ = [
     'llm_provider_service',
     'llm_model_service',
     'llm_generate_service',
+    'bot_service'
 ]

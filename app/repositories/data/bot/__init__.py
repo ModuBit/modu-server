@@ -14,6 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from .BotRepository import BotRepository
+from .BotRepositoryPostgres import BotRepositoryPostgres
+
 __all__ = [
-    'bot',
+    "bot_models",
+    "BotRepository",
+    "BotRepositoryPostgres"
 ]

@@ -31,6 +31,26 @@ class AccountRepository(Repository):
         super().__init__(database)
 
     @abstractmethod
+    async def find_one_by_uid(self, uid: str, session: AsyncSession) -> Account:
+        """
+        通过uid查找账号
+        :param uid: UID
+        :param session: Session
+        :return: 账号
+        """
+        raise NotImplementedError()
+
+    @abstractmethod
+    async def find_by_uids(self, uids: list[str], session: AsyncSession) -> list[Account]:
+        """
+        通过uid查找账号
+        :param uids: UID
+        :param session: Session
+        :return: 账号
+        """
+        raise NotImplementedError()
+
+    @abstractmethod
     async def find_one_by_email(self, email: str, session: AsyncSession) -> Account:
         """
         通过email查找账号

@@ -18,50 +18,45 @@ import enum
 
 from pydantic import BaseModel
 
+from repositories.data.account.account_models import AccountInfo
 from utils.pydantic import default_model_config
 
 
-class AccountStatus(str, enum.Enum):
+class BotMode(str, enum.Enum):
     """
-    用户状态
+    BOT模式
+    """
+    SINGLE_AGENT = "SINGLE_AGENT"
+    """单智能体"""
+    MULTI_AGENTS = "MULTI_AGENTS"
+    """多智能体"""
+
+
+class Bot(BaseModel):
+    """
+    BOT
     """
 
-    PENDING = 'PENDING'
-    """待激活"""
-    ACTIVE = 'ACTIVE'
-    """已激活"""
-    BANNED = 'BANNED'
-    """已禁用"""
-    CLOSED = 'CLOSED'
-    """已注销"""
-
-
-class AccountInfo(BaseModel):
-    uid: str
-    """账号ID"""
-
+    uid: str | None = None
+    """uid"""
+    workspace_uid: str
+    """空间UID"""
     name: str
-    """账号名称"""
-
-    email: str
-    """账号邮箱"""
-
-    avatar: str | None
-    """账号头像"""
-
-    status: AccountStatus
-    """账号状态"""
-
-    # 定义配置
-    model_config = default_model_config()
-
-
-class Account(AccountInfo):
-    """
-    账号
-    """
-    password: str | None = None
-    """账号密码"""
+    """名称"""
+    avatar: str | None = None
+    """头像"""
+    description: str | None = None
+    """描述"""
+    creator_uid: str
+    """创建人UID"""
+    creator: AccountInfo | None = None
+    """创建人"""
+    mode: BotMode | None = None
+    """模式"""
+    config: dict | None = None
+    """BOT配置"""
+    publish_uid: str | None = None
+    """发布UID"""
 
     # 定义配置
     model_config = default_model_config()

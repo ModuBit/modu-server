@@ -32,6 +32,22 @@ class AccountRepositoryPostgres(AccountRepository):
     """
 
     @with_async_session
+    async def find_one_by_uid(self, uid: str, session: AsyncSession) -> Account | None:
+        stmt = (select(AccountPO)
+                .where(AccountPO.uid == uid)
+                .limit(1))
+        select_result = await session.execute(stmt)
+        account_model = select_result.scalars().one_or_none()
+        return Account(**account_model.as_dict()) if account_model else None
+
+    @with_async_session
+    async def find_by_uids(self, uids: list[str], session: AsyncSession) -> list[Account]:
+        stmt = (select(AccountPO)
+                .where(AccountPO.uid.in_(uids)))
+        select_result = await session.execute(stmt)
+        return [Account(**conv.as_dict()) for conv in select_result.scalars()]
+
+    @with_async_session
     async def find_one_by_email(self, email: str, session: AsyncSession) -> Account:
         stmt = (select(AccountPO)
                 .where(AccountPO.email == email)
@@ -64,7 +80,7 @@ class AccountPO(PostgresBasePO):
     账号PO
     """
 
-    __tablename__ = 'modu_account'
+    __tablename__ = 'modu_accounts'
     __table_args__ = (
         PrimaryKeyConstraint('id', name='pk_id'),
     )

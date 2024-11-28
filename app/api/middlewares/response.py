@@ -46,10 +46,12 @@ def register(app: FastAPI):
         process_time = (time.time() - start_time) * 1000
         response.headers["X-Process-Time"] = f"{process_time:.2f}"
 
-        if 'text/event-stream' in response.headers.get('content-type'):
+        if 'text/event-stream' in (response.headers.get('content-type') or []):
+            # 流式输出
             return response
 
         if request.url.path.endswith('.json') or request.url.path.endswith('.txt'):
+            # 资源文件
             _log(request=request, response=response, process_time=process_time)
             return response
 
@@ -59,7 +61,7 @@ def register(app: FastAPI):
             return response
 
         # 判断request accept 是否为 application/json，包装response的body内容
-        if 'application/json' in request.headers.get('accept'):
+        if 'application/json' in (request.headers.get('accept') or []):
             # 异步读取response body
             original_body = b""
             async for chunk in response.body_iterator:

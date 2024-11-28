@@ -21,6 +21,7 @@ from sqlalchemy.exc import DBAPIError
 from fastapi.responses import JSONResponse
 
 from utils.errors.base_error import BaseServiceError
+from .bot import bot
 from .auth import login, users
 from .llm import llm_schema, llm_provider, llm_model
 from .message import message
@@ -61,8 +62,12 @@ def register(app: FastAPI):
                        dependencies=[Depends(token_verify)],
                        tags=['provider config | Provider 配置'])
 
+    app.include_router(bot.router, prefix='/api/workspace/{workspace_uid}/bot',
+                       dependencies=[Depends(token_verify)],
+                       tags=['bot | 智能体/机器人'])
+
     app.include_router(message.router, prefix='/api',
-                       # dependencies=[Depends(token_verify)],
+                       dependencies=[Depends(token_verify)],
                        tags=['message | 消息'])
 
 

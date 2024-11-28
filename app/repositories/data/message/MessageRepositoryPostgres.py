@@ -256,7 +256,7 @@ class MessageSummaryPO(PostgresBasePO):
     消息PO
     """
 
-    __tablename__ = 'modu_messages_summary'
+    __tablename__ = 'modu_message_summary'
     __table_args__ = (
         PrimaryKeyConstraint('id', name='pk_id'),
     )

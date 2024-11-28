@@ -123,7 +123,7 @@ class WorkspacePO(PostgresBasePO):
     空间PO
     """
 
-    __tablename__ = 'modu_workspace'
+    __tablename__ = 'modu_workspaces'
     __table_args__ = (
         PrimaryKeyConstraint('id', name='pk_id'),
     )

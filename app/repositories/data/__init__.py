@@ -15,10 +15,12 @@ limitations under the License.
 """
 
 from .account import AccountRepository
+from .bot import BotRepository
 from .data_repository_container import get_repository, get_database
 from .database import Database
 from .llm import LLMProviderConfigRepository, LLMModelConfigRepository
 from .message import ConversationRepository, MessageRepository, MessageSummaryRepository
+from .publish import PublishConfigRepository
 from .workspace import WorkspaceRepository
 
 database: Database = get_database()
@@ -29,6 +31,8 @@ llm_model_config_repository: LLMModelConfigRepository = get_repository('llm_mode
 conversation_repository: ConversationRepository = get_repository('conversation')
 message_repository: MessageRepository = get_repository('message')
 message_summary_repository: MessageSummaryRepository = get_repository('message_summary')
+bot_repository: BotRepository = get_repository('bot')
+publish_config_repository: PublishConfigRepository = get_repository('publish_config')
 
 __all__ = [
     account_repository,

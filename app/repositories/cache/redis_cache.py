@@ -33,6 +33,11 @@ class RedisCache(Cache):
     async def get(self, key: str) -> str | bytes | None:
         return await self._redis.get(key)
 
+    async def mget(self, keys: list[str]) -> list[str | bytes | None]:
+        if not keys:
+            return []
+        return await self._redis.mget(keys)
+
     async def set(self, key: str, value: str | bytes, expire_seconds: int = 0):
         await self._redis.set(key, value, ex=expire_seconds)
 

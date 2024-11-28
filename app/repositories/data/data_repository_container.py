@@ -20,6 +20,7 @@ from config import app_config
 from utils.dictionary import dict_get
 from utils.lifespan import register_pre_destroy_executor
 from .account import AccountRepository, AccountRepositoryPostgres
+from .bot import BotRepository, BotRepositoryPostgres
 from .database import Database
 from .llm import LLMProviderConfigRepository, LLMProviderConfigRepositoryPostgres, \
     LLMModelConfigRepository, LLMModelConfigRepositoryPostgres
@@ -27,6 +28,7 @@ from .message import (ConversationRepository, ConversationRepositoryPostgres,
                       MessageRepository, MessageRepositoryPostgres,
                       MessageSummaryRepository, MessageSummaryRepositoryPostgres)
 from .postgres_database import PostgresDatabase
+from .publish import PublishConfigRepository, PublishConfigRepositoryPostgres
 from .workspace import WorkspaceRepository, WorkspaceRepositoryPostgres
 
 RepositoryInstance = TypeVar('RepositoryInstance')
@@ -69,6 +71,16 @@ _message_repository_mapping = {
 _message_summary_repository: MessageSummaryRepository | None = None
 _message_summary_repository_mapping = {
     'postgres': MessageSummaryRepositoryPostgres
+}
+
+_bot_repository: BotRepository | None = None
+_bot_repository_mapping = {
+    'postgres': BotRepositoryPostgres
+}
+
+_publish_config_repository: PublishConfigRepository | None = None
+_publish_config_repository_mapping = {
+    'postgres': PublishConfigRepositoryPostgres
 }
 
 

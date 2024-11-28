@@ -58,6 +58,15 @@ class Cache(ABC):
         raise NotImplementedError()
 
     @abstractmethod
+    async def mget(self, keys: list[str]) -> list[str | bytes]:
+        """
+        批量获取缓存
+        :param keys: 缓存健列表
+        :return: 缓存内容
+        """
+        raise NotImplementedError()
+
+    @abstractmethod
     async def set(self, key: str, value: str | bytes, expire_seconds: int = 0):
         """
         设置缓存
@@ -249,6 +258,20 @@ class CacheDecorator(Generic[T]):
             return wrapper
 
         return decorator
+
+    @property
+    def cache(self):
+        return self._cache
+
+    @property
+    def default_expire_time(self):
+        return self._default_expire_time
+
+    def deserialize(self, content: str) -> T:
+        return self._deserialize(content)
+
+    def serialize(self, value: T) -> str:
+        return self._serialize(value)
 
 
 class CacheDecoratorBuilder:
