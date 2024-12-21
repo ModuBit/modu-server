@@ -30,5 +30,5 @@ async def profile():
     系统信息
     """
     return {
-        'appInfo': app_config.get('app', {})
+        'app_info': app_config.get('app', {})
     }

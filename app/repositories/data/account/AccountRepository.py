@@ -61,10 +61,12 @@ class AccountRepository(Repository):
         raise NotImplementedError()
 
     @abstractmethod
-    async def create(self, account: Account, session: AsyncSession) -> Account:
+    async def create(self, name: str, email: str, password: str, session: AsyncSession) -> Account:
         """
         创建账号
-        :param account: 账号
+        :param name: 用户名
+        :param email: 邮箱
+        :param password: 密码
         :param session: Session
         :return:
         """

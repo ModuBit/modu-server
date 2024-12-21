@@ -52,6 +52,50 @@ async def add(current_user: Account, workspace_uid: str, bot: Bot) -> Bot:
     return await bot_repository.create(bot)
 
 
+@bot_detail_cache.async_cache_evict(
+    key_generator=lambda workspace_uid, bot_uid, **kwargs:
+    f"workspace:{workspace_uid}:bot:{bot_uid}")
+async def update(current_user: Account, workspace_uid: str, bot_uid: str, bot: Bot) -> Bot:
+    """
+    更新机器人/智能体的配置
+    :param current_user: 当前用户
+    :param workspace_uid: 空间UID
+    :param bot_uid: 机器人/智能体UID
+    :param bot: 机器人/智能体
+    :return: Bot
+    """
+    bot_detail = await detail(current_user, workspace_uid, bot_uid)
+    if not bot_detail:
+        raise UnauthorizedError('机器人/智能体不存在')
+    if bot_detail.creator_uid != current_user.uid:
+        raise UnauthorizedError('您无该机器人/智能体的权限')
+
+    bot.uid = bot_uid
+    return await bot_repository.update(bot)
+
+
+@bot_detail_cache.async_cacheable(
+    key_generator=lambda workspace_uid, bot_uid, **kwargs:
+    f"workspace:{workspace_uid}:bot:{bot_uid}")
+async def detail(current_user: Account, workspace_uid: str, bot_uid: str) -> Bot:
+    """
+    查找单个机器人/智能体
+    :param current_user: 当前用户
+    :param workspace_uid: 空间UID
+    :param bot_uid: 机器人/智能体UID
+    :return: Bot
+    """
+    member_role = await workspace_service.member_role(current_user, workspace_uid)
+    if member_role is None:
+        raise UnauthorizedError('您无该空间权限')
+
+    bot = await bot_repository.get_by_workspace_and_uid(workspace_uid, bot_uid)
+    if bot:
+        bot.creator = await account_service.get_account_info(bot.creator_uid)
+
+    return bot
+
+
 async def find(current_user: Account, workspace_uid: str, bot_list_query: BotListQry) -> list[Bot]:
     """
     查找某智能体前的智能体列表

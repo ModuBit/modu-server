@@ -35,7 +35,7 @@ class CamelCaseJSONResponse(JSONResponse):
     def _convert_to_dict(obj: Any) -> Any:
         if isinstance(obj, BaseModel):
             # 前提：需要实现 alias_generator
-            return obj.model_dump(by_alias=True)
+            return obj.model_dump(by_alias=False)
         elif isinstance(obj, dict):
             return {key: CamelCaseJSONResponse._convert_to_dict(value) for key, value in obj.items()}
         elif isinstance(obj, list):
@@ -52,7 +52,7 @@ def default_model_config(extra_model_config: dict[str, Any] | None = None) -> di
     """
     default_config = {
         # 别名生成（下划线转驼峰）
-        "alias_generator": _to_camel_case,
+        # "alias_generator": _to_camel_case,
         # 允许在反序列化时也使用别名
         "populate_by_name": True
     }

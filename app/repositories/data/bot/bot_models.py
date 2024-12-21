@@ -39,22 +39,31 @@ class Bot(BaseModel):
 
     uid: str | None = None
     """uid"""
+
     workspace_uid: str
     """空间UID"""
+
     name: str
     """名称"""
+
     avatar: str | None = None
     """头像"""
+
     description: str | None = None
     """描述"""
+
     creator_uid: str
     """创建人UID"""
+
     creator: AccountInfo | None = None
     """创建人"""
+
     mode: BotMode | None = None
     """模式"""
+
     config: dict | None = None
     """BOT配置"""
+
     publish_uid: str | None = None
     """发布UID"""
 

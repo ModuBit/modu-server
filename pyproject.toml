@@ -9,28 +9,28 @@ package-mode = false
 
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.13"
 
 
 # WEB
 [tool.poetry.group.web.dependencies]
 ## [fastapi](https://fastapi.tiangolo.com/)
-fastapi = { extras = ["all"], version = "^0.111.1" }
+fastapi = { extras = ["all"], version = "^0.115.5" }
 ## [uvloop](https://pypi.org/project/uvloop/)
-uvloop = "^0.19.0"
+uvloop = "^0.21.0"
 ## https://pypi.org/project/uvicorn/
-uvicorn = {extras = ["standard"], version = "^0.30.1"}
+uvicorn = {extras = ["standard"], version = "^0.32.1"}
 ## https://github.com/Kludex/uvicorn-worker
 uvicorn-worker = "^0.2.0"
 ## https://pypi.org/project/gunicorn/
-gunicorn = "^22.0.0"
+gunicorn = "^23.0.0"
 
 # 数据库
 [tool.poetry.group.db.dependencies]
 ## [ORM](https://docs.sqlalchemy.org/en/20/)
-sqlalchemy = { extras = ["asyncio"], version = "^2.0.31" }
+sqlalchemy = { extras = ["asyncio"], version = "^2.0.35" }
 ## [PostgreSQL Adapter](https://www.psycopg.org/)
-asyncpg = "^0.29.0"
+asyncpg = "^0.30.0"
 # psycopg2-binary
 ## [数据库版本管理](https://alembic.sqlalchemy.org/en/latest/)
 # alembic
@@ -39,7 +39,7 @@ asyncpg = "^0.29.0"
 # 缓存
 [tool.poetry.group.cache.dependencies]
 ## [redis](https://aioredis.readthedocs.io/en/latest/)
-redis = "^5.0.7"
+redis = "^5.2.0"
 ## [Memory](https://github.com/Yiling-J/theine)
 # theine
 
@@ -58,21 +58,21 @@ redis = "^5.0.7"
 ## [密码库passlib](https://passlib.readthedocs.io/)
 passlib = { extras = ["bcrypt"], version = "^1.7.4" }
 ## [密码库cryptography](https://cryptography.io/)
-cryptography = "^42.0.8"
+cryptography = "^44.0.0"
 ## [JWT](https://python-jose.readthedocs.io/)
 python-jose = { extras = ["cryptography"], version = "^3.3.0" }
 ## [json处理](https://simplejson.readthedocs.io/)
 simplejson = "^3.19.3"
 ## [yaml处理](https://pyyaml.org/)
-pyyaml = "^6.0.1"
+pyyaml = "^6.0.2"
 ## [id生成器ulid](https://python-ulid.readthedocs.io/en/latest/)
-python-ulid = "^2.7.0"
+python-ulid = "^3.0.0"
 ## [日志](https://loguru.readthedocs.io/en/stable/)
 loguru = "^0.7.2"
 ## [工具大全](https://boltons.readthedocs.io/)
-boltons = "^24.0.0"
+boltons = "^24.1.0"
 ## [Eventbus Blinker](https://blinker.readthedocs.io/)
-blinker = "^1.8.2"
+blinker = "^1.9.0"
 ## [Local Cache](https://cachetools.readthedocs.io)
 cachetools = "^5.5.0"
 
@@ -89,32 +89,32 @@ opentelemetry-instrumentation-fastapi = "^0.46b0"
 # LLM
 [tool.poetry.group.llm.dependencies]
 ## [LangChain](https://python.langchain.com/docs)
-langchain = "^0.3.0"
-langchain-core = "^0.3.0"
-langchain-community = "^0.3.0"
-langchain-experimental = "^0.3.0"
+langchain = "^0.3.9"
+langchain-core = "^0.3.21"
+langchain-community = "^0.3.8"
+langchain-experimental = "^0.3.3"
 ## trace
-langgraph = "^0.2.20"
-langfuse = "^2.44.1"
+langgraph = "^0.2.53"
+langfuse = "^2.55.0"
 ## [OpenAI]
-langchain-openai = "^0.2.0"
+langchain-openai = "^0.2.10"
 ## [阿里云dashscope]
-dashscope = "^1.20.1"
+dashscope = "^1.20.13"
 ## [百度千帆]
-qianfan = "^0.3.18"
+qianfan = "^0.4.12.1"
 ## [智普清言]
-zhipuai = "^2.1.2"
+zhipuai = "^2.1.4"
 
 
 # 测试
 [tool.poetry.group.dev.dependencies]
 ## [pytest](https://docs.pytest.org/en/latest/)
-pytest = "^8.2.2"
+pytest = "^8.3.4"
 ## [pytest-html](https://pytest-html.readthedocs.io/en/latest/)
 ## add arguments: --html=/some-dir/some-file.html
 pytest-html = "^4.1.1"
 ## [httpx](https://www.python-httpx.org/)
-httpx = "^0.27.0"
+httpx = "^0.28.0"
 
 
 [build-system]

@@ -17,7 +17,6 @@ limitations under the License.
 from repositories.cache import cache_decorator_builder
 from repositories.cache.cache import CacheDecorator
 from repositories.data import account_repository, workspace_repository, database
-from repositories.data.account.account_models import Account, AccountStatus
 from repositories.data.workspace.workspace_models import Workspace, WorkspaceType
 from utils.auth import hash_password
 from utils.common_utils import strtobool
@@ -57,15 +56,7 @@ async def initialize(name: str, email: str, password: str):
     # 显式使用session（存在多个写动作，保证事务一致性）
     async with database.async_session() as session:
         # 创建账号
-        account = await account_repository.create(
-            Account(
-                name=name,
-                email=email,
-                password=hash_password(password),
-                status=AccountStatus.ACTIVE
-            ),
-            session
-        )
+        account = await account_repository.create(name, email, hash_password(password), session)
 
         # 创建空间
         await workspace_repository.create(

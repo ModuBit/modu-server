@@ -57,9 +57,19 @@ class BotRepository(Repository):
         raise NotImplementedError()
 
     @abstractmethod
-    async def get_by_uid(self, bot_uid: str, session: AsyncSession) -> Bot:
+    async def update(self, bot: Bot, session: AsyncSession) -> Bot:
+        """
+        更新智能体
+        :param bot: 智能体
+        :param session: Session
+        """
+        raise NotImplementedError()
+
+    @abstractmethod
+    async def get_by_workspace_and_uid(self, workspace_uid: str, bot_uid: str, session: AsyncSession) -> Bot:
         """
         通过uid查询会话
+        :param workspace_uid: 空间 uid
         :param bot_uid: 机器人uid
         :param session: Session
         :return Conversation

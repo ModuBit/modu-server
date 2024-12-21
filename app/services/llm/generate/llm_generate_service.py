@@ -364,7 +364,7 @@ async def message_events_checkpoint(current_user: Account, workspace_uid: str,
             )
             checkpoint_saver.process(message)
             await checkpoint_saver.save()
-            yield f'event: message\ndata: {message.model_dump_json(by_alias=True)}\n\n'
+            yield f'event: message\ndata: {message.model_dump_json()}\n\n'
             yield f'event: done\n\n'
 
             # FIXME 虽然不再向端推送，但是llm的请求并未终止，依然在持续生成（持续消耗token）
@@ -385,7 +385,7 @@ async def message_events_checkpoint(current_user: Account, workspace_uid: str,
                 ),
                 is_finished=False,
             )
-            yield f'event: message\ndata: {message.model_dump_json(by_alias=True)}\n\n'
+            yield f'event: message\ndata: {message.model_dump_json()}\n\n'
 
         if isinstance(event, AIMessageChunkEvent):
             message = MessageEventData(
@@ -403,7 +403,7 @@ async def message_events_checkpoint(current_user: Account, workspace_uid: str,
                 is_finished=False,
             )
             checkpoint_saver.process(message)
-            yield f'event: message\ndata: {message.model_dump_json(by_alias=True)}\n\n'
+            yield f'event: message\ndata: {message.model_dump_json()}\n\n'
 
         if isinstance(event, MessageEndEvent):
             generate_runner.pop(conversation.conversation_uid, True)
@@ -427,5 +427,5 @@ async def message_events_checkpoint(current_user: Account, workspace_uid: str,
                 is_finished=True,
             )
             checkpoint_saver.process(message)
-            await checkpoint_saver.save()
-            yield f'event: error\ndata: {message.model_dump_json(by_alias=True)}\n\n'
+            # await checkpoint_saver.save() -- 最后一定会走到MessageEndEvent，在MessageEndEvent中保存
+            yield f'event: error\ndata: {message.model_dump_json()}\n\n'

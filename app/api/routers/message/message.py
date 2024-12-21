@@ -92,8 +92,8 @@ async def clear_memory(conversation_uid: str, current_user: Account = Depends(cu
 @logger.catch()
 @router.get(path='/chat/{conversation_uid}/messages')
 async def messages(conversation_uid: str,
-                   before_message_uid: Optional[str] = Query(None, alias="beforeMessageUid"),
-                   max_count: int = Query(..., alias="maxCount"),
+                   before_message_uid: Optional[str] = Query(None),
+                   max_count: int = Query(...),
                    current_user: Account = Depends(current_account)) -> list[Message]:
     """
     查询会话消息
@@ -107,8 +107,8 @@ async def messages(conversation_uid: str,
 
 @logger.catch()
 @router.get(path='/chat/conversations')
-async def conversations(before_conversation_uid: Optional[str] = Query(None, alias="beforeConversationUid"),
-                        max_count: int = Query(..., alias="maxCount"),
+async def conversations(before_conversation_uid: Optional[str] = Query(None),
+                        max_count: int = Query(...),
                         current_user: Account = Depends(current_account)) -> list[Conversation]:
     """
     查询会话

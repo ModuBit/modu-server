@@ -60,13 +60,12 @@ class AccountRepositoryPostgres(AccountRepository):
         return Account(**account_model.as_dict())
 
     @with_async_session
-    async def create(self, account: Account, session: AsyncSession) -> Account:
-        account_po = AccountPO(**vars(account))
+    async def create(self, name: str, email: str, password: str, session: AsyncSession) -> Account:
+        account_po = AccountPO(name=name, email=email, password=password, status=AccountStatus.ACTIVE)
         account_po.uid = BasePO.uid_generate()
         session.add(account_po)
 
-        account.uid = account_po.uid
-        return account
+        return Account(**account_po.as_dict())
 
     @with_async_session
     async def count_all(self, session: AsyncSession) -> int:

@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from sqlalchemy import PrimaryKeyConstraint, String, Enum, text, delete, select, or_
+from sqlalchemy import PrimaryKeyConstraint, String, Enum, text, delete, select, or_, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -23,6 +23,7 @@ from repositories.data.bot.bot_models import BotMode, Bot
 from repositories.data.database import with_async_session, BasePO
 from repositories.data.postgres_database import PostgresBasePO
 from repositories.data.publish.PublishConfigRepositoryPostgres import Dict2Json
+from utils.dictionary import dict_exclude_keys
 
 
 class BotRepositoryPostgres(BotRepository):
@@ -32,10 +33,18 @@ class BotRepositoryPostgres(BotRepository):
 
     @with_async_session
     async def create(self, bot: Bot, session: AsyncSession) -> Bot:
-        bot_po = BotPO(**vars(bot))
+        bot_po = BotPO(**dict_exclude_keys(vars(bot), ['creator']))
         bot_po.uid = BasePO.uid_generate()
         session.add(bot_po)
         bot.uid = bot_po.uid
+        return bot
+
+    @with_async_session
+    async def update(self, bot: Bot, session: AsyncSession) -> Bot:
+        stmt = (update(BotPO)
+                .where(BotPO.uid == bot.uid)
+                .values(name=bot.name, description=bot.description))
+        await session.execute(stmt)
         return bot
 
     @with_async_session
@@ -70,9 +79,10 @@ class BotRepositoryPostgres(BotRepository):
         return [Bot(**conv.as_dict()) for conv in select_result.scalars()]
 
     @with_async_session
-    async def get_by_uid(self, bot_uid: str, session: AsyncSession) -> Bot:
+    async def get_by_workspace_and_uid(self, workspace_uid: str, bot_uid: str, session: AsyncSession) -> Bot:
         stmt = (select(BotPO)
                 .where(BotPO.uid == bot_uid)
+                .where(BotPO.workspace_uid == workspace_uid)
                 .where(BotPO.is_deleted == False)
                 .limit(1))
         select_result = await session.execute(stmt)
