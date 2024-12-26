@@ -29,10 +29,12 @@ router = APIRouter()
 
 
 @logger.catch()
-@router.get('/provider/{provider_name}/model', response_class=CamelCaseJSONResponse)
-async def all_models_on_provider(workspace_uid: str, provider_name: str,
-                                 current_user: Account = Depends(current_account)
-                                 ) -> dict[ModelType, list[ModelSchema]]:
+@router.get("/provider/{provider_name}/model", response_class=CamelCaseJSONResponse)
+async def all_models_on_provider(
+    workspace_uid: str,
+    provider_name: str,
+    current_user: Account = Depends(current_account),
+) -> dict[ModelType, list[ModelSchema]]:
     """
     获取空间下某一Provider的所有模型
     :param workspace_uid: 工作空间UID
@@ -40,7 +42,9 @@ async def all_models_on_provider(workspace_uid: str, provider_name: str,
     :param current_user: 当前用户
     :return: ModelSchema
     """
-    provider_with_models = await llm_model_service.get_models(current_user, workspace_uid, provider_name)
+    provider_with_models = await llm_model_service.get_models(
+        current_user, workspace_uid, provider_name
+    )
     if not provider_with_models:
         return {}
 
@@ -48,11 +52,16 @@ async def all_models_on_provider(workspace_uid: str, provider_name: str,
 
 
 @logger.catch()
-@router.get(path='/model/type/{model_type}',
-            response_model=list[ProviderWithModelsSchema],
-            response_class=CamelCaseJSONResponse)
-async def all_models_on_type(workspace_uid: str, model_type: ModelType,
-                             current_user: Account = Depends(current_account)) -> list[ProviderWithModelsSchema]:
+@router.get(
+    path="/model/type/{model_type}",
+    response_model=list[ProviderWithModelsSchema],
+    response_class=CamelCaseJSONResponse,
+)
+async def all_models_on_type(
+    workspace_uid: str,
+    model_type: ModelType,
+    current_user: Account = Depends(current_account),
+) -> list[ProviderWithModelsSchema]:
     """
     获取空间下某一模型类型的所有模型
     :param workspace_uid: 工作空间UID
@@ -60,13 +69,18 @@ async def all_models_on_type(workspace_uid: str, model_type: ModelType,
     :param current_user: 当前用户
     :return: ModelSchema
     """
-    return await llm_model_service.get_models(current_user, workspace_uid, model_type=model_type)
+    return await llm_model_service.get_models(
+        current_user, workspace_uid, model_type=model_type
+    )
 
 
 @logger.catch()
-@router.post(path='/model/system/config', response_class=CamelCaseJSONResponse)
-async def add_system_config(workspace_uid: str, llm_model_config: dict[ModelType, LLMModelConfig],
-                            current_user: Account = Depends(current_account)) -> dict[ModelType, LLMModelConfig]:
+@router.post(path="/model/system/config", response_class=CamelCaseJSONResponse)
+async def add_system_config(
+    workspace_uid: str,
+    llm_model_config: dict[ModelType, LLMModelConfig],
+    current_user: Account = Depends(current_account),
+) -> dict[ModelType, LLMModelConfig]:
     """
     添加 工作空间 系统默认模型配置
     :param workspace_uid: 工作空间UID
@@ -74,13 +88,16 @@ async def add_system_config(workspace_uid: str, llm_model_config: dict[ModelType
     :param current_user: 当前用户
     :return: dict[ModelType, LLMModelConfig]
     """
-    return await llm_model_service.add_system_config(current_user, workspace_uid, llm_model_config)
+    return await llm_model_service.add_system_config(
+        current_user, workspace_uid, llm_model_config
+    )
 
 
 @logger.catch()
-@router.get(path='/model/system/config', response_class=CamelCaseJSONResponse)
-async def get_system_config(workspace_uid: str,
-                            current_user: Account = Depends(current_account)) -> dict[ModelType, LLMModelConfig]:
+@router.get(path="/model/system/config", response_class=CamelCaseJSONResponse)
+async def get_system_config(
+    workspace_uid: str, current_user: Account = Depends(current_account)
+) -> dict[ModelType, LLMModelConfig]:
     """
     获取 工作空间 系统默认模型配置
     :param workspace_uid: 工作空间UID

@@ -24,11 +24,12 @@ from fastapi.responses import JSONResponse, Response
 
 def _log(request: Request, response: Response, process_time: float):
     logger.info(
-        f'{request.client.host}:{request.client.port} {request.method} {request.url.scheme.upper()} {request.url.path} {response.status_code} {process_time:.2f}ms')
+        f"{request.client.host}:{request.client.port} {request.method} {request.url.scheme.upper()} {request.url.path} {response.status_code} {process_time:.2f}ms"
+    )
 
 
 def register(app: FastAPI):
-    @app.middleware('http')
+    @app.middleware("http")
     async def json_response(request: Request, call_next):
         """
         对于 application-json 的响应进行统一响应包装
@@ -46,22 +47,22 @@ def register(app: FastAPI):
         process_time = (time.time() - start_time) * 1000
         response.headers["X-Process-Time"] = f"{process_time:.2f}"
 
-        if 'text/event-stream' in (response.headers.get('content-type') or []):
+        if "text/event-stream" in (response.headers.get("content-type") or []):
             # 流式输出
             return response
 
-        if request.url.path.endswith('.json') or request.url.path.endswith('.txt'):
+        if request.url.path.endswith(".json") or request.url.path.endswith(".txt"):
             # 资源文件
             _log(request=request, response=response, process_time=process_time)
             return response
 
-        if '/login' in request.url.path or '/logout' in request.url.path:
+        if "/login" in request.url.path or "/logout" in request.url.path:
             # 不对 login/logout 请求进行包装，用以兼容类似swagger等框架
             _log(request=request, response=response, process_time=process_time)
             return response
 
         # 判断request accept 是否为 application/json，包装response的body内容
-        if 'application/json' in (request.headers.get('accept') or []):
+        if "application/json" in (request.headers.get("accept") or []):
             # 异步读取response body
             original_body = b""
             async for chunk in response.body_iterator:
@@ -72,18 +73,22 @@ def register(app: FastAPI):
                 return response
 
             modified_body = {
-                'success': response.status_code == 200,
-                'code': response.status_code,
-                'content': json.loads(original_body),
+                "success": response.status_code == 200,
+                "code": response.status_code,
+                "content": json.loads(original_body),
             }
 
             modified_headers = {
-                name: value for name, value in response.headers.items() if name.lower() != 'content-length'
+                name: value
+                for name, value in response.headers.items()
+                if name.lower() != "content-length"
             }
 
-            response = JSONResponse(content=modified_body,
-                                    status_code=response.status_code,
-                                    headers=modified_headers)
+            response = JSONResponse(
+                content=modified_body,
+                status_code=response.status_code,
+                headers=modified_headers,
+            )
 
         _log(request=request, response=response, process_time=process_time)
         return response

@@ -22,16 +22,16 @@ from .text_to_speech import TextToSpeechModel
 from .vision import VisionModel
 
 __all__ = [
-    'embedding',
+    "embedding",
     TextEmbeddingModel,
-    'image_generation',
+    "image_generation",
     ImageGenerationModel,
-    'speech_to_text',
+    "speech_to_text",
     SpeechToTextModel,
-    'text_generation',
+    "text_generation",
     TextGenerationModel,
-    'text_to_speech',
+    "text_to_speech",
     TextToSpeechModel,
-    'vision',
+    "vision",
     VisionModel,
 ]

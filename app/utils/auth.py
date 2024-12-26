@@ -22,7 +22,7 @@ from starlette.status import HTTP_401_UNAUTHORIZED
 
 from utils.errors.base_error import UnauthorizedError
 
-pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 def hash_password(password: str) -> str:
@@ -71,8 +71,10 @@ def jose_decode(token: str, secret: str, algorithm: str):
     try:
         return jwt.decode(token, secret, algorithms=[algorithm])
     except ExpiredSignatureError:
-        raise UnauthorizedError(message='Token has expired.',
-                                status_code=HTTP_401_UNAUTHORIZED)
+        raise UnauthorizedError(
+            message="Token has expired.", status_code=HTTP_401_UNAUTHORIZED
+        )
     except JWTError:
-        raise UnauthorizedError(message='Invalid Token.',
-                                status_code=HTTP_401_UNAUTHORIZED)
+        raise UnauthorizedError(
+            message="Invalid Token.", status_code=HTTP_401_UNAUTHORIZED
+        )

@@ -33,35 +33,40 @@ class AccountRepositoryPostgres(AccountRepository):
 
     @with_async_session
     async def find_one_by_uid(self, uid: str, session: AsyncSession) -> Account | None:
-        stmt = (select(AccountPO)
-                .where(AccountPO.uid == uid)
-                .limit(1))
+        stmt = select(AccountPO).where(AccountPO.uid == uid).limit(1)
         select_result = await session.execute(stmt)
         account_model = select_result.scalars().one_or_none()
         return Account(**account_model.as_dict()) if account_model else None
 
     @with_async_session
-    async def find_by_uids(self, uids: list[str], session: AsyncSession) -> list[Account]:
-        stmt = (select(AccountPO)
-                .where(AccountPO.uid.in_(uids)))
+    async def find_by_uids(
+        self, uids: list[str], session: AsyncSession
+    ) -> list[Account]:
+        stmt = select(AccountPO).where(AccountPO.uid.in_(uids))
         select_result = await session.execute(stmt)
         return [Account(**conv.as_dict()) for conv in select_result.scalars()]
 
     @with_async_session
     async def find_one_by_email(self, email: str, session: AsyncSession) -> Account:
-        stmt = (select(AccountPO)
-                .where(AccountPO.email == email)
-                .where(AccountPO.is_deleted == False)
-                .limit(1))
+        stmt = (
+            select(AccountPO)
+            .where(AccountPO.email == email)
+            .where(AccountPO.is_deleted == False)
+            .limit(1)
+        )
         select_result = await session.execute(stmt)
         account_model = select_result.scalars().one_or_none()
         if not account_model:
-            raise AccountLoginError(message='邮箱或密码错误')
+            raise AccountLoginError(message="邮箱或密码错误")
         return Account(**account_model.as_dict())
 
     @with_async_session
-    async def create(self, name: str, email: str, password: str, session: AsyncSession) -> Account:
-        account_po = AccountPO(name=name, email=email, password=password, status=AccountStatus.ACTIVE)
+    async def create(
+        self, name: str, email: str, password: str, session: AsyncSession
+    ) -> Account:
+        account_po = AccountPO(
+            name=name, email=email, password=password, status=AccountStatus.ACTIVE
+        )
         account_po.uid = BasePO.uid_generate()
         session.add(account_po)
 
@@ -69,7 +74,11 @@ class AccountRepositoryPostgres(AccountRepository):
 
     @with_async_session
     async def count_all(self, session: AsyncSession) -> int:
-        stmt = select(func.count()).select_from(AccountPO).where(AccountPO.is_deleted == False)
+        stmt = (
+            select(func.count())
+            .select_from(AccountPO)
+            .where(AccountPO.is_deleted == False)
+        )
         count_result = await session.execute(stmt)
         return count_result.scalar()
 
@@ -79,16 +88,16 @@ class AccountPO(PostgresBasePO):
     账号PO
     """
 
-    __tablename__ = 'modu_accounts'
-    __table_args__ = (
-        PrimaryKeyConstraint('id', name='pk_id'),
-    )
+    __tablename__ = "modu_accounts"
+    __table_args__ = (PrimaryKeyConstraint("id", name="pk_id"),)
 
-    name: Mapped[str] = mapped_column(String(128), nullable=False, comment='用户名')
-    email: Mapped[str] = mapped_column(String(128), nullable=False, comment='邮箱')
-    password: Mapped[str] = mapped_column(String(128), nullable=False, comment='密码')
-    avatar: Mapped[str] = mapped_column(String(256), nullable=True, comment='头像')
+    name: Mapped[str] = mapped_column(String(128), nullable=False, comment="用户名")
+    email: Mapped[str] = mapped_column(String(128), nullable=False, comment="邮箱")
+    password: Mapped[str] = mapped_column(String(128), nullable=False, comment="密码")
+    avatar: Mapped[str] = mapped_column(String(256), nullable=True, comment="头像")
     status: Mapped[AccountStatus] = mapped_column(
-        Enum(AccountStatus, native_enum=False), nullable=False,
+        Enum(AccountStatus, native_enum=False),
+        nullable=False,
         server_default=text("'active'::character varying"),
-        comment='账号状态')
+        comment="账号状态",
+    )

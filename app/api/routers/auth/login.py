@@ -24,7 +24,7 @@ router = APIRouter()
 
 
 @logger.catch()
-@router.post('/login')
+@router.post("/login")
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     """
     登录
@@ -32,14 +32,11 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     """
     account = await account_service.authenticate(form_data.username, form_data.password)
     access_token = account_service.account_token_encode(account)
-    return {
-        "access_token": access_token,
-        "token_type": "bearer"
-    }
+    return {"access_token": access_token, "token_type": "bearer"}
 
 
 @logger.catch()
-@router.get('/logout')
+@router.get("/logout")
 async def logout():
     """
     登出

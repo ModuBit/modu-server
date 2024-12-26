@@ -20,7 +20,7 @@ from .langsmith_config import langsmith_config
 from .loguru_config import loguru_config
 from .opentelemetry_config import ot_config, ot_instrument_loguru
 
-app_config = FrozenDictData(safe_load('config.yml'))
+app_config = FrozenDictData(safe_load("config.yml"))
 
 # 配置日志
 loguru_config(app_config.loguru)

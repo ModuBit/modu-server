@@ -32,9 +32,9 @@ def test_json_1():
         updated_at=datetime.now(),
         is_deleted=False,
         creator_uid=str(ULID()),
-        name='workspace name',
-        description='workspace description',
-        type=WorkspaceType.PRIVATE
+        name="workspace name",
+        description="workspace description",
+        type=WorkspaceType.PRIVATE,
     )
     workspace = Workspace(**workspace_model.as_dict())
 
@@ -45,6 +45,7 @@ def test_json_1():
 
     workspace_loads = json.loads(workspace_json_str)
     print(workspace_loads)
+
 
 def test_json_2():
     workspace_model = WorkspacePO(
@@ -53,9 +54,9 @@ def test_json_2():
         updated_at=datetime.now(),
         is_deleted=False,
         creator_uid=str(ULID()),
-        name='workspace name',
-        description='workspace description',
-        type=WorkspaceType.PRIVATE
+        name="workspace name",
+        description="workspace description",
+        type=WorkspaceType.PRIVATE,
     )
     workspace = Workspace(**workspace_model.as_dict())
 
@@ -66,5 +67,3 @@ def test_json_2():
 
     workspace_loads = json.loads(workspace_json_str)
     print(workspace_loads)
-
-

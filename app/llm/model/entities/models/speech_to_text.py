@@ -31,4 +31,4 @@ class SpeechToTextModel(LLMModel, ABC):
 
     @property
     def description(self) -> I18nOption:
-        return I18nOption(default='语音转文本', en_us='Speech to Text')
+        return I18nOption(default="语音转文本", en_us="Speech to Text")

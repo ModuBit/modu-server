@@ -26,7 +26,9 @@ router = APIRouter()
 
 
 @logger.catch()
-@router.get(path='/me', response_model=AccountInfo, response_class=CamelCaseJSONResponse)
+@router.get(
+    path="/me", response_model=AccountInfo, response_class=CamelCaseJSONResponse
+)
 async def me(current_user: Account = Depends(current_account)) -> Account:
     """
     当前登录人信息

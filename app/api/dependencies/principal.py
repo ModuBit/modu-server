@@ -22,7 +22,7 @@ from repositories.data.account.account_models import Account
 from services import account_service
 from utils.errors.base_error import ErrorShowType, UnauthorizedError
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/api/login')
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/login")
 
 
 async def current_account(token: str = Depends(oauth2_scheme)) -> Account:
@@ -33,9 +33,11 @@ async def current_account(token: str = Depends(oauth2_scheme)) -> Account:
     """
     account = account_service.account_token_decode(token)
     if account is None:
-        raise UnauthorizedError(message='Invalid Token',
-                                show_type=ErrorShowType.SILENT,
-                                status_code=HTTP_401_UNAUTHORIZED)
+        raise UnauthorizedError(
+            message="Invalid Token",
+            show_type=ErrorShowType.SILENT,
+            status_code=HTTP_401_UNAUTHORIZED,
+        )
     return account
 
 

@@ -27,9 +27,13 @@ router = APIRouter()
 
 
 @logger.catch()
-@router.post('/provider/{provider_name}/config', response_class=CamelCaseJSONResponse)
-async def add(workspace_uid: str, provider_name: str, llm_provider_config: LLMProviderConfig,
-              current_user: Account = Depends(current_account)) -> LLMProviderConfig:
+@router.post("/provider/{provider_name}/config", response_class=CamelCaseJSONResponse)
+async def add(
+    workspace_uid: str,
+    provider_name: str,
+    llm_provider_config: LLMProviderConfig,
+    current_user: Account = Depends(current_account),
+) -> LLMProviderConfig:
     """
     添加LLM Provider配置
     :param workspace_uid: 空间UID
@@ -38,13 +42,19 @@ async def add(workspace_uid: str, provider_name: str, llm_provider_config: LLMPr
     :param current_user: 当前用户
     :return: LLMProviderConfig
     """
-    llm_provider_config = await llm_provider_service.add(current_user, workspace_uid, provider_name, llm_provider_config)
+    llm_provider_config = await llm_provider_service.add(
+        current_user, workspace_uid, provider_name, llm_provider_config
+    )
     return llm_provider_service.provider_config_desensitize(llm_provider_config)
 
 
 @logger.catch()
-@router.delete('/provider/{provider_name}/config', response_class=CamelCaseJSONResponse)
-async def delete(workspace_uid: str, provider_name: str, current_user: Account = Depends(current_account)) -> bool:
+@router.delete("/provider/{provider_name}/config", response_class=CamelCaseJSONResponse)
+async def delete(
+    workspace_uid: str,
+    provider_name: str,
+    current_user: Account = Depends(current_account),
+) -> bool:
     """
     删除LLM Provider配置
     :param workspace_uid: 空间UID
@@ -56,24 +66,32 @@ async def delete(workspace_uid: str, provider_name: str, current_user: Account =
 
 
 @logger.catch()
-@router.get('/provider/all/config', response_class=CamelCaseJSONResponse)
-async def all_configured_provider_configs(workspace_uid: str,
-                                          current_user: Account = Depends(current_account)) -> list[LLMProviderConfig]:
+@router.get("/provider/all/config", response_class=CamelCaseJSONResponse)
+async def all_configured_provider_configs(
+    workspace_uid: str, current_user: Account = Depends(current_account)
+) -> list[LLMProviderConfig]:
     """
     获取所有已配置LLM Provider
     :param workspace_uid: 空间UID
     :param current_user: 当前用户
     :return: LLMProviderConfig
     """
-    llm_provider_configs = await llm_provider_service.all_configured(current_user, workspace_uid)
-    return [llm_provider_service.provider_config_desensitize(llm_provider_config)
-            for llm_provider_config in (llm_provider_configs or [])]
+    llm_provider_configs = await llm_provider_service.all_configured(
+        current_user, workspace_uid
+    )
+    return [
+        llm_provider_service.provider_config_desensitize(llm_provider_config)
+        for llm_provider_config in (llm_provider_configs or [])
+    ]
 
 
 @logger.catch()
-@router.get('/provider/{provider_name}/config', response_class=CamelCaseJSONResponse)
-async def config_detail(workspace_uid: str, provider_name: str,
-                        current_user: Account = Depends(current_account)) -> LLMProviderConfig | None:
+@router.get("/provider/{provider_name}/config", response_class=CamelCaseJSONResponse)
+async def config_detail(
+    workspace_uid: str,
+    provider_name: str,
+    current_user: Account = Depends(current_account),
+) -> LLMProviderConfig | None:
     """
     获取LLM Provider配置详情
     :param workspace_uid: 空间UID
@@ -81,5 +99,7 @@ async def config_detail(workspace_uid: str, provider_name: str,
     :param current_user: 当前用户
     :return: LLMProviderConfig
     """
-    llm_provider_config = await llm_provider_service.detail(current_user, workspace_uid, provider_name)
+    llm_provider_config = await llm_provider_service.detail(
+        current_user, workspace_uid, provider_name
+    )
     return llm_provider_service.provider_config_desensitize(llm_provider_config)

@@ -24,10 +24,13 @@ class ModuHttpToolsProtocol(HttpToolsProtocol):
         """
         判断 header 中是否存在 accept: text/event-stream
         """
-        headers_str = [(k.decode('utf-8').lower(), v.decode('utf-8').lower()) for k, v in self.headers]
+        headers_str = [
+            (k.decode("utf-8").lower(), v.decode("utf-8").lower())
+            for k, v in self.headers
+        ]
 
         for key, value in headers_str:
-            if key == 'accept' and 'text/event-stream' in value:
+            if key == "accept" and "text/event-stream" in value:
                 return True
 
         return False
@@ -36,7 +39,11 @@ class ModuHttpToolsProtocol(HttpToolsProtocol):
         """
         移除 header 中的 accept-encoding
         """
-        new_headers = [(k, v) for k, v in self.headers if k.decode('utf-8').lower() != 'accept-encoding']
+        new_headers = [
+            (k, v)
+            for k, v in self.headers
+            if k.decode("utf-8").lower() != "accept-encoding"
+        ]
         return new_headers
 
     def on_headers_complete(self):
@@ -47,6 +54,4 @@ class ModuHttpToolsProtocol(HttpToolsProtocol):
 
 
 class ModuUvicornWorker(UvicornWorker):
-    CONFIG_KWARGS = {
-        "http": ModuHttpToolsProtocol
-    }
+    CONFIG_KWARGS = {"http": ModuHttpToolsProtocol}

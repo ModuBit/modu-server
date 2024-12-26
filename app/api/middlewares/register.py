@@ -35,7 +35,7 @@ def register(app: FastAPI):
     app.add_middleware(
         CORSMiddleware,
         allow_credentials=True,
-        allow_origins=cors_config.allowed_origins or ['*'],
-        allow_methods=cors_config.allowed_methods or ['*'],
-        allow_headers=cors_config.allowed_headers or ['*'],
+        allow_origins=cors_config.allowed_origins or ["*"],
+        allow_methods=cors_config.allowed_methods or ["*"],
+        allow_headers=cors_config.allowed_headers or ["*"],
     )

@@ -21,9 +21,9 @@ from .LLMModelConfigRepository import LLMModelConfigRepository
 from .LLMModelConfigRepositoryPostgres import LLMModelConfigRepositoryPostgres
 
 __all__ = [
-    'llm_models',
-    'LLMProviderConfigRepository',
-    'LLMProviderConfigRepositoryPostgres',
-    'LLMModelConfigRepository',
-    'LLMModelConfigRepositoryPostgres',
+    "llm_models",
+    "LLMProviderConfigRepository",
+    "LLMProviderConfigRepositoryPostgres",
+    "LLMModelConfigRepository",
+    "LLMModelConfigRepositoryPostgres",
 ]

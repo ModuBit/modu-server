@@ -23,7 +23,7 @@ from loguru import logger
 from utils.dictionary import dict_get
 
 # 正则表达式用于匹配 ${variable_name[:default_value]}
-_env_var_pattern = re.compile(r'\$\{([^:}]+):?([^}]*)}')
+_env_var_pattern = re.compile(r"\$\{([^:}]+):?([^}]*)}")
 
 
 def _replace_var(match, config: dict):
@@ -40,5 +40,7 @@ def banner_print(banner_file: str, config: dict):
     """
     with open(banner_file, "r") as banner_file:
         banner = banner_file.read()
-        display_banner = _env_var_pattern.sub(functools.partial(_replace_var, config=config), banner)
+        display_banner = _env_var_pattern.sub(
+            functools.partial(_replace_var, config=config), banner
+        )
         logger.info(display_banner)

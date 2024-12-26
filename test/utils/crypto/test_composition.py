@@ -18,14 +18,14 @@ from utils.crypto import composition
 
 
 def test_composition():
-    secret = '793539f7301c380d6ebb002ffae34eccdb04faae6716b5f7bd1a56c3e04853a1'
-    key = '01HXASS3M44ZX8EF3ZJCW0N7G9'
+    secret = "793539f7301c380d6ebb002ffae34eccdb04faae6716b5f7bd1a56c3e04853a1"
+    key = "01HXASS3M44ZX8EF3ZJCW0N7G9"
 
-    original_content = 'Hello Maner·Fan'
+    original_content = "Hello Maner·Fan"
 
     cipher_content = composition.encrypt_str(secret, key, original_content)
     plain_content = composition.decrypt_str(secret, key, cipher_content)
 
-    assert (original_content == plain_content)
+    assert original_content == plain_content
 
     print(plain_content, cipher_content)

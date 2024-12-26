@@ -29,4 +29,4 @@ class VisionModel(LLMModel):
 
     @property
     def description(self) -> I18nOption:
-        return I18nOption(default='视觉识别', en_us='Vision Recognition')
+        return I18nOption(default="视觉识别", en_us="Vision Recognition")

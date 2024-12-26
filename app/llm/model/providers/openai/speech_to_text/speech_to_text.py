@@ -18,5 +18,7 @@ from llm.model.entities.models import SpeechToTextModel
 
 
 class OpenAISpeechToTextModel(SpeechToTextModel):
-    async def validate_credentials(self, credentials: dict, model: str | None = None) -> None:
+    async def validate_credentials(
+        self, credentials: dict, model: str | None = None
+    ) -> None:
         pass

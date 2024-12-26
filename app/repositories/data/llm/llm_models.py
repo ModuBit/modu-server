@@ -47,16 +47,22 @@ class LLMProviderConfig(BaseModel):
         if isinstance(self.provider_credential, str):
             return self
 
-        self.provider_credential = composition.encrypt_str(app_config.security.secret, self.workspace_uid,
-                                                           json.dumps(self.provider_credential))
+        self.provider_credential = composition.encrypt_str(
+            app_config.security.secret,
+            self.workspace_uid,
+            json.dumps(self.provider_credential),
+        )
         return self
 
     def decrypt_credential(self):
         if isinstance(self.provider_credential, dict):
             return self
 
-        self.provider_credential = json.loads(composition.decrypt_str(app_config.security.secret, self.workspace_uid,
-                                                                      self.provider_credential))
+        self.provider_credential = json.loads(
+            composition.decrypt_str(
+                app_config.security.secret, self.workspace_uid, self.provider_credential
+            )
+        )
         return self
 
 
@@ -75,9 +81,11 @@ class LLMModelConfig(BaseModel):
     """Model 参数"""
 
     # 定义配置
-    model_config = default_model_config({
-        # 设置 protected_namespaces
-        # UserWarning: Field "model_name" has conflict with protected namespace "model_".
-        # UserWarning: Field "model_parameters" has conflict with protected namespace "model_".
-        "protected_namespaces": ("_", "__")
-    })
+    model_config = default_model_config(
+        {
+            # 设置 protected_namespaces
+            # UserWarning: Field "model_name" has conflict with protected namespace "model_".
+            # UserWarning: Field "model_parameters" has conflict with protected namespace "model_".
+            "protected_namespaces": ("_", "__")
+        }
+    )

@@ -19,21 +19,21 @@ from utils.dictionary import dict_get, FrozenDictData
 
 def test_dict_get():
     # 测试成功获取值的情况
-    dictionary = {'a': {'b': {'c': 'value'}}}
-    assert dict_get(dictionary, 'a.b.c') == 'value'
+    dictionary = {"a": {"b": {"c": "value"}}}
+    assert dict_get(dictionary, "a.b.c") == "value"
 
     # 测试多层嵌套的情况
-    dictionary = {'a': {'b': {'c': {'d': 'value'}}}}
-    assert dict_get(dictionary, 'a.b.c.d') == 'value'
+    dictionary = {"a": {"b": {"c": {"d": "value"}}}}
+    assert dict_get(dictionary, "a.b.c.d") == "value"
 
     # 测试键不存在的情况
-    assert dict_get(dictionary, 'b.c.d') is None
+    assert dict_get(dictionary, "b.c.d") is None
 
     # 测试使用默认值的情况
-    assert dict_get(dictionary, 'b.c.d', default='default_value') == 'default_value'
+    assert dict_get(dictionary, "b.c.d", default="default_value") == "default_value"
 
     # 测试空的键字符串的情况
-    assert dict_get(dictionary, '') is None
+    assert dict_get(dictionary, "") is None
 
     # 测试传入None作为keys的情况
     assert dict_get(dictionary, None) is None
@@ -43,27 +43,29 @@ def test_dict_get():
 
 
 def test_frozen_dict_data():
-    dictionary = FrozenDictData({'a': {'b': {'c': 'value'}, 'd': [1, 2], 'e': [{'e1': 1, 'e2': [1, 2]}]}})
+    dictionary = FrozenDictData(
+        {"a": {"b": {"c": "value"}, "d": [1, 2], "e": [{"e1": 1, "e2": [1, 2]}]}}
+    )
 
     # 测试同时支持两种取值方式
-    assert dictionary.a.b.c == 'value'
-    assert dictionary['a']['b']['c'] == 'value'
+    assert dictionary.a.b.c == "value"
+    assert dictionary["a"]["b"]["c"] == "value"
     assert dictionary.a.d == [1, 2]
-    assert dictionary['a']['d'] == [1, 2]
+    assert dictionary["a"]["d"] == [1, 2]
     assert dictionary.a.d[1] == 2
-    assert dictionary['a']['d'][1] == 2
+    assert dictionary["a"]["d"][1] == 2
     assert dictionary.a.e[0].e1 == 1
-    assert dictionary['a']['e'][0]['e1'] == 1
+    assert dictionary["a"]["e"][0]["e1"] == 1
     assert dictionary.a.e[0].e2 == [1, 2]
-    assert dictionary['a']['e'][0]['e2'] == [1, 2]
+    assert dictionary["a"]["e"][0]["e2"] == [1, 2]
     assert dictionary.a.e[0].e2[1] == 2
-    assert dictionary['a']['e'][0]['e2'][1] == 2
+    assert dictionary["a"]["e"][0]["e2"][1] == 2
     assert dictionary.d is None
 
     # 测试支持dict_get
-    assert dict_get(dictionary, 'a.b.c') == 'value'
-    assert dict_get(dictionary, 'b.c.d') is None
-    assert dict_get(dictionary, 'b.c.d', default='default_value') == 'default_value'
-    assert dict_get(dictionary, '') is None
+    assert dict_get(dictionary, "a.b.c") == "value"
+    assert dict_get(dictionary, "b.c.d") is None
+    assert dict_get(dictionary, "b.c.d", default="default_value") == "default_value"
+    assert dict_get(dictionary, "") is None
     assert dict_get(dictionary, None) is None
     assert dict_get(dictionary, 123) is None

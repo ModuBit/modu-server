@@ -21,9 +21,11 @@ from utils.crypto import aes
 
 
 def test_aes():
-    [tag, nonce, cipher_bytes] = aes.encrypt(b'1234567890123456', 'Hello Maner·Fan'.encode('utf-8'))
-    decrypted = aes.decrypt(b'1234567890123456', tag, nonce, cipher_bytes)
-    assert decrypted == 'Hello Maner·Fan'.encode('utf-8')
+    [tag, nonce, cipher_bytes] = aes.encrypt(
+        b"1234567890123456", "Hello Maner·Fan".encode("utf-8")
+    )
+    decrypted = aes.decrypt(b"1234567890123456", tag, nonce, cipher_bytes)
+    assert decrypted == "Hello Maner·Fan".encode("utf-8")
 
 
 def test_urandom_16():

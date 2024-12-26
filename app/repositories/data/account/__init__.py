@@ -18,7 +18,7 @@ from .AccountRepository import AccountRepository
 from .AccountRepositoryPostgres import AccountRepositoryPostgres
 
 __all__ = [
-    'account_models',
-    'AccountRepository',
-    'AccountRepositoryPostgres'
+    "account_models",
+    "AccountRepository",
+    "AccountRepositoryPostgres",
 ]

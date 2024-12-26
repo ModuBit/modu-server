@@ -40,7 +40,9 @@ class MessageRepository(Repository):
         raise NotImplementedError()
 
     @abstractmethod
-    async def add_batch(self, messages: list[Message], session: AsyncSession) -> list[Message]:
+    async def add_batch(
+        self, messages: list[Message], session: AsyncSession
+    ) -> list[Message]:
         """
         批量新增会话消息
         :param messages: 会话消息
@@ -49,9 +51,13 @@ class MessageRepository(Repository):
         raise NotImplementedError()
 
     @abstractmethod
-    async def find_latest(self, conversation_uid: str, latest_count: int,
-                          reset_message_uid: str,
-                          session: AsyncSession) -> list[Message]:
+    async def find_latest(
+        self,
+        conversation_uid: str,
+        latest_count: int,
+        reset_message_uid: str,
+        session: AsyncSession,
+    ) -> list[Message]:
         """
         查找最新的 n 条消息
         :param conversation_uid: 会话ID
@@ -62,9 +68,14 @@ class MessageRepository(Repository):
         raise NotImplementedError()
 
     @abstractmethod
-    async def find_after_time(self, conversation_uid: str, after_time: int, max_count: int,
-                              reset_message_uid: str,
-                              session: AsyncSession) -> list[Message]:
+    async def find_after_time(
+        self,
+        conversation_uid: str,
+        after_time: int,
+        max_count: int,
+        reset_message_uid: str,
+        session: AsyncSession,
+    ) -> list[Message]:
         """
         查找某时间之后的所有消息
         :param conversation_uid: 会话ID
@@ -76,9 +87,15 @@ class MessageRepository(Repository):
         raise NotImplementedError()
 
     @abstractmethod
-    async def find_after_uid(self, conversation_uid: str, after_uid: str, include_this: bool, max_count: int,
-                             reset_message_uid: str,
-                             session: AsyncSession) -> list[Message]:
+    async def find_after_uid(
+        self,
+        conversation_uid: str,
+        after_uid: str,
+        include_this: bool,
+        max_count: int,
+        reset_message_uid: str,
+        session: AsyncSession,
+    ) -> list[Message]:
         """
         查找某条消息之后的所有消息
         :param conversation_uid: 会话ID
@@ -91,9 +108,15 @@ class MessageRepository(Repository):
         raise NotImplementedError()
 
     @abstractmethod
-    async def find_before_uid(self, conversation_uid: str, before_uid: str, include_this: bool, max_count: int,
-                              reset_message_uid: str,
-                              session: AsyncSession) -> list[Message]:
+    async def find_before_uid(
+        self,
+        conversation_uid: str,
+        before_uid: str,
+        include_this: bool,
+        max_count: int,
+        reset_message_uid: str,
+        session: AsyncSession,
+    ) -> list[Message]:
         """
         查找某条消息之前的所有消息
         :param conversation_uid: 会话ID
@@ -106,9 +129,13 @@ class MessageRepository(Repository):
         raise NotImplementedError()
 
     @abstractmethod
-    async def count_after_uid(self, conversation_uid: str, after_uid: str | None,
-                              reset_message_uid: str,
-                              session: AsyncSession) -> int:
+    async def count_after_uid(
+        self,
+        conversation_uid: str,
+        after_uid: str | None,
+        reset_message_uid: str,
+        session: AsyncSession,
+    ) -> int:
         """
         查找某条消息之后的所有消息的数量
         :param conversation_uid: 会话ID
@@ -128,7 +155,9 @@ class MessageSummaryRepository(Repository):
         super().__init__(database)
 
     @abstractmethod
-    async def add(self, message_summary: MessageSummary, session: AsyncSession) -> MessageSummary:
+    async def add(
+        self, message_summary: MessageSummary, session: AsyncSession
+    ) -> MessageSummary:
         """
         新增会话消息总结
         :param message_summary: 会话消息总结

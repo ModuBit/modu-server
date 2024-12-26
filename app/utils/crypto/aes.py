@@ -31,7 +31,9 @@ def encrypt(key_material: bytes, plain_bytes: bytes) -> tuple[bytes, bytes, byte
     return tag, cipher.nonce, cipher_bytes
 
 
-def decrypt(key_material: bytes, tag: bytes, nonce: bytes, cipher_bytes: bytes) -> bytes:
+def decrypt(
+    key_material: bytes, tag: bytes, nonce: bytes, cipher_bytes: bytes
+) -> bytes:
     """
     解密
     :param key_material: 密钥

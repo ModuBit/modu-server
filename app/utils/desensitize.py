@@ -15,7 +15,7 @@ limitations under the License.
 """
 
 
-def desensitize(secret: str, prefix: str = '') -> str:
+def desensitize(secret: str, prefix: str = "") -> str:
     """
     脱敏
     :param secret: 待脱敏内容

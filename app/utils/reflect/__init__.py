@@ -15,6 +15,6 @@ limitations under the License.
 """
 
 __all__ = [
-    'dataclass',
-    'module_scan',
+    "dataclass",
+    "module_scan",
 ]

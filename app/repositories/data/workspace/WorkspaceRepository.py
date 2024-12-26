@@ -41,8 +41,12 @@ class WorkspaceRepository(Repository):
 
     @abstractmethod
     async def add_workspace_membership(
-            self, workspace_uid: str, member_uid: str, role: WorkspaceMemberRole,
-            session: AsyncSession) -> WorkspaceMembership:
+        self,
+        workspace_uid: str,
+        member_uid: str,
+        role: WorkspaceMemberRole,
+        session: AsyncSession,
+    ) -> WorkspaceMembership:
         """
         添加空间成员
         :param workspace_uid: 空间UID
@@ -53,7 +57,9 @@ class WorkspaceRepository(Repository):
         raise NotImplementedError()
 
     @abstractmethod
-    async def find_mine_by_creator_uid(self, creator_uid: str, session: AsyncSession) -> Workspace:
+    async def find_mine_by_creator_uid(
+        self, creator_uid: str, session: AsyncSession
+    ) -> Workspace:
         """
         查询私有空间
         :param creator_uid: 人员uid
@@ -72,8 +78,9 @@ class WorkspaceRepository(Repository):
         raise NotImplementedError()
 
     @abstractmethod
-    async def get_member_by_uid(self, workspace_uid: str, member_uid: str,
-                                session: AsyncSession) -> WorkspaceMembership:
+    async def get_member_by_uid(
+        self, workspace_uid: str, member_uid: str, session: AsyncSession
+    ) -> WorkspaceMembership:
         """
         通过uid查询空间成员
         :param workspace_uid: 空间uid
@@ -83,7 +90,9 @@ class WorkspaceRepository(Repository):
         raise NotImplementedError()
 
     @abstractmethod
-    async def is_member(self, workspace_uid: str, account_uid: str, session: AsyncSession) -> bool:
+    async def is_member(
+        self, workspace_uid: str, account_uid: str, session: AsyncSession
+    ) -> bool:
         """
         判断是否是空间成员
         :param workspace_uid: 空间uid
@@ -93,7 +102,9 @@ class WorkspaceRepository(Repository):
         raise NotImplementedError()
 
     @abstractmethod
-    async def get_member_role(self, workspace_uid: str, account_uid: str, session: AsyncSession) -> WorkspaceMemberRole:
+    async def get_member_role(
+        self, workspace_uid: str, account_uid: str, session: AsyncSession
+    ) -> WorkspaceMemberRole:
         """
         获取空间成员角色
         :param workspace_uid: 空间uid

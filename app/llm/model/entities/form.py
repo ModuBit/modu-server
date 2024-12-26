@@ -52,11 +52,11 @@ class FormFieldValueStatusEnum(str, enum.Enum):
     表单值状态
     """
 
-    Success = 'Success'
-    Error = 'Error'
-    Processing = 'Processing'
-    Warning = 'Warning'
-    Default = 'Default'
+    Success = "Success"
+    Error = "Error"
+    Processing = "Processing"
+    Warning = "Warning"
+    Default = "Default"
 
 
 class FormFieldValueEnum(BaseModel):

@@ -43,7 +43,7 @@ def test_tolerant():
     assert data3.v_str is None
     assert data3.v_list == ["1", "2"]
 
-    data4 = DataClassTest(v_int=1, v_str='str', v_list=["1", "2"])
+    data4 = DataClassTest(v_int=1, v_str="str", v_list=["1", "2"])
     assert data4.v_int == 1
-    assert data4.v_str == 'str'
+    assert data4.v_str == "str"
     assert data4.v_list == ["1", "2"]

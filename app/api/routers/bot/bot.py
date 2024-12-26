@@ -14,9 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from typing import Optional
+from typing import Optional, Annotated
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Body
 from loguru import logger
 from pydantic import BaseModel
 
@@ -55,22 +55,26 @@ class BotDTO(BaseModel):
 
 
 def get_bot_list_qry(
-        keyword: Optional[str] = Query(None),
-        mode: Optional[BotMode] = Query(None),
-        is_published: Optional[bool] = Query(None),
-        after_uid_limit: Optional[str] = Query(None),
-        max_count: int = Query(20)) -> BotListQry:
-    return BotListQry(keyword=keyword,
-                      mode=mode,
-                      is_published=is_published,
-                      after_uid_limit=after_uid_limit,
-                      max_count=max_count)
+    keyword: Optional[str] = Query(None),
+    mode: Optional[BotMode] = Query(None),
+    is_published: Optional[bool] = Query(None),
+    after_uid_limit: Optional[str] = Query(None),
+    max_count: int = Query(20),
+) -> BotListQry:
+    return BotListQry(
+        keyword=keyword,
+        mode=mode,
+        is_published=is_published,
+        after_uid_limit=after_uid_limit,
+        max_count=max_count,
+    )
 
 
 @logger.catch()
-@router.post('', response_class=CamelCaseJSONResponse)
-async def add(workspace_uid: str, bot: Bot,
-              current_user: Account = Depends(current_account)) -> Bot:
+@router.post("", response_class=CamelCaseJSONResponse)
+async def add(
+    workspace_uid: str, bot: Bot, current_user: Account = Depends(current_account)
+) -> Bot:
     """
     添加 机器人/智能体
     :param workspace_uid: 空间UID
@@ -82,9 +86,13 @@ async def add(workspace_uid: str, bot: Bot,
 
 
 @logger.catch()
-@router.put('/{bot_uid}', response_class=CamelCaseJSONResponse)
-async def update(workspace_uid: str, bot_uid: str, bot: Bot,
-                 current_user: Account = Depends(current_account)) -> Bot:
+@router.put("/{bot_uid}", response_class=CamelCaseJSONResponse)
+async def update_base_info(
+    workspace_uid: str,
+    bot_uid: str,
+    bot: Bot,
+    current_user: Account = Depends(current_account),
+) -> Bot:
     """
     修改 机器人/智能体
     :param workspace_uid: 空间UID
@@ -92,12 +100,16 @@ async def update(workspace_uid: str, bot_uid: str, bot: Bot,
     :param current_user: 当前用户
     :return: Bot
     """
-    return await bot_service.update(current_user, workspace_uid, bot_uid, bot)
+    return await bot_service.update_base_info(current_user, workspace_uid, bot_uid, bot)
 
 
 @logger.catch()
-@router.get(path='/{bot_uid}', response_model=BotDTO, response_class=CamelCaseJSONResponse)
-async def detail(workspace_uid: str, bot_uid: str, current_user: Account = Depends(current_account)) -> Bot:
+@router.get(
+    path="/{bot_uid}", response_model=BotDTO, response_class=CamelCaseJSONResponse
+)
+async def detail(
+    workspace_uid: str, bot_uid: str, current_user: Account = Depends(current_account)
+) -> Bot:
     """
     查询 机器人/智能体
     :param workspace_uid: 空间UID
@@ -109,9 +121,12 @@ async def detail(workspace_uid: str, bot_uid: str, current_user: Account = Depen
 
 
 @logger.catch()
-@router.get(path='', response_model=list[BotDTO], response_class=CamelCaseJSONResponse)
-async def find(workspace_uid: str, bot_list_qry: BotListQry = Depends(get_bot_list_qry),
-               current_user: Account = Depends(current_account)) -> list[Bot]:
+@router.get(path="", response_model=list[BotDTO], response_class=CamelCaseJSONResponse)
+async def find(
+    workspace_uid: str,
+    bot_list_qry: BotListQry = Depends(get_bot_list_qry),
+    current_user: Account = Depends(current_account),
+) -> list[Bot]:
     """
     查询 机器人/智能体 列表
     :param workspace_uid: 空间UID
@@ -120,3 +135,49 @@ async def find(workspace_uid: str, bot_list_qry: BotListQry = Depends(get_bot_li
     :return: Bot
     """
     return await bot_service.find(current_user, workspace_uid, bot_list_qry)
+
+
+@logger.catch()
+@router.put(path="/{bot_uid}/config/save", response_class=CamelCaseJSONResponse)
+async def save_config(
+    workspace_uid: str,
+    bot_uid: str,
+    bot_mode: BotMode = Body(),
+    bot_config: dict = Body(),
+    current_user: Account = Depends(current_account),
+) -> str:
+    """
+    保存 机器人/智能体
+    :param workspace_uid: 空间UID
+    :param bot_uid: 智能体UID
+    :param bot_mode: 智能体模式
+    :param bot_config: 智能体配置
+    :param current_user: 当前用户
+    :return: str
+    """
+    return await bot_service.save_config(
+        current_user, workspace_uid, bot_uid, bot_mode, bot_config
+    )
+
+
+@logger.catch()
+@router.put(path="/{bot_uid}/config/publish", response_class=CamelCaseJSONResponse)
+async def publish_config(
+    workspace_uid: str,
+    bot_uid: str,
+    bot_mode: BotMode = Body(),
+    bot_config: dict = Body(),
+    current_user: Account = Depends(current_account),
+) -> str:
+    """
+    发布 机器人/智能体
+    :param workspace_uid: 空间UID
+    :param bot_uid: 智能体UID
+    :param bot_mode: 智能体模式
+    :param bot_config: 智能体配置
+    :param current_user: 当前用户
+    :return: str
+    """
+    return await bot_service.publish_config(
+        current_user, workspace_uid, bot_uid, bot_mode, bot_config
+    )

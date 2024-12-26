@@ -17,11 +17,12 @@ limitations under the License.
 from .llm import llm_provider_service, llm_model_service, llm_generate_service
 
 __all__ = [
-    'init_service',
-    'account_service',
-    'workspace_service',
-    'llm_provider_service',
-    'llm_model_service',
-    'llm_generate_service',
-    'bot_service'
+    "init_service",
+    "account_service",
+    "workspace_service",
+    "llm_provider_service",
+    "llm_model_service",
+    "llm_generate_service",
+    "bot_service",
+    "publish_service",
 ]

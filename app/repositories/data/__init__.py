@@ -24,15 +24,19 @@ from .publish import PublishConfigRepository
 from .workspace import WorkspaceRepository
 
 database: Database = get_database()
-account_repository: AccountRepository = get_repository('account')
-workspace_repository: WorkspaceRepository = get_repository('workspace')
-llm_provider_config_repository: LLMProviderConfigRepository = get_repository('llm_provider_config')
-llm_model_config_repository: LLMModelConfigRepository = get_repository('llm_model_config')
-conversation_repository: ConversationRepository = get_repository('conversation')
-message_repository: MessageRepository = get_repository('message')
-message_summary_repository: MessageSummaryRepository = get_repository('message_summary')
-bot_repository: BotRepository = get_repository('bot')
-publish_config_repository: PublishConfigRepository = get_repository('publish_config')
+account_repository: AccountRepository = get_repository("account")
+workspace_repository: WorkspaceRepository = get_repository("workspace")
+llm_provider_config_repository: LLMProviderConfigRepository = get_repository(
+    "llm_provider_config"
+)
+llm_model_config_repository: LLMModelConfigRepository = get_repository(
+    "llm_model_config"
+)
+conversation_repository: ConversationRepository = get_repository("conversation")
+message_repository: MessageRepository = get_repository("message")
+message_summary_repository: MessageSummaryRepository = get_repository("message_summary")
+bot_repository: BotRepository = get_repository("bot")
+publish_config_repository: PublishConfigRepository = get_repository("publish_config")
 
 __all__ = [
     account_repository,

@@ -27,7 +27,7 @@ from ulid import ULID
 
 from utils.pydantic import default_model_config
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 class Database(ABC):
@@ -51,7 +51,9 @@ class Database(ABC):
         raise NotImplementedError()
 
     @asynccontextmanager
-    async def async_session(self) -> Callable[..., AbstractAsyncContextManager[Session]]:
+    async def async_session(
+        self,
+    ) -> Callable[..., AbstractAsyncContextManager[Session]]:
         """
         构建Session上下文
         """
@@ -76,7 +78,9 @@ class Repository(ABC):
         self._database = database
 
 
-def with_async_session(func: Callable[..., Awaitable], ):
+def with_async_session(
+    func: Callable[..., Awaitable],
+):
     """
     Session装饰器
     只能用在Repository类方法中
@@ -90,12 +94,12 @@ def with_async_session(func: Callable[..., Awaitable], ):
             return await func(self, *args, **kwargs)
 
         # 检查关键字参数中是否存在名为session的对象
-        if 'session' in kwargs and isinstance(kwargs['session'], AsyncSession):
+        if "session" in kwargs and isinstance(kwargs["session"], AsyncSession):
             return await func(self, *args, **kwargs)
 
         # 如果没有找到Session对象，则创建一个新的Session对象
         async with self._database.async_session() as session:
-            kwargs['session'] = session
+            kwargs["session"] = session
             return await func(self, *args, **kwargs)
 
     return wrapper
@@ -138,7 +142,9 @@ class BasePO(DeclarativeBase):
                 key = c.name
                 value = getattr(self, c.name)
                 mapping = alias_mapping[key]
-                result[mapping.alias or key] = mapping.value(value) if mapping.value else value
+                result[mapping.alias or key] = (
+                    mapping.value(value) if mapping.value else value
+                )
             else:
                 result[c.name] = getattr(self, c.name)
 

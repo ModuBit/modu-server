@@ -26,9 +26,11 @@ class RedisCache(Cache):
         self._port = port
         self._database = database
 
-        pool = redis.ConnectionPool(host=host, port=port, db=database, password=password, max_connections=10)
+        pool = redis.ConnectionPool(
+            host=host, port=port, db=database, password=password, max_connections=10
+        )
         self._redis = redis.Redis(connection_pool=pool)
-        logger.info('=== create redis({}) {}:{}/{} ===', id(self), host, port, database)
+        logger.info("=== create redis({}) {}:{}/{} ===", id(self), host, port, database)
 
     async def get(self, key: str) -> str | bytes | None:
         return await self._redis.get(key)
@@ -47,9 +49,15 @@ class RedisCache(Cache):
     async def delete_all_key_pattern(self, key_pattern: str, batch_size: int = 10):
         keys = [key async for key in self._redis.scan_iter(match=key_pattern)]
         for i in range(0, len(keys), batch_size):
-            batch = keys[i:i + batch_size]
+            batch = keys[i : i + batch_size]
             await self._redis.delete(*batch)
 
     async def close(self):
-        logger.info('=== close redis({}) {}:{}/{} ===', id(self), self._host, self._port, self._database)
+        logger.info(
+            "=== close redis({}) {}:{}/{} ===",
+            id(self),
+            self._host,
+            self._port,
+            self._database,
+        )
         await self._redis.close()

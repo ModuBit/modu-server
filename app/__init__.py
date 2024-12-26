@@ -17,11 +17,11 @@ limitations under the License.
 from . import main
 
 __all__ = [
-    'main',
+    "main",
 ]
 
-__version__ = '0.0.1'
-__author__ = 'Maner·Fan'
-__author_email__ = 'manerfan@163.com'
-__license__ = 'Apache License 2.0'
-__copyright__ = 'Copyright 2024 Maner·Fan'
+__version__ = "0.0.1"
+__author__ = "Maner·Fan"
+__author_email__ = "manerfan@163.com"
+__license__ = "Apache License 2.0"
+__copyright__ = "Copyright 2024 Maner·Fan"

@@ -30,7 +30,7 @@ class Conversation(BaseModel):
     creator_uid: str
     """创建者uid"""
 
-    workspace_uid: str = 'ROOT'
+    workspace_uid: str = "ROOT"
     """空间uid"""
 
     name: str

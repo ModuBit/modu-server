@@ -37,14 +37,19 @@ class CamelCaseJSONResponse(JSONResponse):
             # 前提：需要实现 alias_generator
             return obj.model_dump(by_alias=False)
         elif isinstance(obj, dict):
-            return {key: CamelCaseJSONResponse._convert_to_dict(value) for key, value in obj.items()}
+            return {
+                key: CamelCaseJSONResponse._convert_to_dict(value)
+                for key, value in obj.items()
+            }
         elif isinstance(obj, list):
             return [CamelCaseJSONResponse._convert_to_dict(item) for item in obj]
         else:
             return obj
 
 
-def default_model_config(extra_model_config: dict[str, Any] | None = None) -> dict[str, Any]:
+def default_model_config(
+    extra_model_config: dict[str, Any] | None = None
+) -> dict[str, Any]:
     """
     默认的 pydantic model_config
     :param extra_model_config: 额外的 model_config
@@ -69,10 +74,10 @@ def _to_camel_case(string: str) -> str:
     """
 
     # 保留首尾的下划线
-    leading_underscores = len(string) - len(string.lstrip('_'))
-    trailing_underscores = len(string) - len(string.rstrip('_'))
+    leading_underscores = len(string) - len(string.lstrip("_"))
+    trailing_underscores = len(string) - len(string.rstrip("_"))
 
-    parts = string.strip('_').split('_')
+    parts = string.strip("_").split("_")
     # 过滤掉空字符串部分，以防止在处理连续下划线时出现问题
     filtered_parts = [part for part in parts if part]
     if not filtered_parts:
@@ -80,5 +85,7 @@ def _to_camel_case(string: str) -> str:
         return "_" * leading_underscores + "_" * trailing_underscores
 
     # 非首尾下划线转驼峰
-    camel_case = filtered_parts[0] + ''.join(word.capitalize() for word in filtered_parts[1:])
+    camel_case = filtered_parts[0] + "".join(
+        word.capitalize() for word in filtered_parts[1:]
+    )
     return "_" * leading_underscores + camel_case + "_" * trailing_underscores

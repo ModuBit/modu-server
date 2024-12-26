@@ -22,20 +22,36 @@ from utils.reflect.module_scan import load_classes
 
 def test_load_classes():
     # 扫描类
-    model_provider_classes = load_classes('llm.model.providers', LLMProvider, True, 1)
+    model_provider_classes = load_classes("llm.model.providers", LLMProvider, True, 1)
     assert len(model_provider_classes) > 0
-    assert any(model_provider_class == OpenAIProvider for model_provider_class in model_provider_classes)
+    assert any(
+        model_provider_class == OpenAIProvider
+        for model_provider_class in model_provider_classes
+    )
 
     # 类实例化
-    model_provider_instances = [model_provider_class() for model_provider_class in model_provider_classes]
+    model_provider_instances = [
+        model_provider_class() for model_provider_class in model_provider_classes
+    ]
     assert len(model_provider_instances) > 0
     assert all(
-        isinstance(model_provider_instance, LLMProvider) for model_provider_instance in model_provider_instances)
+        isinstance(model_provider_instance, LLMProvider)
+        for model_provider_instance in model_provider_instances
+    )
     assert any(
-        isinstance(model_provider_instance, OpenAIProvider) for model_provider_instance in model_provider_instances)
+        isinstance(model_provider_instance, OpenAIProvider)
+        for model_provider_instance in model_provider_instances
+    )
 
     # 调用实例方法
-    provider_schemas = [model_provider_instance.provider_schema
-                        for model_provider_instance in model_provider_instances]
-    assert all(isinstance(provider_schema, ProviderSchema) for provider_schema in provider_schemas)
-    assert any(provider_schema.provider == 'openai' for provider_schema in provider_schemas)
+    provider_schemas = [
+        model_provider_instance.provider_schema
+        for model_provider_instance in model_provider_instances
+    ]
+    assert all(
+        isinstance(provider_schema, ProviderSchema)
+        for provider_schema in provider_schemas
+    )
+    assert any(
+        provider_schema.provider == "openai" for provider_schema in provider_schemas
+    )

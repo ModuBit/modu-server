@@ -42,7 +42,9 @@ def encrypt_str(secret: str, key: str, plain_content: str) -> str:
     :param plain_content: 待加密内容
     :return: 加密后内容
     """
-    cipher_bytes = encrypt(secret.encode('utf-8'), key.encode('utf-8'), plain_content.encode('utf-8'))
+    cipher_bytes = encrypt(
+        secret.encode("utf-8"), key.encode("utf-8"), plain_content.encode("utf-8")
+    )
     return cipher_bytes.hex()
 
 
@@ -58,8 +60,8 @@ def decrypt(secret: bytes, key: bytes, cipher_bytes: bytes) -> bytes:
     key_material = _key_material(secret, key)
 
     tag = cipher_bytes[:16]
-    nonce = cipher_bytes[16:16 + 15]
-    cb = cipher_bytes[16 + 15:]
+    nonce = cipher_bytes[16 : 16 + 15]
+    cb = cipher_bytes[16 + 15 :]
 
     return aes.decrypt(key_material, tag, nonce, cb)
 
@@ -72,12 +74,14 @@ def decrypt_str(secret: str, key: str, cipher_content: str) -> str:
     :param cipher_content: 待解密内容
     :return: 解密后的内容
     """
-    plain_bytes = decrypt(secret.encode('utf-8'), key.encode('utf-8'), bytearray.fromhex(cipher_content))
-    return plain_bytes.decode('utf-8')
+    plain_bytes = decrypt(
+        secret.encode("utf-8"), key.encode("utf-8"), bytearray.fromhex(cipher_content)
+    )
+    return plain_bytes.decode("utf-8")
 
 
 def _key_material(secret: bytes, key: bytes) -> bytes:
-    """"
+    """ "
     生成key material
     """
     hmac = HMAC.new(secret, digestmod=SHA256)

@@ -25,7 +25,7 @@ router = APIRouter()
 
 
 @logger.catch()
-@router.get('/providers', response_class=CamelCaseJSONResponse)
+@router.get("/providers", response_class=CamelCaseJSONResponse)
 async def providers() -> list[ProviderSchema]:
     """
     系统中注册的LLM提供商

@@ -43,17 +43,17 @@ async def lifespan(fast_app: FastAPI):
 
     # start
     # 应用启动之后
-    logger.info('==== application started ====')
+    logger.info("==== application started ====")
 
     yield
 
     # shutdown
     # 应用关闭之前
 
-    for executor in (_pre_destroy_executors or []):
+    for executor in _pre_destroy_executors or []:
         if inspect.iscoroutinefunction(executor):
             await executor()
         else:
             executor()
 
-    logger.info('==== application will be shutdown ====')
+    logger.info("==== application will be shutdown ====")

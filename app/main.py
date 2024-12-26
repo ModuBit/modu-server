@@ -32,13 +32,16 @@ def use_uvloop_if_available():
     """
     尝试使用uvloop
     """
-    if platform.system() != 'Windows':
+    if platform.system() != "Windows":
         try:
             import uvloop
+
             asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
             logger.info("[EventLoop] Using uvloop as the event loop.")
         except ImportError:
-            logger.warning("[EventLoop] uvloop not installed, using default asyncio event loop.")
+            logger.warning(
+                "[EventLoop] uvloop not installed, using default asyncio event loop."
+            )
     else:
         logger.info("[EventLoop] Running on Windows, using default asyncio event loop.")
 
@@ -50,15 +53,17 @@ def create_app() -> FastAPI:
     """
 
     # 创建FastAPI实例
-    fast_app = FastAPI(title=app_config.app.title,
-                       description=app_config.app.description,
-                       version=app_config.app.version,
-                       summary=app_config.summary,
-                       terms_of_service=app_config.app.terms_of_service,
-                       contact=app_config.app.contact.as_dict() or {},
-                       license_info=app_config.app.license_info.as_dict() or {},
-                       project=app_config.app.project.as_dict() or {},
-                       lifespan=lifespan.lifespan)
+    fast_app = FastAPI(
+        title=app_config.app.title,
+        description=app_config.app.description,
+        version=app_config.app.version,
+        summary=app_config.summary,
+        terms_of_service=app_config.app.terms_of_service,
+        contact=app_config.app.contact.as_dict() or {},
+        license_info=app_config.app.license_info.as_dict() or {},
+        project=app_config.app.project.as_dict() or {},
+        lifespan=lifespan.lifespan,
+    )
     fast_app.config = app_config
 
     return fast_app
@@ -68,7 +73,7 @@ def create_app() -> FastAPI:
 use_uvloop_if_available()
 
 # 打印banner
-banner_print('./banner.txt', app_config)
+banner_print("./banner.txt", app_config)
 
 # 创建应用
 app = create_app()

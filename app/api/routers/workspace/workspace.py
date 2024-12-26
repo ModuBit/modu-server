@@ -20,7 +20,11 @@ from pydantic import BaseModel
 
 from api.dependencies.principal import current_account
 from repositories.data.account.account_models import Account
-from repositories.data.workspace.workspace_models import Workspace, WorkspaceType, WorkspaceMemberRole
+from repositories.data.workspace.workspace_models import (
+    Workspace,
+    WorkspaceType,
+    WorkspaceMemberRole,
+)
 from services import workspace_service
 from utils.pydantic import default_model_config, CamelCaseJSONResponse
 
@@ -51,8 +55,12 @@ class WorkspaceDTO(BaseModel):
 
 
 @logger.catch()
-@router.get(path='', response_model=list[WorkspaceDTO], response_class=CamelCaseJSONResponse)
-async def list_related(current_user: Account = Depends(current_account)) -> list[Workspace]:
+@router.get(
+    path="", response_model=list[WorkspaceDTO], response_class=CamelCaseJSONResponse
+)
+async def list_related(
+    current_user: Account = Depends(current_account),
+) -> list[Workspace]:
     """
     当前登录人相关的空间列表
     FIXME 关联的空间可能很多，终有一天需要考虑下分页
@@ -63,8 +71,14 @@ async def list_related(current_user: Account = Depends(current_account)) -> list
 
 
 @logger.catch()
-@router.get(path='/{workspace_uid}', response_model=WorkspaceDTO, response_class=CamelCaseJSONResponse)
-async def detail(workspace_uid: str, current_user: Account = Depends(current_account)) -> Workspace:
+@router.get(
+    path="/{workspace_uid}",
+    response_model=WorkspaceDTO,
+    response_class=CamelCaseJSONResponse,
+)
+async def detail(
+    workspace_uid: str, current_user: Account = Depends(current_account)
+) -> Workspace:
     """
     获取空间详情
     :param workspace_uid: 空间uid

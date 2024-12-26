@@ -22,11 +22,11 @@ from utils.lifespan import register_pre_destroy_executor
 from .cache import Cache
 from .redis_cache import RedisCache
 
-CacheInstance = TypeVar('CacheInstance')
+CacheInstance = TypeVar("CacheInstance")
 
 _cache: Cache | None = None
 _cache_mapping = {
-    'redis': RedisCache,
+    "redis": RedisCache,
 }
 
 

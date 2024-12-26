@@ -17,15 +17,18 @@ limitations under the License.
 from .ConversationRepository import ConversationRepository
 from .ConversationRepositoryPostgres import ConversationRepositoryPostgres
 from .MessageRepository import MessageRepository, MessageSummaryRepository
-from .MessageRepositoryPostgres import MessageRepositoryPostgres, MessageSummaryRepositoryPostgres
+from .MessageRepositoryPostgres import (
+    MessageRepositoryPostgres,
+    MessageSummaryRepositoryPostgres,
+)
 
 __all__ = [
-    'conversation_models',
-    'ConversationRepository',
-    'ConversationRepositoryPostgres',
-    'message_models',
-    'MessageRepository',
-    'MessageRepositoryPostgres',
-    'MessageSummaryRepository',
-    'MessageSummaryRepositoryPostgres'
+    "conversation_models",
+    "ConversationRepository",
+    "ConversationRepositoryPostgres",
+    "message_models",
+    "MessageRepository",
+    "MessageRepositoryPostgres",
+    "MessageSummaryRepository",
+    "MessageSummaryRepositoryPostgres",
 ]

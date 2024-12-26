@@ -24,9 +24,9 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
 
-_ot_trace_id = contextvars.ContextVar('ot_trace_id', default='0')
-_ot_span_id = contextvars.ContextVar('ot_span_id', default='0')
-_ot_service_name = contextvars.ContextVar('ot_service_name', default='unknown_service')
+_ot_trace_id = contextvars.ContextVar("ot_trace_id", default="0")
+_ot_span_id = contextvars.ContextVar("ot_span_id", default="0")
+_ot_service_name = contextvars.ContextVar("ot_service_name", default="unknown_service")
 
 
 def ot_config(fast_app: FastAPI):

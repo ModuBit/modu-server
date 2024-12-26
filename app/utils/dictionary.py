@@ -20,7 +20,7 @@ from collections import abc
 from types import MappingProxyType
 from typing import TypeVar, Dict, Any, Callable
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 class FrozenDictData:
@@ -44,7 +44,7 @@ class FrozenDictData:
         # 处理关键字
         for key, value in data.items():
             if keyword.iskeyword(key):
-                key += '_'
+                key += "_"
             __data[key] = value
         self._data = MappingProxyType(__data)
 
@@ -81,7 +81,9 @@ class FrozenDictData:
         return self._data
 
 
-def dict_get(dictionary: Dict[str, Any] | FrozenDictData, keys: str, default: T | None = None) -> T | None:
+def dict_get(
+    dictionary: Dict[str, Any] | FrozenDictData, keys: str, default: T | None = None
+) -> T | None:
     """
     支持字典的链式键值获取
     :param dictionary: 字典
@@ -92,7 +94,7 @@ def dict_get(dictionary: Dict[str, Any] | FrozenDictData, keys: str, default: T 
 
     try:
         # 将键链拆分为键列表
-        keys_list = keys.split('.')
+        keys_list = keys.split(".")
         # 遍历键列表，逐层深入字典
         for key in keys_list:
             if dictionary is None or key not in dictionary:
@@ -114,7 +116,9 @@ def dict_filter_none_values(dictionary: Dict) -> Dict:
     return {k: v for k, v in dict_empty_if_none(dictionary).items() if v is not None}
 
 
-def dict_merge(dictionary_left: Dict, dictionary_right: Dict, filter_none_values: bool = True) -> Dict:
+def dict_merge(
+    dictionary_left: Dict, dictionary_right: Dict, filter_none_values: bool = True
+) -> Dict:
     """
     合并两个字典
     :param dictionary_left: 左字典
@@ -125,7 +129,10 @@ def dict_merge(dictionary_left: Dict, dictionary_right: Dict, filter_none_values
     if filter_none_values:
         dictionary_left = dict_filter_none_values(dictionary_left)
         dictionary_right = dict_filter_none_values(dictionary_right)
-    return {**dict_empty_if_none(dictionary_left), **dict_empty_if_none(dictionary_right)}
+    return {
+        **dict_empty_if_none(dictionary_left),
+        **dict_empty_if_none(dictionary_right),
+    }
 
 
 def dict_exclude_keys(original_dict: Dict, keys_to_exclude: list | set):
@@ -135,7 +142,11 @@ def dict_exclude_keys(original_dict: Dict, keys_to_exclude: list | set):
     :param keys_to_exclude: 排除的 key 列表
     :return: 生成的新字典
     """
-    return {key: value for key, value in dict_empty_if_none(original_dict).items() if key not in keys_to_exclude}
+    return {
+        key: value
+        for key, value in dict_empty_if_none(original_dict).items()
+        if key not in keys_to_exclude
+    }
 
 
 def dict_map_values(dictionary: Dict, value_map: Callable[[any, any], any]):
@@ -145,7 +156,10 @@ def dict_map_values(dictionary: Dict, value_map: Callable[[any, any], any]):
     :param value_map: value 映射函数
     :return: 生成的新字典
     """
-    return {key: value_map(key, value) for key, value in dict_empty_if_none(dictionary).items()}
+    return {
+        key: value_map(key, value)
+        for key, value in dict_empty_if_none(dictionary).items()
+    }
 
 
 def dict_map_keys(dictionary: Dict, key_map: Callable[[any], any]):
@@ -155,10 +169,16 @@ def dict_map_keys(dictionary: Dict, key_map: Callable[[any], any]):
     :param key_map: key 映射函数
     :return: 生成的新字典
     """
-    return {key_map(key): value for key, value in dict_empty_if_none(dictionary).items()}
+    return {
+        key_map(key): value for key, value in dict_empty_if_none(dictionary).items()
+    }
 
 
-def dict_map_key_value(dictionary: Dict, key_map: Callable[[any], any], value_map: Callable[[any, any], any]):
+def dict_map_key_value(
+    dictionary: Dict,
+    key_map: Callable[[any], any],
+    value_map: Callable[[any, any], any],
+):
     """
     将原字典中的 key value 映射为新的值
     :param dictionary: 原字典
@@ -166,7 +186,11 @@ def dict_map_key_value(dictionary: Dict, key_map: Callable[[any], any], value_ma
     :param value_map: value 映射函数
     :return: 生成的新字典
     """
-    return {key_map(key): value_map(key, value) for key, value in dict_empty_if_none(dictionary).items()}
+    return {
+        key_map(key): value_map(key, value)
+        for key, value in dict_empty_if_none(dictionary).items()
+    }
+
 
 def dict_empty_if_none(dictionary: Dict | None) -> Dict | None:
     return {} if dictionary is None else dictionary

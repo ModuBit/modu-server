@@ -106,6 +106,7 @@ class Message(BaseModel):
     # 定义配置
     model_config = default_model_config()
 
+
 class MessageSummary(BaseModel):
     """
     消息总结

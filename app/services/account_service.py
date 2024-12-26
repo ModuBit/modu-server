@@ -26,7 +26,9 @@ from utils.errors.account_error import AccountLoginError
 from utils.json import default_excluded_fields
 
 account_info_cache: CacheDecorator[AccountInfo] = cache_decorator_builder.build(
-    serialize=lambda workspace: workspace.model_dump_json(exclude=default_excluded_fields),
+    serialize=lambda workspace: workspace.model_dump_json(
+        exclude=default_excluded_fields
+    ),
     deserialize=lambda json_content: AccountInfo.model_validate_json(json_content),
     default_expire_seconds=24 * 3600,
     allow_none_values=True,
@@ -44,10 +46,10 @@ async def authenticate(email: str, password: str) -> Account:
     account = await account_repository.find_one_by_email(email)
 
     if not account:
-        raise AccountLoginError(message='用户名或密码错误')
+        raise AccountLoginError(message="用户名或密码错误")
 
     if not auth.verify_password(password, account.password):
-        raise AccountLoginError(message='用户名或密码错误')
+        raise AccountLoginError(message="用户名或密码错误")
 
     account.password = None
     return account
@@ -61,10 +63,12 @@ def account_token_encode(account: Account) -> str:
     """
     security_config = app_config.security
     jwt_config = security_config.jwt
-    return auth.jose_encode(vars(account),
-                            security_config.secret,
-                            jwt_config.algorithm,
-                            jwt_config.expire_minutes)
+    return auth.jose_encode(
+        vars(account),
+        security_config.secret,
+        jwt_config.algorithm,
+        jwt_config.expire_minutes,
+    )
 
 
 def account_token_decode(token: str) -> Account:
@@ -88,7 +92,8 @@ def account_token_verify(token: str):
 
 
 @account_info_cache.async_cacheable(
-    key_generator=lambda uid, **kwargs: f"account:{uid}:info")
+    key_generator=lambda uid, **kwargs: f"account:{uid}:info"
+)
 async def get_account_info(uid: str) -> AccountInfo:
     """
     查找账号信息
@@ -108,7 +113,9 @@ async def get_account_infos(uids: list[str]) -> Mapping[str, AccountInfo]:
     # TODO 是否将列表缓存做成通用工具
     account_infos = {}
     uncached_uids = []
-    account_info_caches = await account_info_cache.cache.mget([f"account:{uid}:info" for uid in uids])
+    account_info_caches = await account_info_cache.cache.mget(
+        [f"account:{uid}:info" for uid in uids]
+    )
 
     # 先查询已经缓存的
     for i in range(len(account_info_caches)):
@@ -118,7 +125,7 @@ async def get_account_infos(uids: list[str]) -> Mapping[str, AccountInfo]:
             continue
 
         if isinstance(cached_content, bytes):
-            cached_content = cached_content.decode('utf-8')
+            cached_content = cached_content.decode("utf-8")
         if none_content == cached_content:
             uncached_uids.append(uids[i])
             continue
@@ -132,8 +139,10 @@ async def get_account_infos(uids: list[str]) -> Mapping[str, AccountInfo]:
         for account in accounts:
             account_info = AccountInfo.model_validate(account)
             account_infos[account.uid] = account_info
-            await account_info_cache.cache.set(f"account:{account.uid}:info",
-                                               account_info_cache.serialize(account_info),
-                                               account_info_cache.default_expire_time)
+            await account_info_cache.cache.set(
+                f"account:{account.uid}:info",
+                account_info_cache.serialize(account_info),
+                account_info_cache.default_expire_time,
+            )
 
     return account_infos

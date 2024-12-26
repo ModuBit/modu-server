@@ -30,7 +30,13 @@ class LLMMessageCheckPointSaver:
     这里需要自定义处理逻辑
     """
 
-    def __init__(self, current_user: Account, workspace_uid: str, conversation: Conversation, assistant_uid: str):
+    def __init__(
+        self,
+        current_user: Account,
+        workspace_uid: str,
+        conversation: Conversation,
+        assistant_uid: str,
+    ):
         """
         LLMMessageCheckPointSaver
         :param conversation_uid: 会话 UID
@@ -50,7 +56,7 @@ class LLMMessageCheckPointSaver:
         self._conversationSummaryBufferMemory = ConversationSummaryBufferMemory(
             current_user=current_user,
             workspace_uid=workspace_uid,
-            conversation=conversation
+            conversation=conversation,
         )
 
     def process(self, message_event: MessageEventData):
@@ -63,7 +69,10 @@ class LLMMessageCheckPointSaver:
             # 已经保存过了
             return
 
-        if not self._current_message or self._current_message.message_uid != message_event.message_uid:
+        if (
+            not self._current_message
+            or self._current_message.message_uid != message_event.message_uid
+        ):
             # 新消息
             self._current_message = Message(
                 conversation_uid=self._conversation.conversation_uid,
@@ -71,7 +80,8 @@ class LLMMessageCheckPointSaver:
                 sender_uid=message_event.sender_uid or self._assistant_uid,
                 sender_role=message_event.sender_role or "assistant",
                 message_time=message_event.message_time,
-                messages=[message_event.message])
+                messages=[message_event.message],
+            )
 
             self._conversation_messages.append(self._current_message)
         else:
@@ -89,5 +99,7 @@ class LLMMessageCheckPointSaver:
         """
         保存消息
         """
-        await self._conversationSummaryBufferMemory.save_messages(self._conversation_messages, True)
+        await self._conversationSummaryBufferMemory.save_messages(
+            self._conversation_messages, True
+        )
         self._saved = True

@@ -19,9 +19,9 @@ from abc import ABC, abstractmethod
 from functools import wraps
 from typing import TypeVar, Callable, Generic, Awaitable, Set
 
-T = TypeVar('T')
+T = TypeVar("T")
 
-none_content = '__None__'
+none_content = "__None__"
 
 
 def func_bound_values(func, *args, **kwargs):
@@ -39,7 +39,9 @@ def func_bound_values(func, *args, **kwargs):
     # 将所有位置参数和关键字参数统一存入字典
     bound_values = sig.bind_partial(*args, **kwargs).arguments
     # 将 bound_values 和 params 中的默认值合并
-    bound_values.update({k: v.default for k, v in params.items() if k not in bound_values})
+    bound_values.update(
+        {k: v.default for k, v in params.items() if k not in bound_values}
+    )
     return bound_values
 
 
@@ -106,13 +108,15 @@ class CacheDecorator(Generic[T]):
     缓存Decorator
     """
 
-    def __init__(self,
-                 cache: Cache,
-                 serialize: Callable[[T], str],
-                 deserialize: Callable[[str], T],
-                 key_prefix: str = "",
-                 default_expire_seconds: int = 3600,
-                 allow_none_values: bool = False, ):
+    def __init__(
+        self,
+        cache: Cache,
+        serialize: Callable[[T], str],
+        deserialize: Callable[[str], T],
+        key_prefix: str = "",
+        default_expire_seconds: int = 3600,
+        allow_none_values: bool = False,
+    ):
         """
         缓存Decorator
         :param cache: 缓存实例
@@ -129,14 +133,18 @@ class CacheDecorator(Generic[T]):
         self._default_expire_time = default_expire_seconds
         self._allow_none_values = allow_none_values
 
-    def async_cacheable(self, key_generator: Callable[..., str], expire_seconds: int = None):
+    def async_cacheable(
+        self, key_generator: Callable[..., str], expire_seconds: int = None
+    ):
         """
         在调用方法时优先取缓存值，若无缓存则调用原方法，并将方法返回值缓存
         :param key_generator: 缓存key生成方法
         :param expire_seconds: 过期时间，缺省使用默认值
         """
 
-        def decorator(func: Callable[..., Awaitable[T]], ):
+        def decorator(
+            func: Callable[..., Awaitable[T]],
+        ):
             # noinspection PyBroadException
             @wraps(func)
             async def wrapper(*args, **kwargs):
@@ -145,9 +153,11 @@ class CacheDecorator(Generic[T]):
 
                 # 缓存中的值
                 cache_key = self._key_prefix + key_generator(**bound_values)
-                cached_content = await self._cache.get(cache_key, )
+                cached_content = await self._cache.get(
+                    cache_key,
+                )
                 if isinstance(cached_content, bytes):
-                    cached_content = cached_content.decode('utf-8')
+                    cached_content = cached_content.decode("utf-8")
 
                 if cached_content is not None:
                     # 缓存中有值
@@ -168,8 +178,14 @@ class CacheDecorator(Generic[T]):
                     return None
 
                 # 存入缓存
-                cache_value = self._serialize(origin_value) if origin_value is not None else none_content
-                await self._cache.set(cache_key, cache_value, expire_seconds or self._default_expire_time)
+                cache_value = (
+                    self._serialize(origin_value)
+                    if origin_value is not None
+                    else none_content
+                )
+                await self._cache.set(
+                    cache_key, cache_value, expire_seconds or self._default_expire_time
+                )
 
                 return origin_value
 
@@ -177,14 +193,18 @@ class CacheDecorator(Generic[T]):
 
         return decorator
 
-    def async_cache_put(self, key_generator: Callable[..., str], expire_seconds: int = None):
+    def async_cache_put(
+        self, key_generator: Callable[..., str], expire_seconds: int = None
+    ):
         """
         在调用方法时总是调用原方法，并将方法返回值缓存
         :param key_generator: 缓存key生成方法
         :param expire_seconds: 过期时间，缺省使用默认值
         """
 
-        def decorator(func: Callable[..., Awaitable[T]], ):
+        def decorator(
+            func: Callable[..., Awaitable[T]],
+        ):
             @wraps(func)
             async def wrapper(*args, **kwargs):
                 # 调用原方法
@@ -199,8 +219,14 @@ class CacheDecorator(Generic[T]):
 
                 # 存入缓存
                 cache_key = self._key_prefix + key_generator(**bound_values)
-                cache_value = self._serialize(origin_value) if origin_value is not None else none_content
-                await self._cache.set(cache_key, cache_value, expire_seconds or self._default_expire_time)
+                cache_value = (
+                    self._serialize(origin_value)
+                    if origin_value is not None
+                    else none_content
+                )
+                await self._cache.set(
+                    cache_key, cache_value, expire_seconds or self._default_expire_time
+                )
 
                 # 返回原方法执行结果
                 return origin_value
@@ -215,7 +241,9 @@ class CacheDecorator(Generic[T]):
         :param key_generator: 缓存key生成方法
         """
 
-        def decorator(func: Callable[..., Awaitable[T]], ):
+        def decorator(
+            func: Callable[..., Awaitable[T]],
+        ):
             @wraps(func)
             async def wrapper(*args, **kwargs):
                 # 调用原方法
@@ -240,7 +268,9 @@ class CacheDecorator(Generic[T]):
         :param key_pattern_generator: 缓存key匹配模式生成方法
         """
 
-        def decorator(func: Callable[..., Awaitable[T]], ):
+        def decorator(
+            func: Callable[..., Awaitable[T]],
+        ):
             @wraps(func)
             async def wrapper(*args, **kwargs):
                 # 调用原方法
@@ -286,13 +316,14 @@ class CacheDecoratorBuilder:
         """
         self.cache = cache
 
-    def build(self,
-              serialize: Callable[[T], str],
-              deserialize: Callable[[str], T],
-              key_prefix: str = "",
-              default_expire_seconds: int = 3600,
-              allow_none_values: bool = False,
-              ) -> CacheDecorator[T]:
+    def build(
+        self,
+        serialize: Callable[[T], str],
+        deserialize: Callable[[str], T],
+        key_prefix: str = "",
+        default_expire_seconds: int = 3600,
+        allow_none_values: bool = False,
+    ) -> CacheDecorator[T]:
         """
         构造CacheManager
         :param serialize: 序列化方法
@@ -302,6 +333,11 @@ class CacheDecoratorBuilder:
         :param allow_none_values: 是否缓存None，可以有效防止缓存击穿，默认不缓存
         :return:
         """
-        return CacheDecorator[T](self.cache,
-                                 serialize, deserialize, key_prefix,
-                                 default_expire_seconds, allow_none_values, )
+        return CacheDecorator[T](
+            self.cache,
+            serialize,
+            deserialize,
+            key_prefix,
+            default_expire_seconds,
+            allow_none_values,
+        )

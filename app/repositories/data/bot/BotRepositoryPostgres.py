@@ -14,7 +14,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from sqlalchemy import PrimaryKeyConstraint, String, Enum, text, delete, select, or_, update
+from sqlalchemy import (
+    PrimaryKeyConstraint,
+    String,
+    Enum,
+    text,
+    delete,
+    select,
+    or_,
+    update,
+)
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -33,29 +42,56 @@ class BotRepositoryPostgres(BotRepository):
 
     @with_async_session
     async def create(self, bot: Bot, session: AsyncSession) -> Bot:
-        bot_po = BotPO(**dict_exclude_keys(vars(bot), ['creator']))
+        bot_po = BotPO(**dict_exclude_keys(vars(bot), ["creator"]))
         bot_po.uid = BasePO.uid_generate()
         session.add(bot_po)
         bot.uid = bot_po.uid
         return bot
 
     @with_async_session
-    async def update(self, bot: Bot, session: AsyncSession) -> Bot:
-        stmt = (update(BotPO)
-                .where(BotPO.uid == bot.uid)
-                .values(name=bot.name, description=bot.description))
+    async def update_base_info(self, bot: Bot, session: AsyncSession) -> Bot:
+        stmt = (
+            update(BotPO)
+            .where(BotPO.uid == bot.uid)
+            .values(name=bot.name, description=bot.description)
+        )
         await session.execute(stmt)
         return bot
 
     @with_async_session
-    async def find(self, workspace_uid: str, qry: BotListQry, session: AsyncSession) -> list[Bot]:
-        stmt = (select(BotPO)
-                .where(BotPO.workspace_uid == workspace_uid)
-                .where(BotPO.is_deleted == False))
+    async def update_bot_config(
+        self,
+        bot_uid: str,
+        bot_mode: BotMode,
+        bot_config: dict,
+        publish_uid: str,
+        session: AsyncSession,
+    ):
+        stmt = (
+            update(BotPO)
+            .where(BotPO.uid == bot_uid)
+            .values(mode=bot_mode, config=bot_config, publish_uid=publish_uid)
+        )
+        await session.execute(stmt)
+
+    @with_async_session
+    async def find(
+        self, workspace_uid: str, qry: BotListQry, session: AsyncSession
+    ) -> list[Bot]:
+        stmt = (
+            select(BotPO)
+            .where(BotPO.workspace_uid == workspace_uid)
+            .where(BotPO.is_deleted == False)
+        )
 
         # 搜索关键字
         if qry.keyword:
-            stmt = stmt.where(or_(BotPO.name.ilike(f"%{qry.keyword}%"), BotPO.description.ilike(f"%{qry.keyword}%")))
+            stmt = stmt.where(
+                or_(
+                    BotPO.name.ilike(f"%{qry.keyword}%"),
+                    BotPO.description.ilike(f"%{qry.keyword}%"),
+                )
+            )
 
         # 筛选模式
         if qry.mode:
@@ -79,12 +115,16 @@ class BotRepositoryPostgres(BotRepository):
         return [Bot(**conv.as_dict()) for conv in select_result.scalars()]
 
     @with_async_session
-    async def get_by_workspace_and_uid(self, workspace_uid: str, bot_uid: str, session: AsyncSession) -> Bot:
-        stmt = (select(BotPO)
-                .where(BotPO.uid == bot_uid)
-                .where(BotPO.workspace_uid == workspace_uid)
-                .where(BotPO.is_deleted == False)
-                .limit(1))
+    async def get_by_workspace_and_uid(
+        self, workspace_uid: str, bot_uid: str, session: AsyncSession
+    ) -> Bot:
+        stmt = (
+            select(BotPO)
+            .where(BotPO.uid == bot_uid)
+            .where(BotPO.workspace_uid == workspace_uid)
+            .where(BotPO.is_deleted == False)
+            .limit(1)
+        )
         select_result = await session.execute(stmt)
         bot_model = select_result.scalars().one_or_none()
         return Bot(**bot_model.as_dict()) if bot_model else None
@@ -101,17 +141,25 @@ class BotPO(PostgresBasePO):
     Bot PO
     """
 
-    __tablename__ = 'modu_bots'
-    __table_args__ = (
-        PrimaryKeyConstraint('id', name='pk_id'),
-    )
+    __tablename__ = "modu_bots"
+    __table_args__ = (PrimaryKeyConstraint("id", name="pk_id"),)
 
-    workspace_uid: Mapped[str] = mapped_column(String(32), nullable=False, comment='所属空间uid')
-    name: Mapped[str] = mapped_column(String(128), nullable=False, comment='Bot名称')
-    avatar: Mapped[str] = mapped_column(String(256), nullable=True, comment='头像')
-    description: Mapped[str] = mapped_column(String(512), nullable=True, comment='描述')
-    creator_uid: Mapped[str] = mapped_column(String(32), nullable=False, comment='创建者uid')
-    mode: Mapped[BotMode] = mapped_column(Enum(BotMode, native_enum=False), nullable=False,
-                                          server_default=text("'SINGLE_AGENT'::character varying"), comment='模式')
-    config: Mapped[dict] = mapped_column(Dict2Json, nullable=True, comment='配置内容')
-    publish_uid: Mapped[str] = mapped_column(String(32), nullable=True, comment='发布uid')
+    workspace_uid: Mapped[str] = mapped_column(
+        String(32), nullable=False, comment="所属空间uid"
+    )
+    name: Mapped[str] = mapped_column(String(128), nullable=False, comment="Bot名称")
+    avatar: Mapped[str] = mapped_column(String(256), nullable=True, comment="头像")
+    description: Mapped[str] = mapped_column(String(512), nullable=True, comment="描述")
+    creator_uid: Mapped[str] = mapped_column(
+        String(32), nullable=False, comment="创建者uid"
+    )
+    mode: Mapped[BotMode] = mapped_column(
+        Enum(BotMode, native_enum=False),
+        nullable=False,
+        server_default=text("'SINGLE_AGENT'::character varying"),
+        comment="模式",
+    )
+    config: Mapped[dict] = mapped_column(Dict2Json, nullable=True, comment="配置内容")
+    publish_uid: Mapped[str] = mapped_column(
+        String(32), nullable=True, comment="发布uid"
+    )

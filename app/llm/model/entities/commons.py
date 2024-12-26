@@ -23,6 +23,7 @@ class I18nOption(BaseModel):
     """
     国际化
     """
+
     default: str
     en_us: str | None = None
     zh_cn: str | None = None
@@ -35,6 +36,7 @@ class IconOption(BaseModel):
     """
     图标
     """
+
     icon: str | None = None
     avatar: str | None = None
     combine: str | None = None
@@ -48,6 +50,7 @@ class HelpOption(BaseModel):
     """
     帮助
     """
+
     title: I18nOption
     """标题"""
     url: str

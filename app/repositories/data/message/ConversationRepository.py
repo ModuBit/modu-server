@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+
 from abc import abstractmethod
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -30,7 +31,9 @@ class ConversationRepository(Repository):
         super().__init__(database)
 
     @abstractmethod
-    async def get_by_uid(self, creator_uid: str, conversation_uid: str, session: AsyncSession) -> Conversation:
+    async def get_by_uid(
+        self, creator_uid: str, conversation_uid: str, session: AsyncSession
+    ) -> Conversation:
         """
         通过uid查询会话
         :param creator_uid: 用户 uid
@@ -41,8 +44,14 @@ class ConversationRepository(Repository):
         raise NotImplementedError()
 
     @abstractmethod
-    async def find_before_uid(self, creator_uid: str, before_uid: str, include_this: bool, max_count: int,
-                              session: AsyncSession) -> list[Conversation]:
+    async def find_before_uid(
+        self,
+        creator_uid: str,
+        before_uid: str,
+        include_this: bool,
+        max_count: int,
+        session: AsyncSession,
+    ) -> list[Conversation]:
         """
         查询某会话前的会话
         :param creator_uid: 用户 uid
@@ -55,7 +64,9 @@ class ConversationRepository(Repository):
         raise NotImplementedError()
 
     @abstractmethod
-    async def create(self, conversation: Conversation, session: AsyncSession) -> Conversation:
+    async def create(
+        self, conversation: Conversation, session: AsyncSession
+    ) -> Conversation:
         """
         创建会话
         :param conversation: 会话
@@ -64,8 +75,9 @@ class ConversationRepository(Repository):
         raise NotImplementedError()
 
     @abstractmethod
-    async def update_reset_message_uid(self, conversation_uid: str, reset_message_uid: str,
-                                       session: AsyncSession) -> str:
+    async def update_reset_message_uid(
+        self, conversation_uid: str, reset_message_uid: str, session: AsyncSession
+    ) -> str:
         """
         更新 重置/清楚记忆 时的消息UID
         :param conversation_uid: 会话UID
@@ -84,7 +96,9 @@ class ConversationRepository(Repository):
         raise NotImplementedError()
 
     @abstractmethod
-    async def delete_all_by_creator(self, creator_uid: str, session: AsyncSession) -> bool:
+    async def delete_all_by_creator(
+        self, creator_uid: str, session: AsyncSession
+    ) -> bool:
         """
         删除所有会话
         :param creator_uid: 用户 uid
@@ -93,7 +107,9 @@ class ConversationRepository(Repository):
         raise NotImplementedError()
 
     @abstractmethod
-    async def update_name(self, conversation_uid: str, name: str, session: AsyncSession) -> str:
+    async def update_name(
+        self, conversation_uid: str, name: str, session: AsyncSession
+    ) -> str:
         """
         更新会话名称
         :param conversation_uid: 会话 UID

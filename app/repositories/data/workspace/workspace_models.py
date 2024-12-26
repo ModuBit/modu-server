@@ -26,9 +26,9 @@ class WorkspaceType(str, enum.Enum):
     空间类型
     """
 
-    PRIVATE = 'PRIVATE'
+    PRIVATE = "PRIVATE"
     """私有空间"""
-    PUBLIC = 'PUBLIC'
+    PUBLIC = "PUBLIC"
     """公开空间"""
 
 
@@ -59,11 +59,11 @@ class WorkspaceMemberStatus(str, enum.Enum):
     空间成员状态
     """
 
-    PENDING = 'PENDING'
+    PENDING = "PENDING"
     """待确认"""
-    ACTIVE = 'ACTIVE'
+    ACTIVE = "ACTIVE"
     """已激活"""
-    CLOSED = 'CLOSED'
+    CLOSED = "CLOSED"
     """已注销"""
 
 
@@ -72,11 +72,11 @@ class WorkspaceMemberRole(str, enum.Enum):
     空间成员角色
     """
 
-    OWNER = 'OWNER'
+    OWNER = "OWNER"
     """owner"""
-    ADMIN = 'ADMIN'
+    ADMIN = "ADMIN"
     """管理员"""
-    MEMBER = 'MEMBER'
+    MEMBER = "MEMBER"
     """成员"""
 
 

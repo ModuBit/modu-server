@@ -15,6 +15,6 @@ limitations under the License.
 """
 
 __all__ = [
-    'setup',
-    'system',
+    "setup",
+    "system",
 ]

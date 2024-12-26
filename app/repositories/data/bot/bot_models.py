@@ -26,6 +26,7 @@ class BotMode(str, enum.Enum):
     """
     BOT模式
     """
+
     SINGLE_AGENT = "SINGLE_AGENT"
     """单智能体"""
     MULTI_AGENTS = "MULTI_AGENTS"

@@ -59,6 +59,7 @@ class MessageStartEvent(MessageEvent):
     """
     消息开始事件
     """
+
     event: Event = Event.MESSAGE_START
 
 
@@ -66,6 +67,7 @@ class MessageEndEvent(MessageEvent):
     """
     消息结束事件
     """
+
     event: Event = Event.MESSAGE_END
 
 
@@ -73,6 +75,7 @@ class StopEvent(MessageEvent):
     """
     停止事件
     """
+
     event: Event = Event.STOP
 
 
@@ -80,6 +83,7 @@ class ErrorEvent(MessageEvent):
     """
     异常事件
     """
+
     event: Event = Event.ERROR
 
     error: Any | None = None
@@ -90,6 +94,7 @@ class AIMessageChunkEvent(MessageEvent):
     """
     AI消息分块事件
     """
+
     event: Event = Event.AI_MESSAGE_CHUNK
 
     chunk: Any

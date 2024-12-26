@@ -31,4 +31,4 @@ class TextEmbeddingModel(LLMModel, ABC):
 
     @property
     def description(self) -> I18nOption:
-        return I18nOption(default='Embedding')
+        return I18nOption(default="Embedding")

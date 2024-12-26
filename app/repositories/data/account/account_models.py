@@ -26,13 +26,13 @@ class AccountStatus(str, enum.Enum):
     用户状态
     """
 
-    PENDING = 'PENDING'
+    PENDING = "PENDING"
     """待激活"""
-    ACTIVE = 'ACTIVE'
+    ACTIVE = "ACTIVE"
     """已激活"""
-    BANNED = 'BANNED'
+    BANNED = "BANNED"
     """已禁用"""
-    CLOSED = 'CLOSED'
+    CLOSED = "CLOSED"
     """已注销"""
 
 
@@ -60,6 +60,7 @@ class Account(AccountInfo):
     """
     账号
     """
+
     password: str | None = None
     """账号密码"""
 

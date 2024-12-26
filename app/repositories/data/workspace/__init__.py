@@ -18,7 +18,7 @@ from .WorkspaceRepository import WorkspaceRepository
 from .WorkspaceRepositoryPostgres import WorkspaceRepositoryPostgres
 
 __all__ = [
-    'workspace_models',
-    'WorkspaceRepository',
-    'WorkspaceRepositoryPostgres'
+    "workspace_models",
+    "WorkspaceRepository",
+    "WorkspaceRepositoryPostgres",
 ]

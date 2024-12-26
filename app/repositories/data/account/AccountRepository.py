@@ -41,7 +41,9 @@ class AccountRepository(Repository):
         raise NotImplementedError()
 
     @abstractmethod
-    async def find_by_uids(self, uids: list[str], session: AsyncSession) -> list[Account]:
+    async def find_by_uids(
+        self, uids: list[str], session: AsyncSession
+    ) -> list[Account]:
         """
         通过uid查找账号
         :param uids: UID
@@ -61,7 +63,9 @@ class AccountRepository(Repository):
         raise NotImplementedError()
 
     @abstractmethod
-    async def create(self, name: str, email: str, password: str, session: AsyncSession) -> Account:
+    async def create(
+        self, name: str, email: str, password: str, session: AsyncSession
+    ) -> Account:
         """
         创建账号
         :param name: 用户名

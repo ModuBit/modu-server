@@ -20,5 +20,5 @@ from .PublishConfigRepositoryPostgres import PublishConfigRepositoryPostgres
 __all__ = [
     "publish_config",
     "PublishConfigRepository",
-    "PublishConfigRepositoryPostgres"
+    "PublishConfigRepositoryPostgres",
 ]

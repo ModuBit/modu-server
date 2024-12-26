@@ -53,7 +53,7 @@ class Bytes2String(TypeDecorator):
         Convert Python bytes to database string
         """
         if value is not None:
-            value = base64.b64encode(value).decode('utf-8')
+            value = base64.b64encode(value).decode("utf-8")
         return value
 
     def process_result_value(self, value, dialect):
@@ -61,5 +61,5 @@ class Bytes2String(TypeDecorator):
         Convert database string to Python bytes
         """
         if value is not None:
-            value = base64.b64decode(value.encode('utf-8'))
+            value = base64.b64decode(value.encode("utf-8"))
         return value

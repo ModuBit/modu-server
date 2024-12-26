@@ -32,7 +32,8 @@ class LLMProviderConfigRepository(Repository):
 
     @abstractmethod
     async def add(
-            self, llm_provider_config: LLMProviderConfig, session: AsyncSession) -> LLMProviderConfig:
+        self, llm_provider_config: LLMProviderConfig, session: AsyncSession
+    ) -> LLMProviderConfig:
         """
         新增Provider配置
         :param llm_provider_config: llm provider
@@ -42,7 +43,8 @@ class LLMProviderConfigRepository(Repository):
 
     @abstractmethod
     async def update(
-            self, llm_provider_config: LLMProviderConfig, session: AsyncSession) -> LLMProviderConfig:
+        self, llm_provider_config: LLMProviderConfig, session: AsyncSession
+    ) -> LLMProviderConfig:
         """
         修改Provider配置
         :param llm_provider_config: llm provider
@@ -52,7 +54,8 @@ class LLMProviderConfigRepository(Repository):
 
     @abstractmethod
     async def delete(
-            self, workspace_uid: str, provider_name: str, session: AsyncSession) -> bool:
+        self, workspace_uid: str, provider_name: str, session: AsyncSession
+    ) -> bool:
         """
         删除Provider配置
         :param workspace_uid: workspace uid
@@ -63,7 +66,8 @@ class LLMProviderConfigRepository(Repository):
 
     @abstractmethod
     async def find_one_by_workspace_and_provider_name(
-            self, workspace_uid: str, provider_name: str, session: AsyncSession) -> LLMProviderConfig | None:
+        self, workspace_uid: str, provider_name: str, session: AsyncSession
+    ) -> LLMProviderConfig | None:
         """
         根据workspace uid和provider name查询配置
         :param workspace_uid: workspace uid
@@ -73,7 +77,9 @@ class LLMProviderConfigRepository(Repository):
         raise NotImplementedError()
 
     @abstractmethod
-    async def list_all(self, workspace_uid: str, session: AsyncSession) -> list[LLMProviderConfig]:
+    async def list_all(
+        self, workspace_uid: str, session: AsyncSession
+    ) -> list[LLMProviderConfig]:
         """
         列出所有配置
         :param workspace_uid: workspace uid

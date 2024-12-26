@@ -18,5 +18,7 @@ from llm.model.entities.models import TextToSpeechModel
 
 
 class DashScopeTextToSpeechModel(TextToSpeechModel):
-    async def validate_credentials(self, credentials: dict, model: str | None = None) -> None:
+    async def validate_credentials(
+        self, credentials: dict, model: str | None = None
+    ) -> None:
         pass

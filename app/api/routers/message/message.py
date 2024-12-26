@@ -44,32 +44,40 @@ def compact_async_generate_response(response: dict | ContentStream) -> Response:
             "Connection": "keep-alive",
             "Transfer-Encoding": "chunked",
             "X-Accel-Buffering": "no",
-            "Content-Encoding": "identity"
-        })
+            "Content-Encoding": "identity",
+        },
+    )
 
 
 @logger.catch()
-@router.post(path='/chat')
-async def chat(workspace_uid: str | None, chat_generate_cmd: GenerateCmd,
-               current_user: Account = Depends(current_account)):
+@router.post(path="/chat")
+async def chat(
+    workspace_uid: str | None,
+    chat_generate_cmd: GenerateCmd,
+    current_user: Account = Depends(current_account),
+):
     if not workspace_uid:
         mine_workspace = await workspace_service.mine(current_user)
         if not mine_workspace:
-            raise UnauthorizedError('找不到您的个人空间，请联系管理员')
+            raise UnauthorizedError("找不到您的个人空间，请联系管理员")
         workspace_uid = mine_workspace.uid
     else:
         member_role = await workspace_service.member_role(current_user, workspace_uid)
         if member_role is None:
-            raise UnauthorizedError('您无该使用该空间')
+            raise UnauthorizedError("您无该使用该空间")
 
-    generator = await llm_generate_service.generate(current_user, workspace_uid, chat_generate_cmd)
+    generator = await llm_generate_service.generate(
+        current_user, workspace_uid, chat_generate_cmd
+    )
     response = compact_async_generate_response(generator)
     return response
 
 
 @logger.catch()
-@router.put(path='/chat/{conversation_uid}/stop')
-async def chat(conversation_uid: str, current_user: Account = Depends(current_account)) -> bool:
+@router.put(path="/chat/{conversation_uid}/stop")
+async def chat(
+    conversation_uid: str, current_user: Account = Depends(current_account)
+) -> bool:
     """
     停止生成
     :param conversation_uid: 会话 ID
@@ -79,8 +87,10 @@ async def chat(conversation_uid: str, current_user: Account = Depends(current_ac
 
 
 @logger.catch()
-@router.post(path='/chat/{conversation_uid}/message/clear')
-async def clear_memory(conversation_uid: str, current_user: Account = Depends(current_account)) -> list[Message]:
+@router.post(path="/chat/{conversation_uid}/message/clear")
+async def clear_memory(
+    conversation_uid: str, current_user: Account = Depends(current_account)
+) -> list[Message]:
     """
     清除会话记忆
     :param conversation_uid: 会话ID
@@ -90,11 +100,13 @@ async def clear_memory(conversation_uid: str, current_user: Account = Depends(cu
 
 
 @logger.catch()
-@router.get(path='/chat/{conversation_uid}/messages')
-async def messages(conversation_uid: str,
-                   before_message_uid: Optional[str] = Query(None),
-                   max_count: int = Query(...),
-                   current_user: Account = Depends(current_account)) -> list[Message]:
+@router.get(path="/chat/{conversation_uid}/messages")
+async def messages(
+    conversation_uid: str,
+    before_message_uid: Optional[str] = Query(None),
+    max_count: int = Query(...),
+    current_user: Account = Depends(current_account),
+) -> list[Message]:
     """
     查询会话消息
     :param conversation_uid: 会话 ID
@@ -102,26 +114,34 @@ async def messages(conversation_uid: str,
     :param max_count: 返回多少条
     :param current_user: 当前用户
     """
-    return await message_service.messages(current_user, conversation_uid, before_message_uid, max_count)
+    return await message_service.messages(
+        current_user, conversation_uid, before_message_uid, max_count
+    )
 
 
 @logger.catch()
-@router.get(path='/chat/conversations')
-async def conversations(before_conversation_uid: Optional[str] = Query(None),
-                        max_count: int = Query(...),
-                        current_user: Account = Depends(current_account)) -> list[Conversation]:
+@router.get(path="/chat/conversations")
+async def conversations(
+    before_conversation_uid: Optional[str] = Query(None),
+    max_count: int = Query(...),
+    current_user: Account = Depends(current_account),
+) -> list[Conversation]:
     """
     查询会话
     :param before_conversation_uid: 查询该会话之前的
     :param max_count: 返回多少条
     :param current_user: 当前用户
     """
-    return await message_service.conversations(current_user, before_conversation_uid, max_count)
+    return await message_service.conversations(
+        current_user, before_conversation_uid, max_count
+    )
 
 
 @logger.catch()
-@router.get(path='/chat/conversation/latest')
-async def latest_conversation(current_user: Account = Depends(current_account)) -> Conversation:
+@router.get(path="/chat/conversation/latest")
+async def latest_conversation(
+    current_user: Account = Depends(current_account),
+) -> Conversation:
     """
     查询最新会话
     :param current_user: 当前用户
@@ -130,8 +150,10 @@ async def latest_conversation(current_user: Account = Depends(current_account)) 
 
 
 @logger.catch()
-@router.delete(path='/chat/conversation/all')
-async def delete_all_conversations(current_user: Account = Depends(current_account)) -> bool:
+@router.delete(path="/chat/conversation/all")
+async def delete_all_conversations(
+    current_user: Account = Depends(current_account),
+) -> bool:
     """
     删除所有会话
     :param current_user: 当前用户
@@ -140,8 +162,10 @@ async def delete_all_conversations(current_user: Account = Depends(current_accou
 
 
 @logger.catch()
-@router.delete(path='/chat/conversation/{conversation_uid}')
-async def delete_conversation(conversation_uid: str, current_user: Account = Depends(current_account)) -> bool:
+@router.delete(path="/chat/conversation/{conversation_uid}")
+async def delete_conversation(
+    conversation_uid: str, current_user: Account = Depends(current_account)
+) -> bool:
     """
     删除会话
     :param conversation_uid: 会话 ID
@@ -151,13 +175,16 @@ async def delete_conversation(conversation_uid: str, current_user: Account = Dep
 
 
 @logger.catch()
-@router.put(path='/chat/conversation/{conversation_uid}/rename')
-async def rename_conversation(conversation_uid: str, name: str,
-                              current_user: Account = Depends(current_account)) -> str:
+@router.put(path="/chat/conversation/{conversation_uid}/rename")
+async def rename_conversation(
+    conversation_uid: str, name: str, current_user: Account = Depends(current_account)
+) -> str:
     """
     修改会话名
     :param conversation_uid: 会话 ID
     :param name: 会话名
     :param current_user: 当前用户
     """
-    return await message_service.rename_conversation(current_user, conversation_uid, name)
+    return await message_service.rename_conversation(
+        current_user, conversation_uid, name
+    )

@@ -19,5 +19,5 @@ from .model_provider_factory import ModelProviderFactory
 model_provider_factory = ModelProviderFactory()
 
 __all__ = [
-    model_provider_factory
+    model_provider_factory,
 ]

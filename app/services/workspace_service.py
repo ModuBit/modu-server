@@ -25,24 +25,35 @@ from utils.errors.space_error import SpaceExistsError
 from utils.json import default_excluded_fields
 
 workspace_detail_cache: CacheDecorator[Workspace] = cache_decorator_builder.build(
-    serialize=lambda workspace: workspace.model_dump_json(exclude=default_excluded_fields),
+    serialize=lambda workspace: workspace.model_dump_json(
+        exclude=default_excluded_fields
+    ),
     deserialize=lambda json_content: Workspace.model_validate_json(json_content),
     default_expire_seconds=24 * 3600,
     allow_none_values=True,
 )
 
-workspace_related_cache: CacheDecorator[list[Workspace]] = cache_decorator_builder.build(
-    serialize=lambda workspaces: json.dumps(
-        [workspace.model_dump(exclude=default_excluded_fields) for workspace in workspaces]),
-    deserialize=lambda json_contents: [Workspace.model_validate(json_obj) for json_obj in json.loads(json_contents)],
-    default_expire_seconds=24 * 3600,
-    allow_none_values=True,
+workspace_related_cache: CacheDecorator[list[Workspace]] = (
+    cache_decorator_builder.build(
+        serialize=lambda workspaces: json.dumps(
+            [
+                workspace.model_dump(exclude=default_excluded_fields)
+                for workspace in workspaces
+            ]
+        ),
+        deserialize=lambda json_contents: [
+            Workspace.model_validate(json_obj) for json_obj in json.loads(json_contents)
+        ],
+        default_expire_seconds=24 * 3600,
+        allow_none_values=True,
+    )
 )
 
 
 # FIXME 关联的空间可能很多，终有一天需要分页的时候需要重新考虑缓存设计
 @workspace_related_cache.async_cacheable(
-    key_generator=lambda current_user, **kwargs: f"workspace:account:{current_user.uid}:workspace_related")
+    key_generator=lambda current_user, **kwargs: f"workspace:account:{current_user.uid}:workspace_related"
+)
 async def list_related(current_user: Account) -> list[Workspace]:
     """
     查询用户相关的空间
@@ -59,8 +70,8 @@ async def list_related(current_user: Account) -> list[Workspace]:
 
 
 @workspace_detail_cache.async_cacheable(
-    key_generator=lambda current_user, **kwargs:
-    f"workspace:own:account:{current_user.uid}:workspace_detail")
+    key_generator=lambda current_user, **kwargs: f"workspace:own:account:{current_user.uid}:workspace_detail"
+)
 async def mine(current_user: Account) -> Workspace:
     """
     查询用户创建的空间
@@ -75,8 +86,8 @@ async def mine(current_user: Account) -> Workspace:
 
 
 @workspace_detail_cache.async_cacheable(
-    key_generator=lambda current_user, workspace_uid, **kwargs:
-    f"workspace:{workspace_uid}:account:{current_user.uid}:workspace_detail")
+    key_generator=lambda current_user, workspace_uid, **kwargs: f"workspace:{workspace_uid}:account:{current_user.uid}:workspace_detail"
+)
 async def detail(current_user: Account, workspace_uid: str) -> Workspace:
     """
     查看空间详情
@@ -86,7 +97,7 @@ async def detail(current_user: Account, workspace_uid: str) -> Workspace:
     """
     workspace = await workspace_repository.get_by_uid(workspace_uid)
     if not workspace:
-        raise SpaceExistsError('该空间不存在')
+        raise SpaceExistsError("该空间不存在")
 
     # 创建人
     if workspace.creator_uid == current_user.uid:
@@ -94,15 +105,19 @@ async def detail(current_user: Account, workspace_uid: str) -> Workspace:
         return workspace
 
     # 成员
-    workspace_member = await workspace_repository.get_member_by_uid(workspace_uid, current_user.uid)
+    workspace_member = await workspace_repository.get_member_by_uid(
+        workspace_uid, current_user.uid
+    )
     if not workspace_member:
-        raise UnauthorizedError('您无该空间权限')
+        raise UnauthorizedError("您无该空间权限")
 
     workspace.member_role = workspace_member.member_role
     return workspace
 
 
-async def member_role(current_user: Account, workspace_uid: str) -> WorkspaceMemberRole | None:
+async def member_role(
+    current_user: Account, workspace_uid: str
+) -> WorkspaceMemberRole | None:
     """
     获取空间成员角色
     :param current_user: 当前用户

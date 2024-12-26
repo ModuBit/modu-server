@@ -19,11 +19,12 @@ import inspect
 import pkgutil
 from typing import TypeVar, Type
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
-def load_classes(package_name: str, cls_type: Type[T],
-                 recursive: bool = False, max_depth: int = -1) -> list[Type[T]]:
+def load_classes(
+    package_name: str, cls_type: Type[T], recursive: bool = False, max_depth: int = -1
+) -> list[Type[T]]:
     """
     扫描指定包，并加载模块中指定类
     :param package_name: 需要扫描的包含
@@ -35,8 +36,13 @@ def load_classes(package_name: str, cls_type: Type[T],
     return _load_classes(package_name, cls_type, recursive, max_depth)
 
 
-def _load_classes(package_name: str, cls_type: Type[T],
-                  recursive: bool = False, max_depth: int = -1, current_depth: int = 0, ) -> list[Type[T]]:
+def _load_classes(
+    package_name: str,
+    cls_type: Type[T],
+    recursive: bool = False,
+    max_depth: int = -1,
+    current_depth: int = 0,
+) -> list[Type[T]]:
     """
     扫描指定包，并加载模块中指定类
     :param package_name: 需要扫描的包含
@@ -53,19 +59,25 @@ def _load_classes(package_name: str, cls_type: Type[T],
     package = importlib.import_module(package_name)
 
     # 遍历包中的所有模块
-    for _, module_name, is_pkg in pkgutil.iter_modules(package.__path__, package.__name__ + '.'):
+    for _, module_name, is_pkg in pkgutil.iter_modules(
+        package.__path__, package.__name__ + "."
+    ):
         if is_pkg and recursive and (max_depth < 0 or current_depth < max_depth):
             # 递归加载子包
-            cls_types += _load_classes(module_name, cls_type, recursive, max_depth, current_depth + 1)
+            cls_types += _load_classes(
+                module_name, cls_type, recursive, max_depth, current_depth + 1
+            )
             continue
 
         module = importlib.import_module(module_name)
-        for (name, cls) in inspect.getmembers(module, inspect.isclass):
+        for name, cls in inspect.getmembers(module, inspect.isclass):
             # 检查是否是cls_type的子类 (排除cls_type自身)
-            if (isinstance(cls, type)
-                    and issubclass(cls, cls_type)
-                    and cls is not cls_type
-                    and cls.__module__.startswith(module_name)):
+            if (
+                isinstance(cls, type)
+                and issubclass(cls, cls_type)
+                and cls is not cls_type
+                and cls.__module__.startswith(module_name)
+            ):
                 cls_types.append(cls)
 
     return cls_types

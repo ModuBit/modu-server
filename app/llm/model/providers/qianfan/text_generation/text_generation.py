@@ -24,28 +24,44 @@ from utils.errors.llm_error import LLMValidateError
 
 
 class QianFanTextGenerationModel(TextGenerationModel):
-    def chat_model(self,
-                   provider_credential: dict, model_parameters: dict, model_name: str,
-                   streaming: bool = True, request_timeout: int = 10, max_retries: int = 0) -> BaseChatModel:
+    def chat_model(
+        self,
+        provider_credential: dict,
+        model_parameters: dict,
+        model_name: str,
+        streaming: bool = True,
+        request_timeout: int = 10,
+        max_retries: int = 0,
+    ) -> BaseChatModel:
         pass
 
-    async def validate_credentials(self, credentials: dict, model: str | None = None) -> None:
+    async def validate_credentials(
+        self, credentials: dict, model: str | None = None
+    ) -> None:
         try:
             model_name = model or "ERNIE-4.0-8K"
             chat_model = QianfanChatEndpoint(
                 model=model_name,
-                request_timeout=5, streaming=False,
+                request_timeout=5,
+                streaming=False,
                 model_kwargs={
                     "retry_count": 0,
                     "max_output_tokens": 512,
                 },
-                **credentials
+                **credentials,
             )
-            chat_result = await chat_model.ainvoke([
-                SystemMessage(content="Translate the following from Chinese into English"),
-                HumanMessage(content="林中通幽境，深山藏小舍")
-            ])
-            logger.info("QianFan Credential Validate Success, using model {}, chat result {}",
-                        model_name, chat_result)
+            chat_result = await chat_model.ainvoke(
+                [
+                    SystemMessage(
+                        content="Translate the following from Chinese into English"
+                    ),
+                    HumanMessage(content="林中通幽境，深山藏小舍"),
+                ]
+            )
+            logger.info(
+                "QianFan Credential Validate Success, using model {}, chat result {}",
+                model_name,
+                chat_result,
+            )
         except Exception as e:
             raise LLMValidateError(f"认证异常: {e}")

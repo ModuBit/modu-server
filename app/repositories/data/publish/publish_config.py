@@ -24,13 +24,15 @@ class PublishConfigTargetType(str, enum.Enum):
     """
     配置发布目标类型
     """
-    BOT = "BOT"
+
+    BOT_CONFIG = "BOT_CONFIG"
 
 
 class PublishConfigStatus(str, enum.Enum):
     """
     配置发布状态
     """
+
     DRAFT = "DRAFT"
     """草稿"""
     PUBLISHED = "PUBLISHED"
@@ -41,6 +43,7 @@ class PublishConfig(BaseModel):
     """
     配置发布
     """
+
     uid: str | None = None
     """UID"""
     created_at: datetime | None = None

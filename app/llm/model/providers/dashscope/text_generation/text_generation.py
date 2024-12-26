@@ -24,26 +24,43 @@ from utils.errors.llm_error import LLMValidateError
 
 
 class DashScopeTextGenerationModel(TextGenerationModel):
-    def chat_model(self,
-                   provider_credential: dict, model_parameters: dict, model_name: str,
-                   streaming: bool = True, request_timeout: int = 10, max_retries: int = 0) -> BaseChatModel:
+    def chat_model(
+        self,
+        provider_credential: dict,
+        model_parameters: dict,
+        model_name: str,
+        streaming: bool = True,
+        request_timeout: int = 10,
+        max_retries: int = 0,
+    ) -> BaseChatModel:
         pass
 
-    async def validate_credentials(self, credentials: dict, model: str | None = None) -> None:
+    async def validate_credentials(
+        self, credentials: dict, model: str | None = None
+    ) -> None:
         try:
             model_name = model or "qwen-max"
             chat_model = ChatTongyi(
-                model_name=model_name, max_retries=0, streaming=False,
+                model_name=model_name,
+                max_retries=0,
+                streaming=False,
                 model_kwargs={
                     "max_tokens": 512,
                 },
-                **credentials
+                **credentials,
             )
-            chat_result = await chat_model.ainvoke([
-                SystemMessage(content="Translate the following from Chinese into English"),
-                HumanMessage(content="林中通幽境，深山藏小舍")
-            ])
-            logger.info("DashScope Credential Validate Success, using model {}, chat result {}",
-                        model_name, chat_result)
+            chat_result = await chat_model.ainvoke(
+                [
+                    SystemMessage(
+                        content="Translate the following from Chinese into English"
+                    ),
+                    HumanMessage(content="林中通幽境，深山藏小舍"),
+                ]
+            )
+            logger.info(
+                "DashScope Credential Validate Success, using model {}, chat result {}",
+                model_name,
+                chat_result,
+            )
         except Exception as e:
             raise LLMValidateError(f"认证异常: {e}")

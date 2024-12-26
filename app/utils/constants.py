@@ -14,4 +14,4 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-HIDDEN_PREFIX = '[:hidden:]'
+HIDDEN_PREFIX = "[:hidden:]"

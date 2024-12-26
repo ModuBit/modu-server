@@ -37,13 +37,15 @@ class PostgresDatabase(Database):
     PostgreSQL连接
     """
 
-    def __init__(self, host: str, port: int, database: str, username: str, password: str):
+    def __init__(
+        self, host: str, port: int, database: str, username: str, password: str
+    ):
         self._host = host
         self._port = port
         self._database = database
 
         self._engine = create_async_engine(
-            f'postgresql+asyncpg://{username}:{password}@{host}:{port}/{database}',
+            f"postgresql+asyncpg://{username}:{password}@{host}:{port}/{database}",
             json_serializer=functools.partial(json.dumps, ensure_ascii=False),
             # 指定连接池类
             poolclass=AsyncAdaptedQueuePool,
@@ -63,10 +65,18 @@ class PostgresDatabase(Database):
             autocommit=False,
             autoflush=False,
         )
-        logger.info('=== create postgresql({}) {}:{}/{} ===', id(self), host, port, database)
+        logger.info(
+            "=== create postgresql({}) {}:{}/{} ===", id(self), host, port, database
+        )
 
     async def close(self):
-        logger.info('=== close postgresql({}) {}:{}/{} ===', id(self), self._host, self._port, self._database)
+        logger.info(
+            "=== close postgresql({}) {}:{}/{} ===",
+            id(self),
+            self._host,
+            self._port,
+            self._database,
+        )
         self._async_session_factory.close_all()
         await self._engine.dispose()
 
@@ -86,23 +96,32 @@ class PostgresBasePO(BasePO):
     __abstract__ = True
 
     # 主键ID
-    id: Mapped[str] = mapped_column(UUID, primary_key=True,
-                                    server_default=text('uuid_generate_v4()'),
-                                    comment='主键ID')
+    id: Mapped[str] = mapped_column(
+        UUID,
+        primary_key=True,
+        server_default=text("uuid_generate_v4()"),
+        comment="主键ID",
+    )
     # 全局ID
-    uid: Mapped[str] = mapped_column(String(32), nullable=False,
-                                     default=BasePO.uid_generate,
-                                     comment='UID')
+    uid: Mapped[str] = mapped_column(
+        String(32), nullable=False, default=BasePO.uid_generate, comment="UID"
+    )
     # 创建时间
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False,
-                                                 server_default=text('CURRENT_TIMESTAMP(0)'),
-                                                 comment='创建时间')
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=text("CURRENT_TIMESTAMP(0)"),
+        comment="创建时间",
+    )
     # 更新时间
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False,
-                                                 server_default=text('CURRENT_TIMESTAMP(0)'),
-                                                 onupdate=text('CURRENT_TIMESTAMP(0)'),
-                                                 comment='更新时间')
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=text("CURRENT_TIMESTAMP(0)"),
+        onupdate=text("CURRENT_TIMESTAMP(0)"),
+        comment="更新时间",
+    )
 
-    is_deleted: Mapped[bool] = mapped_column(Bool2SmallInt, nullable=False,
-                                             server_default=text('0'),
-                                             comment='是否已删除')
+    is_deleted: Mapped[bool] = mapped_column(
+        Bool2SmallInt, nullable=False, server_default=text("0"), comment="是否已删除"
+    )

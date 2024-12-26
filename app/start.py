@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     """
     本地开发使用 python start.py
     生产请使用 Gunicorn 进行部署
@@ -24,9 +24,9 @@ if __name__ == '__main__':
     import uvicorn_tools
 
     uvicorn.run(
-        'main:app',
+        "main:app",
         reload=True,
-        host='0.0.0.0',
+        host="0.0.0.0",
         port=8080,
         http=uvicorn_tools.ModuHttpToolsProtocol,
     )

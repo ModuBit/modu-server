@@ -35,22 +35,22 @@ class ModelType(str, enum.Enum):
     模型类型
     """
 
-    TEXT_GENERATION = 'TEXT_GENERATION'
+    TEXT_GENERATION = "TEXT_GENERATION"
     """文本生成"""
 
-    IMAGE_GENERATION = 'IMAGE_GENERATION'
+    IMAGE_GENERATION = "IMAGE_GENERATION"
     """图像生成"""
 
-    VISION = 'VISION'
+    VISION = "VISION"
     """视觉识别"""
 
-    TEXT_EMBEDDING = 'TEXT_EMBEDDING'
+    TEXT_EMBEDDING = "TEXT_EMBEDDING"
     """文本嵌入"""
 
-    TEXT_TO_SPEECH = 'TEXT_TO_SPEECH'
+    TEXT_TO_SPEECH = "TEXT_TO_SPEECH"
     """文本转语音"""
 
-    SPEECH_TO_TEXT = 'SPEECH_TO_TEXT'
+    SPEECH_TO_TEXT = "SPEECH_TO_TEXT"
     """语音转文本"""
 
 
@@ -114,17 +114,22 @@ class ModelSchema(BaseModel):
     model_config = default_model_config()
 
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
-def _load_module_configs(module_path: str, load: Callable[[Traversable], T]) -> list[ModelSchema]:
+def _load_module_configs(
+    module_path: str, load: Callable[[Traversable], T]
+) -> list[ModelSchema]:
     """
     从一个包路径中加载所有的ModelSchema
     :param module_path: 包路径
     :return: ModelSchema
     """
-    return [load(path) for path in files(module_path).iterdir()
-            if path.suffix in ['.yml', '.yaml']]
+    return [
+        load(path)
+        for path in files(module_path).iterdir()
+        if path.suffix in [".yml", ".yaml"]
+    ]
 
 
 def _load_model_schema(model_schema_file: Traversable) -> ModelSchema:
@@ -133,20 +138,36 @@ def _load_model_schema(model_schema_file: Traversable) -> ModelSchema:
     :param model_schema_file: 配置文件
     :return: ModelSchema
     """
-    schema_content = model_schema_file.read_text(encoding='utf-8')
+    schema_content = model_schema_file.read_text(encoding="utf-8")
     schema_data = yaml.safe_load(schema_content)
     model_schema = ModelSchema(**schema_data)
 
     # 模板
-    model_templates = LLMModel._model_templates[model_schema.type] \
-        if model_schema.type in LLMModel._model_templates else {}
+    model_templates = (
+        LLMModel._model_templates[model_schema.type]
+        if model_schema.type in LLMModel._model_templates
+        else {}
+    )
 
     # 处理parameters，与模板整合
-    merged_parameters = [FormSchema(**dict_merge(
-        dict_get(model_templates, parameter.template, FormSchema(name=parameter.name)).model_dump(),
-        parameter.model_dump(),
-        True
-    )) if parameter.template else parameter for parameter in model_schema.parameters]
+    merged_parameters = [
+        (
+            FormSchema(
+                **dict_merge(
+                    dict_get(
+                        model_templates,
+                        parameter.template,
+                        FormSchema(name=parameter.name),
+                    ).model_dump(),
+                    parameter.model_dump(),
+                    True,
+                )
+            )
+            if parameter.template
+            else parameter
+        )
+        for parameter in model_schema.parameters
+    ]
     model_schema.parameters = merged_parameters
 
     return model_schema
@@ -158,12 +179,22 @@ def _load_model_template(model_template_file: Traversable):
     :param model_template_file: 配置模板
     :return: ModelSchema
     """
-    template_content = model_template_file.read_text(encoding='utf-8')
+    template_content = model_template_file.read_text(encoding="utf-8")
     template_data = yaml.safe_load(template_content)
     return {
-        "type": ModelType(dict_get(template_data, 'type', ).upper()),
-        "parameters": {dict_get(parameter, 'name', ): FormSchema(**parameter) for parameter in
-                       dict_get(template_data, 'parameters', [])}
+        "type": ModelType(
+            dict_get(
+                template_data,
+                "type",
+            ).upper()
+        ),
+        "parameters": {
+            dict_get(
+                parameter,
+                "name",
+            ): FormSchema(**parameter)
+            for parameter in dict_get(template_data, "parameters", [])
+        },
     }
 
 
@@ -174,8 +205,13 @@ def _load_model_templates():
 
     parent_module = __package__
 
-    model_templates = _load_module_configs(parent_module + '.templates', _load_model_template)
-    return {model_template['type']: model_template['parameters'] for model_template in model_templates}
+    model_templates = _load_module_configs(
+        parent_module + ".templates", _load_model_template
+    )
+    return {
+        model_template["type"]: model_template["parameters"]
+        for model_template in model_templates
+    }
 
 
 class LLMModel(ABC):
@@ -183,7 +219,9 @@ class LLMModel(ABC):
     LLM模型
     """
 
-    _model_templates: dict[ModelType, dict[str, list[FormSchema]]] = _load_model_templates()
+    _model_templates: dict[ModelType, dict[str, list[FormSchema]]] = (
+        _load_model_templates()
+    )
 
     def __init__(self):
         self._model_schemas = OrderedDict()
@@ -201,7 +239,7 @@ class LLMModel(ABC):
             return
 
         module = self.__class__.__module__
-        parent_module = '.'.join(module.split('.')[:-1])
+        parent_module = ".".join(module.split(".")[:-1])
 
         model_schemas = _load_module_configs(parent_module, _load_model_schema)
         for model_schema in model_schemas:
@@ -229,7 +267,9 @@ class LLMModel(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    async def validate_credentials(self, credentials: dict, model: str | None = None) -> None:
+    async def validate_credentials(
+        self, credentials: dict, model: str | None = None
+    ) -> None:
         """
         验证凭证
         :param model: 模型

@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+
 from collections import OrderedDict
 from importlib.resources import files
 
@@ -43,15 +44,22 @@ class ModelProviderFactory:
             return
 
         # 加载provider
-        provider_classes = load_classes('llm.model.providers', LLMProvider, True, 1)
+        provider_classes = load_classes("llm.model.providers", LLMProvider, True, 1)
         providers = [provider_cls() for provider_cls in provider_classes]
 
         # 对provider进行排序
-        ordinal_content = files('llm.model.providers').joinpath('_ordinal.yml').read_text(encoding='utf-8')
+        ordinal_content = (
+            files("llm.model.providers")
+            .joinpath("_ordinal.yml")
+            .read_text(encoding="utf-8")
+        )
         ordinal_list = yaml.safe_load(ordinal_content)
         ordering = {key: index for index, key in enumerate(ordinal_list)}
-        ordering_default = float('inf')
-        sorted_providers = sorted(providers, key=lambda p: ordering.get(p.provider_schema.provider, ordering_default))
+        ordering_default = float("inf")
+        sorted_providers = sorted(
+            providers,
+            key=lambda p: ordering.get(p.provider_schema.provider, ordering_default),
+        )
 
         for provider in sorted_providers:
             self._providers[provider.provider_schema.provider] = provider

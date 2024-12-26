@@ -31,7 +31,12 @@ class InitializeCmd(BaseModel):
     email: EmailStr
     """账号邮箱"""
 
-    password: constr(min_length=6, max_length=32, strip_whitespace=True, pattern=r'^[a-zA-Z][a-zA-Z0-9_!@#$%&*]{5,31}$')
+    password: constr(
+        min_length=6,
+        max_length=32,
+        strip_whitespace=True,
+        pattern=r"^[a-zA-Z][a-zA-Z0-9_!@#$%&*]{5,31}$",
+    )
     """账号密码"""
 
     # 定义配置
@@ -39,7 +44,7 @@ class InitializeCmd(BaseModel):
 
 
 @logger.catch()
-@router.get('/setup', response_class=CamelCaseJSONResponse)
+@router.get("/setup", response_class=CamelCaseJSONResponse)
 async def initialized_status():
     """
     获取初始化信息
@@ -48,7 +53,7 @@ async def initialized_status():
 
 
 @logger.catch()
-@router.post('/setup', response_class=CamelCaseJSONResponse)
+@router.post("/setup", response_class=CamelCaseJSONResponse)
 async def initialize(init_data: InitializeCmd):
     """
     初始化

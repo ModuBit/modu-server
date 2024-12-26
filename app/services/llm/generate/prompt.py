@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+
 from langchain_core.prompts import PromptTemplate
 
 DEFAULT_SUMMARIZER_TEMPLATE = """结合之前的摘要，总结提供的对话内容，并返回新的摘要。直接输出摘要内容，不需要描述性的语言，并将摘要内容控制在500字以内。

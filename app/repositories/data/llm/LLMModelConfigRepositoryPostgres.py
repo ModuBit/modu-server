@@ -33,29 +33,44 @@ class LLMModelConfigRepositoryPostgres(LLMModelConfigRepository):
     """
 
     @with_async_session
-    async def add_system_models(self, workspace_uid: str, llm_model_configs: dict[ModelType, LLMModelConfig],
-                                session: AsyncSession) -> dict[ModelType, LLMModelConfig]:
-        llm_system_model_config_po = LLMSystemModelConfigPO(workspace_uid=workspace_uid, model_config=llm_model_configs)
+    async def add_system_models(
+        self,
+        workspace_uid: str,
+        llm_model_configs: dict[ModelType, LLMModelConfig],
+        session: AsyncSession,
+    ) -> dict[ModelType, LLMModelConfig]:
+        llm_system_model_config_po = LLMSystemModelConfigPO(
+            workspace_uid=workspace_uid, model_config=llm_model_configs
+        )
         session.add(llm_system_model_config_po)
         return llm_model_configs
 
     @with_async_session
-    async def update_system_models(self, workspace_uid: str, llm_model_configs: dict[ModelType, LLMModelConfig],
-                                   session: AsyncSession) -> dict[ModelType, LLMModelConfig]:
-        stmt = (update(LLMSystemModelConfigPO)
-                .where(LLMSystemModelConfigPO.workspace_uid == workspace_uid)
-                .values(model_config=llm_model_configs))
+    async def update_system_models(
+        self,
+        workspace_uid: str,
+        llm_model_configs: dict[ModelType, LLMModelConfig],
+        session: AsyncSession,
+    ) -> dict[ModelType, LLMModelConfig]:
+        stmt = (
+            update(LLMSystemModelConfigPO)
+            .where(LLMSystemModelConfigPO.workspace_uid == workspace_uid)
+            .values(model_config=llm_model_configs)
+        )
         await session.execute(stmt)
 
         return llm_model_configs
 
     @with_async_session
     async def find_system_models_by_workspace(
-            self, workspace_uid: str, session: AsyncSession) -> dict[ModelType, LLMModelConfig] | None:
-        stmt = (select(LLMSystemModelConfigPO)
-                .where(LLMSystemModelConfigPO.workspace_uid == workspace_uid)
-                .where(LLMSystemModelConfigPO.is_deleted == False)
-                .limit(1))
+        self, workspace_uid: str, session: AsyncSession
+    ) -> dict[ModelType, LLMModelConfig] | None:
+        stmt = (
+            select(LLMSystemModelConfigPO)
+            .where(LLMSystemModelConfigPO.workspace_uid == workspace_uid)
+            .where(LLMSystemModelConfigPO.is_deleted == False)
+            .limit(1)
+        )
         select_result = await session.execute(stmt)
         system_model = select_result.scalars().one_or_none()
         if system_model is None:
@@ -78,7 +93,10 @@ class LLMModelConfigDict2Json(TypeDecorator):
         Convert dict[ModelType, LLMModelConfig] to dict[string, dict]
         """
         if value is not None:
-            value = {model_type.value: model_config.model_dump() for model_type, model_config in value.items()}
+            value = {
+                model_type.value: model_config.model_dump()
+                for model_type, model_config in value.items()
+            }
         return value
 
     def process_result_value(self, value, dialect):
@@ -86,8 +104,12 @@ class LLMModelConfigDict2Json(TypeDecorator):
         Convert dict[string, dict] to dict[ModelType, LLMModelConfig]
         """
         if value is not None:
-            value = {ModelType(model_type.upper()): LLMModelConfig.model_validate(model_config)
-                     for model_type, model_config in value.items()}
+            value = {
+                ModelType(model_type.upper()): LLMModelConfig.model_validate(
+                    model_config
+                )
+                for model_type, model_config in value.items()
+            }
         return value
 
 
@@ -96,11 +118,12 @@ class LLMSystemModelConfigPO(PostgresBasePO):
     LLM 系统默认模型配置
     """
 
-    __tablename__ = 'modu_llm_system_model_config'
-    __table_args__ = (
-        PrimaryKeyConstraint('id', name='pk_id'),
-    )
+    __tablename__ = "modu_llm_system_model_config"
+    __table_args__ = (PrimaryKeyConstraint("id", name="pk_id"),)
 
-    workspace_uid: Mapped[str] = mapped_column(String(32), nullable=False, comment='provider配置uid')
-    model_config: Mapped[dict[ModelType, LLMModelConfig]] = mapped_column(LLMModelConfigDict2Json, nullable=False,
-                                                                          comment='系统默认模型配置')
+    workspace_uid: Mapped[str] = mapped_column(
+        String(32), nullable=False, comment="provider配置uid"
+    )
+    model_config: Mapped[dict[ModelType, LLMModelConfig]] = mapped_column(
+        LLMModelConfigDict2Json, nullable=False, comment="系统默认模型配置"
+    )

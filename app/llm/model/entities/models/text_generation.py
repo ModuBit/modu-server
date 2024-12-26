@@ -33,12 +33,18 @@ class TextGenerationModel(LLMModel, ABC):
 
     @property
     def description(self) -> I18nOption:
-        return I18nOption(default='文本生成', en_us='Text Generation')
+        return I18nOption(default="文本生成", en_us="Text Generation")
 
     @abstractmethod
-    def chat_model(self,
-                   provider_credential: dict, model_parameters: dict, model_name: str,
-                   streaming: bool = True, request_timeout: int = 10, max_retries: int = 0) -> BaseChatModel:
+    def chat_model(
+        self,
+        provider_credential: dict,
+        model_parameters: dict,
+        model_name: str,
+        streaming: bool = True,
+        request_timeout: int = 10,
+        max_retries: int = 0,
+    ) -> BaseChatModel:
         """
         构造BaseChatModel
         :param provider_credential: Provider凭证

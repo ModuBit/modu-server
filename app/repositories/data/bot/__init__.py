@@ -20,5 +20,5 @@ from .BotRepositoryPostgres import BotRepositoryPostgres
 __all__ = [
     "bot_models",
     "BotRepository",
-    "BotRepositoryPostgres"
+    "BotRepositoryPostgres",
 ]

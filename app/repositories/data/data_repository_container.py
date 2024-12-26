@@ -22,66 +22,69 @@ from utils.lifespan import register_pre_destroy_executor
 from .account import AccountRepository, AccountRepositoryPostgres
 from .bot import BotRepository, BotRepositoryPostgres
 from .database import Database
-from .llm import LLMProviderConfigRepository, LLMProviderConfigRepositoryPostgres, \
-    LLMModelConfigRepository, LLMModelConfigRepositoryPostgres
-from .message import (ConversationRepository, ConversationRepositoryPostgres,
-                      MessageRepository, MessageRepositoryPostgres,
-                      MessageSummaryRepository, MessageSummaryRepositoryPostgres)
+from .llm import (
+    LLMProviderConfigRepository,
+    LLMProviderConfigRepositoryPostgres,
+    LLMModelConfigRepository,
+    LLMModelConfigRepositoryPostgres,
+)
+from .message import (
+    ConversationRepository,
+    ConversationRepositoryPostgres,
+    MessageRepository,
+    MessageRepositoryPostgres,
+    MessageSummaryRepository,
+    MessageSummaryRepositoryPostgres,
+)
 from .postgres_database import PostgresDatabase
 from .publish import PublishConfigRepository, PublishConfigRepositoryPostgres
 from .workspace import WorkspaceRepository, WorkspaceRepositoryPostgres
 
-RepositoryInstance = TypeVar('RepositoryInstance')
+RepositoryInstance = TypeVar("RepositoryInstance")
 
 _database: Database | None = None
 _database_mapping = {
-    'postgres': PostgresDatabase,
+    "postgres": PostgresDatabase,
 }
 
 _account_repository: AccountRepository | None = None
 _account_repository_mapping = {
-    'postgres': AccountRepositoryPostgres,
+    "postgres": AccountRepositoryPostgres,
 }
 
 _workspace_repository: WorkspaceRepository | None = None
 _workspace_repository_mapping = {
-    'postgres': WorkspaceRepositoryPostgres,
+    "postgres": WorkspaceRepositoryPostgres,
 }
 
 _llm_provider_config_repository: LLMProviderConfigRepository | None = None
 _llm_provider_config_repository_mapping = {
-    'postgres': LLMProviderConfigRepositoryPostgres,
+    "postgres": LLMProviderConfigRepositoryPostgres,
 }
 
 _llm_model_config_repository: LLMModelConfigRepository | None = None
 _llm_model_config_repository_mapping = {
-    'postgres': LLMModelConfigRepositoryPostgres,
+    "postgres": LLMModelConfigRepositoryPostgres,
 }
 
 _conversation_repository: ConversationRepository | None = None
 _conversation_repository_mapping = {
-    'postgres': ConversationRepositoryPostgres,
+    "postgres": ConversationRepositoryPostgres,
 }
 
 _message_repository: MessageRepository | None = None
 _message_repository_mapping = {
-    'postgres': MessageRepositoryPostgres,
+    "postgres": MessageRepositoryPostgres,
 }
 
 _message_summary_repository: MessageSummaryRepository | None = None
-_message_summary_repository_mapping = {
-    'postgres': MessageSummaryRepositoryPostgres
-}
+_message_summary_repository_mapping = {"postgres": MessageSummaryRepositoryPostgres}
 
 _bot_repository: BotRepository | None = None
-_bot_repository_mapping = {
-    'postgres': BotRepositoryPostgres
-}
+_bot_repository_mapping = {"postgres": BotRepositoryPostgres}
 
 _publish_config_repository: PublishConfigRepository | None = None
-_publish_config_repository_mapping = {
-    'postgres': PublishConfigRepositoryPostgres
-}
+_publish_config_repository_mapping = {"postgres": PublishConfigRepositoryPostgres}
 
 
 def get_database() -> Database:

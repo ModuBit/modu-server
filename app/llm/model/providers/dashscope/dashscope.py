@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+
 from llm.model.entities.model import ModelType
 from llm.model.entities.provider import LLMProvider
 
@@ -21,6 +22,7 @@ class DashScopeProvider(LLMProvider):
     """
     通义千问
     """
+
     async def validate_credentials(self, credentials: dict) -> None:
         text_generation_model = self.get_model(ModelType.TEXT_GENERATION)
         await text_generation_model.validate_credentials(credentials)

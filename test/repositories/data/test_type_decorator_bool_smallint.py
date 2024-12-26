@@ -29,5 +29,5 @@ def test_process_result_value():
     assert bool_smallint.process_result_value(1, None)
     assert not bool_smallint.process_result_value(0, None)
     assert bool_smallint.process_result_value(11, None)
-    assert bool_smallint.process_result_value(b'1234', None)
-    assert bool_smallint.process_result_value('1234', None)
+    assert bool_smallint.process_result_value(b"1234", None)
+    assert bool_smallint.process_result_value("1234", None)

@@ -18,11 +18,12 @@ from typing import AsyncIterator, TypeVar, Callable
 
 from loguru import logger
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 async def merge_async_iterators(
-        *iterators: AsyncIterator[T], yield_when_exception: Callable[[Exception], T] = None) -> AsyncIterator[T]:
+    *iterators: AsyncIterator[T], yield_when_exception: Callable[[Exception], T] = None
+) -> AsyncIterator[T]:
     """
     将多个异步迭代器合并成一个新的异步迭代器
     :param iterators: 待合并的异步迭代器

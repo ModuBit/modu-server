@@ -34,7 +34,7 @@ class ProviderStatus(str, enum.Enum):
     LLM Provider状态
     """
 
-    ACTIVE = 'ACTIVE'
+    ACTIVE = "ACTIVE"
     """已激活"""
 
     UN_CONFIGURED = "UN_CONFIGURED"
@@ -105,7 +105,9 @@ class ProviderWithModelsSchema(BaseModel):
         """
         grouped_models = OrderedDict()
         for model_type in self.provider.supported_model_types:
-            grouped_models[model_type] = [model for model in self.models if model.type == model_type]
+            grouped_models[model_type] = [
+                model for model in self.models if model.type == model_type
+            ]
         return grouped_models
 
 
@@ -131,7 +133,7 @@ class LLMProvider(ABC):
 
         # 加载model
         module = self.__class__.__module__
-        parent_module = '.'.join(module.split('.')[:-1])
+        parent_module = ".".join(module.split(".")[:-1])
         model_classes = load_classes(parent_module, LLMModel, True, 1)
         models = [provider_cls() for provider_cls in model_classes]
 
@@ -143,8 +145,11 @@ class LLMProvider(ABC):
         # 对model进行排序
         ordinal_list = [name for name, _ in ModelType.__members__.items()]
         ordering = {key: index for index, key in enumerate(ordinal_list)}
-        ordering_default = float('inf')
-        sorted_groups = sorted(model_groups.items(), key=lambda item: ordering.get(item[0], ordering_default))
+        ordering_default = float("inf")
+        sorted_groups = sorted(
+            model_groups.items(),
+            key=lambda item: ordering.get(item[0], ordering_default),
+        )
 
         for model_type, model in sorted_groups:
             self._models[model_type] = model
@@ -161,8 +166,11 @@ class LLMProvider(ABC):
         获取指定类型的模型列表
         :param model_type: 模型类型
         """
-        return [model for (_model_type, model) in self._models.items() if
-                model_type is None or model_type == _model_type]
+        return [
+            model
+            for (_model_type, model) in self._models.items()
+            if model_type is None or model_type == _model_type
+        ]
 
     def get_model(self, model_type: ModelType) -> LLMModel:
         """
@@ -181,12 +189,16 @@ class LLMProvider(ABC):
             return self._provider_schema
 
         module = self.__class__.__module__
-        parent_module = '.'.join(module.split('.')[:-1])
-        name = parent_module.split('.')[-1]
+        parent_module = ".".join(module.split(".")[:-1])
+        name = parent_module.split(".")[-1]
 
-        schema_content = files(parent_module).joinpath(f"{name}.yml").read_text(encoding='utf-8')
+        schema_content = (
+            files(parent_module).joinpath(f"{name}.yml").read_text(encoding="utf-8")
+        )
         schema_data = yaml.safe_load(schema_content)
-        provider_schema = ProviderSchema(**schema_data, supported_model_types=self._models.keys())
+        provider_schema = ProviderSchema(
+            **schema_data, supported_model_types=self._models.keys()
+        )
         self._provider_schema = provider_schema
 
         return provider_schema

@@ -33,8 +33,11 @@ class LLMModelConfigRepository(Repository):
 
     @abstractmethod
     async def add_system_models(
-            self, workspace_uid: str, llm_model_configs: dict[ModelType, LLMModelConfig],
-            session: AsyncSession) -> dict[ModelType, LLMModelConfig]:
+        self,
+        workspace_uid: str,
+        llm_model_configs: dict[ModelType, LLMModelConfig],
+        session: AsyncSession,
+    ) -> dict[ModelType, LLMModelConfig]:
         """
         新增某空间系统模型配置
         :param workspace_uid: 空间UID
@@ -45,8 +48,11 @@ class LLMModelConfigRepository(Repository):
 
     @abstractmethod
     async def update_system_models(
-            self, workspace_uid: str, llm_model_configs: dict[ModelType, LLMModelConfig],
-            session: AsyncSession) -> dict[ModelType, LLMModelConfig]:
+        self,
+        workspace_uid: str,
+        llm_model_configs: dict[ModelType, LLMModelConfig],
+        session: AsyncSession,
+    ) -> dict[ModelType, LLMModelConfig]:
         """
         修改某空间系统模型配置
         :param workspace_uid: 空间UID
@@ -57,7 +63,8 @@ class LLMModelConfigRepository(Repository):
 
     @abstractmethod
     async def find_system_models_by_workspace(
-            self, workspace_uid: str, session: AsyncSession) -> dict[ModelType, LLMModelConfig]:
+        self, workspace_uid: str, session: AsyncSession
+    ) -> dict[ModelType, LLMModelConfig]:
         """
         获取某空间系统模型配置
         :param workspace_uid: 空间UID

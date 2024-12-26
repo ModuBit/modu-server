@@ -24,14 +24,16 @@ from utils.errors.base_error import ErrorShowType
 from utils.errors.system_error import InitializeError
 
 initialized_status_cache: CacheDecorator[bool] = cache_decorator_builder.build(
-    serialize=lambda initialized: 'True' if initialized else 'False',
+    serialize=lambda initialized: "True" if initialized else "False",
     deserialize=lambda json_content: bool(strtobool(json_content)),
     default_expire_seconds=30 * 24 * 3600,
     allow_none_values=True,
 )
 
 
-@initialized_status_cache.async_cacheable(key_generator=lambda **kwargs: 'system:initialized')
+@initialized_status_cache.async_cacheable(
+    key_generator=lambda **kwargs: "system:initialized"
+)
 async def is_initialized() -> bool:
     """
     判断是否已经初始化
@@ -40,7 +42,9 @@ async def is_initialized() -> bool:
     return await account_repository.count_all() > 0
 
 
-@initialized_status_cache.async_cache_evict(key_generator=lambda **kwargs: 'system:initialized')
+@initialized_status_cache.async_cache_evict(
+    key_generator=lambda **kwargs: "system:initialized"
+)
 async def initialize(name: str, email: str, password: str):
     """
     初始化服务
@@ -50,21 +54,26 @@ async def initialize(name: str, email: str, password: str):
     """
     if await is_initialized():
         raise InitializeError(
-            message='已初始化，请直接登录', status_code=409,
-            show_type=ErrorShowType.REDIRECT, target='/login', )
+            message="已初始化，请直接登录",
+            status_code=409,
+            show_type=ErrorShowType.REDIRECT,
+            target="/login",
+        )
 
     # 显式使用session（存在多个写动作，保证事务一致性）
     async with database.async_session() as session:
         # 创建账号
-        account = await account_repository.create(name, email, hash_password(password), session)
+        account = await account_repository.create(
+            name, email, hash_password(password), session
+        )
 
         # 创建空间
         await workspace_repository.create(
             Workspace(
                 creator_uid=account.uid,
-                name=f'{name}的默认空间',
-                description=f'{name}的默认空间',
+                name=f"{name}的默认空间",
+                description=f"{name}的默认空间",
                 type=WorkspaceType.PRIVATE,
             ),
-            session
+            session,
         )

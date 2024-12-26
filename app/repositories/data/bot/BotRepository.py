@@ -27,6 +27,7 @@ class BotListQry(BaseModel):
     """
     智能体列表查询条件
     """
+
     keyword: str | None = None
     """关键词"""
     mode: BotMode | None = None
@@ -57,7 +58,7 @@ class BotRepository(Repository):
         raise NotImplementedError()
 
     @abstractmethod
-    async def update(self, bot: Bot, session: AsyncSession) -> Bot:
+    async def update_base_info(self, bot: Bot, session: AsyncSession) -> Bot:
         """
         更新智能体
         :param bot: 智能体
@@ -66,7 +67,28 @@ class BotRepository(Repository):
         raise NotImplementedError()
 
     @abstractmethod
-    async def get_by_workspace_and_uid(self, workspace_uid: str, bot_uid: str, session: AsyncSession) -> Bot:
+    async def update_bot_config(
+        self,
+        bot_uid: str,
+        bot_mode: BotMode,
+        bot_config: dict,
+        publish_uid: str,
+        session: AsyncSession,
+    ):
+        """
+        更新智能体
+        :param bot_uid: 智能体uid
+        :param bot_mode: 智能体模式
+        :param bot_config: 智能体配置
+        :param publish_uid: 发布uid
+        :param session: Session
+        """
+        raise NotImplementedError()
+
+    @abstractmethod
+    async def get_by_workspace_and_uid(
+        self, workspace_uid: str, bot_uid: str, session: AsyncSession
+    ) -> Bot:
         """
         通过uid查询会话
         :param workspace_uid: 空间 uid
@@ -86,8 +108,9 @@ class BotRepository(Repository):
         raise NotImplementedError()
 
     @abstractmethod
-    async def find(self, workspace_uid: str, qry: BotListQry,
-                   session: AsyncSession) -> list[Bot]:
+    async def find(
+        self, workspace_uid: str, qry: BotListQry, session: AsyncSession
+    ) -> list[Bot]:
         """
         查找某智能体前的智能体列表
         :param workspace_uid: 空间ID

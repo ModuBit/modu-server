@@ -31,4 +31,4 @@ class ImageGenerationModel(LLMModel, ABC):
 
     @property
     def description(self) -> I18nOption:
-        return I18nOption(default='图像生成', en_us='Image Generation')
+        return I18nOption(default="图像生成", en_us="Image Generation")

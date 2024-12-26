@@ -37,11 +37,20 @@ from repositories.data import conversation_repository, message_repository
 from repositories.data.account.account_models import Account
 from repositories.data.database import BasePO
 from repositories.data.message.conversation_models import Conversation
-from repositories.data.message.message_models import MessageBlock, MessageEventData, Message
+from repositories.data.message.message_models import (
+    MessageBlock,
+    MessageEventData,
+    Message,
+)
 from services.llm import llm_model_service, llm_provider_service
 from services.llm.generate.llm_message_checkpoint import LLMMessageCheckPointSaver
-from services.llm.generate.llm_message_event_models import MessageStartEvent, MessageEndEvent, ErrorEvent, MessageEvent, \
-    AIMessageChunkEvent
+from services.llm.generate.llm_message_event_models import (
+    MessageStartEvent,
+    MessageEndEvent,
+    ErrorEvent,
+    MessageEvent,
+    AIMessageChunkEvent,
+)
 from services.llm.generate.llm_message_memory import ConversationSummaryBufferMemory
 from utils.dictionary import dict_merge
 from utils.errors.base_error import UnauthorizedError
@@ -100,16 +109,22 @@ async def clear_memory(current_user: Account, conversation_uid: str) -> list[Mes
     # TODO 这里需要考虑加锁
 
     # 找到会话
-    conversation = await conversation_repository.get_by_uid(current_user.uid, conversation_uid)
+    conversation = await conversation_repository.get_by_uid(
+        current_user.uid, conversation_uid
+    )
     if not conversation:
-        raise UnauthorizedError('找不到当前会话')
+        raise UnauthorizedError("找不到当前会话")
 
     # 找到最后一条消息
-    latest_message = await message_repository.find_latest(conversation_uid, 1,
-                                                          reset_message_uid=conversation.reset_message_uid)
+    latest_message = await message_repository.find_latest(
+        conversation_uid, 1, reset_message_uid=conversation.reset_message_uid
+    )
     latest_message = latest_message[-1] if latest_message else None
 
-    if not latest_message or latest_message.message_uid == conversation.reset_message_uid:
+    if (
+        not latest_message
+        or latest_message.message_uid == conversation.reset_message_uid
+    ):
         # 还没有消息，或者 最后一条消息就是重置消息
         # 防止重复重置
         return []
@@ -119,23 +134,29 @@ async def clear_memory(current_user: Account, conversation_uid: str) -> list[Mes
         conversation_uid=conversation_uid,
         sender_uid="system",
         sender_role="system",
-        messages=[MessageBlock(
-            type="system",
-            content_type="text",
-            content="以下为新对话",
-            section_uid=BasePO.uid_generate())
+        messages=[
+            MessageBlock(
+                type="system",
+                content_type="text",
+                content="以下为新对话",
+                section_uid=BasePO.uid_generate(),
+            )
         ],
-        message_time=int(datetime.now().timestamp()) * 1000
+        message_time=int(datetime.now().timestamp()) * 1000,
     )
     reset_message = await message_repository.add(reset_message)
 
     # 更新会话
-    await conversation_repository.update_reset_message_uid(conversation_uid, reset_message.message_uid)
+    await conversation_repository.update_reset_message_uid(
+        conversation_uid, reset_message.message_uid
+    )
 
     return [reset_message]
 
 
-async def generate(current_user: Account, workspace_uid: str, chat_generate_cmd: GenerateCmd) -> dict | ContentStream:
+async def generate(
+    current_user: Account, workspace_uid: str, chat_generate_cmd: GenerateCmd
+) -> dict | ContentStream:
     """
     生成对话
     :param current_user: 当前用户
@@ -145,37 +166,56 @@ async def generate(current_user: Account, workspace_uid: str, chat_generate_cmd:
     """
 
     # 初始化 conversation
-    first_text_message = next(filter(lambda item: item.type == "text", chat_generate_cmd.query.inputs)).content
-    conversation_name = multi_replace(first_text_message, {'\n': ' '})[:30] if first_text_message else "对话"
-    conversation = Conversation(conversation_uid=chat_generate_cmd.conversation_uid or "",
-                                creator_uid=current_user.uid, name=conversation_name)
+    first_text_message = next(
+        filter(lambda item: item.type == "text", chat_generate_cmd.query.inputs)
+    ).content
+    conversation_name = (
+        multi_replace(first_text_message, {"\n": " "})[:30]
+        if first_text_message
+        else "对话"
+    )
+    conversation = Conversation(
+        conversation_uid=chat_generate_cmd.conversation_uid or "",
+        creator_uid=current_user.uid,
+        name=conversation_name,
+    )
     conversation = await _init_generate_conversation(current_user, conversation)
 
     # 历史会话
     memory = ConversationSummaryBufferMemory(
         current_user=current_user,
         workspace_uid=workspace_uid,
-        conversation=conversation
+        conversation=conversation,
     )
-    summary_buffer_messages = await memory.get_summary_buffer_messages(to_langchain=True)
+    summary_buffer_messages = await memory.get_summary_buffer_messages(
+        to_langchain=True
+    )
 
     # 存储 user message
-    question_messages = ([MessageBlock(type="question",
-                                       content_type=f'refer:{_refer.type}',
-                                       content=_refer.content,
-                                       section_uid=BasePO.uid_generate()) for _refer in
-                          chat_generate_cmd.query.refers] +
-                         [MessageBlock(type="question",
-                                       content_type=_input.type,
-                                       content=_input.content,
-                                       section_uid=BasePO.uid_generate()) for _input in chat_generate_cmd.query.inputs]
-                         )
+    question_messages = [
+        MessageBlock(
+            type="question",
+            content_type=f"refer:{_refer.type}",
+            content=_refer.content,
+            section_uid=BasePO.uid_generate(),
+        )
+        for _refer in chat_generate_cmd.query.refers
+    ] + [
+        MessageBlock(
+            type="question",
+            content_type=_input.type,
+            content=_input.content,
+            section_uid=BasePO.uid_generate(),
+        )
+        for _input in chat_generate_cmd.query.inputs
+    ]
     user_message = Message(
         conversation_uid=conversation.conversation_uid,
         sender_uid=current_user.uid,
         sender_role="user",
         messages=question_messages,
-        message_time=int(datetime.now().timestamp()) * 1000)
+        message_time=int(datetime.now().timestamp()) * 1000,
+    )
     await message_repository.add(user_message)
 
     # 编译机器人
@@ -183,24 +223,38 @@ async def generate(current_user: Account, workspace_uid: str, chat_generate_cmd:
 
     # 机器人对话
     llm_event_stream = chat_bot.astream_events(
-        {"messages": summary_buffer_messages + [HumanMessage(content=first_text_message)]},
-        {"configurable": {"thread_id": "1"}}, version="v2")
+        {
+            "messages": summary_buffer_messages
+            + [HumanMessage(content=first_text_message)]
+        },
+        {"configurable": {"thread_id": "1"}},
+        version="v2",
+    )
 
     # 前置内容
-    before_events = single_element_async_iterator(MessageStartEvent(section_uid=str(ULID())))
+    before_events = single_element_async_iterator(
+        MessageStartEvent(section_uid=str(ULID()))
+    )
 
     # 生成内容
     llm_message_events = llm_stream_events(llm_event_stream)
 
     # 后置内容
-    after_events = single_element_async_iterator(MessageEndEvent(section_uid=str(ULID())))
+    after_events = single_element_async_iterator(
+        MessageEndEvent(section_uid=str(ULID()))
+    )
 
     # 合并内容
     message_events = merge_async_iterators(
-        before_events, llm_message_events, after_events,
-        yield_when_exception=lambda e: ErrorEvent(section_uid=str(ULID()), error=e))
+        before_events,
+        llm_message_events,
+        after_events,
+        yield_when_exception=lambda e: ErrorEvent(section_uid=str(ULID()), error=e),
+    )
 
-    return message_events_checkpoint(current_user, workspace_uid, message_events, conversation, "")
+    return message_events_checkpoint(
+        current_user, workspace_uid, message_events, conversation, ""
+    )
 
 
 async def stop_generate(current_user: Account, conversation_uid: str) -> bool:
@@ -211,53 +265,73 @@ async def stop_generate(current_user: Account, conversation_uid: str) -> bool:
     """
 
     # 找到会话
-    conversation = await conversation_repository.get_by_uid(current_user.uid, conversation_uid)
+    conversation = await conversation_repository.get_by_uid(
+        current_user.uid, conversation_uid
+    )
     if not conversation:
-        raise UnauthorizedError('找不到当前会话')
+        raise UnauthorizedError("找不到当前会话")
 
     # TODO 当前只支持单机local，需要考虑分布式集群部署的情况，将 stop 指令广播到所有进程进行处理
     generate_runner[conversation_uid] = False
     return True
 
 
-async def _make_graph_bot(current_user: Account, workspace_uid: str, chat_generate_cmd: GenerateCmd) -> CompiledGraph:
+async def _make_graph_bot(
+    current_user: Account, workspace_uid: str, chat_generate_cmd: GenerateCmd
+) -> CompiledGraph:
     """
     TODO 仅用于演示，需要重新设计
     """
 
-    system_models = await llm_model_service.get_system_config(current_user, workspace_uid)
+    system_models = await llm_model_service.get_system_config(
+        current_user, workspace_uid
+    )
     if not system_models or ModelType.TEXT_GENERATION not in system_models:
         raise LLMExistsError(
-            message='您还没有配置系统推理模型，请在 空间-设置-模型-系统模型设置 中添加 系统推理模型')
+            message="您还没有配置系统推理模型，请在 空间-设置-模型-系统模型设置 中添加 系统推理模型"
+        )
 
     # model 配置
     model_config = system_models[ModelType.TEXT_GENERATION]
 
     # provider 配置
-    provider_config = await llm_provider_service.detail(current_user, workspace_uid, model_config.provider_name)
+    provider_config = await llm_provider_service.detail(
+        current_user, workspace_uid, model_config.provider_name
+    )
     provider_config.decrypt_credential()
 
     # provider → model → chat_model
     provider = model_provider_factory.get_provider(model_config.provider_name)
     model: TextGenerationModel = provider.get_model(ModelType.TEXT_GENERATION)
-    chat_model: BaseChatModel = model.chat_model(provider_credential=provider_config.provider_credential,
-                                                 model_parameters=model_config.model_parameters,
-                                                 model_name=model_config.model_name,
-                                                 streaming=True,
-                                                 request_timeout=5,
-                                                 max_retries=0) if model else None
+    chat_model: BaseChatModel = (
+        model.chat_model(
+            provider_credential=provider_config.provider_credential,
+            model_parameters=model_config.model_parameters,
+            model_name=model_config.model_name,
+            streaming=True,
+            request_timeout=5,
+            max_retries=0,
+        )
+        if model
+        else None
+    )
 
     if not chat_model:
-        raise LLMExistsError(message=f'您在{model_config.provider_name}中还未配置任何{ModelType.TEXT_GENERATION}模型')
+        raise LLMExistsError(
+            message=f"您在{model_config.provider_name}中还未配置任何{ModelType.TEXT_GENERATION}模型"
+        )
 
     async def chat(state: MessagesState, config: RunnableConfig):
         system_message = SystemMessage(content="")
         messages = state["messages"] or []
         if messages and isinstance(messages[0], SystemMessage):
-            system_message = SystemMessage(content=f'{system_message.content}\n\n{messages[0].content}')
+            system_message = SystemMessage(
+                content=f"{system_message.content}\n\n{messages[0].content}"
+            )
             messages = messages[1:]
-        response = await chat_model.ainvoke([system_message] + messages,
-                                            dict_merge(config, {'tags': ['explain_tag']}))
+        response = await chat_model.ainvoke(
+            [system_message] + messages, dict_merge(config, {"tags": ["explain_tag"]})
+        )
         return {"messages": response}
 
     workflow = StateGraph(MessagesState)
@@ -268,7 +342,9 @@ async def _make_graph_bot(current_user: Account, workspace_uid: str, chat_genera
     return workflow.compile()
 
 
-async def _init_generate_records(conversation: Conversation, user_message: Message) -> (str, str):
+async def _init_generate_records(
+    conversation: Conversation, user_message: Message
+) -> (str, str):
     """
     初始化会话消息
     :param conversation: 当前用户
@@ -288,7 +364,9 @@ async def _init_generate_records(conversation: Conversation, user_message: Messa
     return conversation_uid, BasePO.uid_generate()
 
 
-async def _init_generate_conversation(current_user: Account, conversation: Conversation) -> Conversation:
+async def _init_generate_conversation(
+    current_user: Account, conversation: Conversation
+) -> Conversation:
     """
     初始化会话
     :param conversation: 当前用户
@@ -296,7 +374,9 @@ async def _init_generate_conversation(current_user: Account, conversation: Conve
     """
 
     if conversation.conversation_uid:
-        conversation = await conversation_repository.get_by_uid(current_user.uid, conversation.conversation_uid)
+        conversation = await conversation_repository.get_by_uid(
+            current_user.uid, conversation.conversation_uid
+        )
 
     if not conversation or not conversation.conversation_uid:
         conversation = await conversation_repository.create(conversation)
@@ -304,7 +384,9 @@ async def _init_generate_conversation(current_user: Account, conversation: Conve
     return conversation
 
 
-async def llm_stream_events(event_iter: AsyncIterator[StreamEvent]) -> AsyncIterator[MessageEvent]:
+async def llm_stream_events(
+    event_iter: AsyncIterator[StreamEvent],
+) -> AsyncIterator[MessageEvent]:
     """
     通常，langgraph使用 BaseCheckpointSaver 处理历史消息
     langgraph.graph.state.StateGraph.compile(checkpoint=)
@@ -321,8 +403,10 @@ async def llm_stream_events(event_iter: AsyncIterator[StreamEvent]) -> AsyncIter
     try:
         async for event in event_iter:
             logger.debug(event)
-            if event['event'] == 'on_chat_model_stream':
-                chunk_event = AIMessageChunkEvent(section_uid=section_uid, chunk=event['data']['chunk'])
+            if event["event"] == "on_chat_model_stream":
+                chunk_event = AIMessageChunkEvent(
+                    section_uid=section_uid, chunk=event["data"]["chunk"]
+                )
                 yield chunk_event
             # TODO 其他类型判断
     except Exception as e:
@@ -330,14 +414,18 @@ async def llm_stream_events(event_iter: AsyncIterator[StreamEvent]) -> AsyncIter
         yield ErrorEvent(section_uid=str(ULID()), error=e)
 
 
-async def message_events_checkpoint(current_user: Account, workspace_uid: str,
-                                    event_iter: AsyncIterator[MessageEvent],
-                                    conversation: Conversation, assistant_uid: str):
+async def message_events_checkpoint(
+    current_user: Account,
+    workspace_uid: str,
+    event_iter: AsyncIterator[MessageEvent],
+    conversation: Conversation,
+    assistant_uid: str,
+):
     checkpoint_saver = LLMMessageCheckPointSaver(
         current_user=current_user,
         workspace_uid=workspace_uid,
         conversation=conversation,
-        assistant_uid=assistant_uid
+        assistant_uid=assistant_uid,
     )
 
     message_uid = BasePO.uid_generate()
@@ -358,14 +446,14 @@ async def message_events_checkpoint(current_user: Account, workspace_uid: str,
                     type="system",
                     content_type="text",
                     content="用户终止了生成",
-                    section_uid=BasePO.uid_generate()
+                    section_uid=BasePO.uid_generate(),
                 ),
                 is_finished=True,
             )
             checkpoint_saver.process(message)
             await checkpoint_saver.save()
-            yield f'event: message\ndata: {message.model_dump_json()}\n\n'
-            yield f'event: done\n\n'
+            yield f"event: message\ndata: {message.model_dump_json()}\n\n"
+            yield f"event: done\n\n"
 
             # FIXME 虽然不再向端推送，但是llm的请求并未终止，依然在持续生成（持续消耗token）
             return
@@ -385,7 +473,7 @@ async def message_events_checkpoint(current_user: Account, workspace_uid: str,
                 ),
                 is_finished=False,
             )
-            yield f'event: message\ndata: {message.model_dump_json()}\n\n'
+            yield f"event: message\ndata: {message.model_dump_json()}\n\n"
 
         if isinstance(event, AIMessageChunkEvent):
             message = MessageEventData(
@@ -403,12 +491,12 @@ async def message_events_checkpoint(current_user: Account, workspace_uid: str,
                 is_finished=False,
             )
             checkpoint_saver.process(message)
-            yield f'event: message\ndata: {message.model_dump_json()}\n\n'
+            yield f"event: message\ndata: {message.model_dump_json()}\n\n"
 
         if isinstance(event, MessageEndEvent):
             generate_runner.pop(conversation.conversation_uid, True)
             await checkpoint_saver.save()
-            yield f'event: done\n\n'
+            yield f"event: done\n\n"
 
         if isinstance(event, ErrorEvent):
             generate_runner.pop(conversation.conversation_uid, True)
@@ -428,4 +516,4 @@ async def message_events_checkpoint(current_user: Account, workspace_uid: str,
             )
             checkpoint_saver.process(message)
             # await checkpoint_saver.save() -- 最后一定会走到MessageEndEvent，在MessageEndEvent中保存
-            yield f'event: error\ndata: {message.model_dump_json()}\n\n'
+            yield f"event: error\ndata: {message.model_dump_json()}\n\n"

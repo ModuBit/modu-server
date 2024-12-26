@@ -21,7 +21,7 @@ import re
 import yaml
 
 # 正则表达式用于匹配 ${variable_name[:default_value]}
-_env_var_pattern = re.compile(r'\$\{([^:}]+):?([^}]*)}')
+_env_var_pattern = re.compile(r"\$\{([^:}]+):?([^}]*)}")
 
 
 def _env_var_constructor(loader, node):
@@ -50,10 +50,10 @@ def _env_var_constructor(loader, node):
 
 
 # 添加构造器用于处理带有特定标签的节点
-yaml.SafeLoader.add_implicit_resolver('!env_var', _env_var_pattern, None)
-yaml.SafeLoader.add_constructor('!env_var', _env_var_constructor)
-yaml.add_implicit_resolver('!env_var', _env_var_pattern)
-yaml.add_constructor('!env_var', _env_var_constructor)
+yaml.SafeLoader.add_implicit_resolver("!env_var", _env_var_pattern, None)
+yaml.SafeLoader.add_constructor("!env_var", _env_var_constructor)
+yaml.add_implicit_resolver("!env_var", _env_var_pattern)
+yaml.add_constructor("!env_var", _env_var_constructor)
 
 
 def safe_load(file_path):
@@ -62,7 +62,7 @@ def safe_load(file_path):
     see yaml.safe_load
     :param file_path: 文件路径
     """
-    with open(file_path, 'r') as f:
+    with open(file_path, "r") as f:
         return yaml.load(f, Loader=yaml.SafeLoader)
 
 
@@ -72,5 +72,5 @@ def full_load(file_path):
     see yaml.load
     :param file_path: 文件路径
     """
-    with open(file_path, 'r') as f:
+    with open(file_path, "r") as f:
         return yaml.load(f, Loader=yaml.FullLoader)

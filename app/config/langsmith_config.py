@@ -24,7 +24,7 @@ def langsmith_config(config: dict):
     if not api_key:
         return
 
-    os.environ['LANGCHAIN_TRACING_V2'] = "true"
-    os.environ['LANGCHAIN_ENDPOINT'] = "https://api.smith.langchain.com"
-    os.environ['LANGCHAIN_API_KEY'] = api_key
-    os.environ['LANGCHAIN_PROJECT'] = dict_get(config, "app.project.name", "MODU")
+    os.environ["LANGCHAIN_TRACING_V2"] = "true"
+    os.environ["LANGCHAIN_ENDPOINT"] = "https://api.smith.langchain.com"
+    os.environ["LANGCHAIN_API_KEY"] = api_key
+    os.environ["LANGCHAIN_PROJECT"] = dict_get(config, "app.project.name", "MODU")
