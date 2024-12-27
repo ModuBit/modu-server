@@ -19,6 +19,8 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
+from utils.pydantic import default_model_config
+
 
 class PublishConfigTargetType(str, enum.Enum):
     """
@@ -48,13 +50,18 @@ class PublishConfig(BaseModel):
     """UID"""
     created_at: datetime | None = None
     """创建时间"""
+    updated_at: datetime | None = None
+    """更新时间"""
     target_type: PublishConfigTargetType
     """目标类型"""
     target_uid: str
     """目标uid"""
-    config_mode: str
-    """配置模式"""
-    config_content: dict
+    config: dict
     """配置内容"""
-    publish_status: PublishConfigStatus
+    creator_uid: str | None = None
+    """创建者UID"""
+    publish_status: PublishConfigStatus = PublishConfigStatus.DRAFT
     """发布状态"""
+
+    # 定义配置
+    model_config = default_model_config()

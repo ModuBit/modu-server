@@ -21,7 +21,10 @@ from repositories.data import bot_repository, database
 from repositories.data.account.account_models import Account
 from repositories.data.bot.BotRepository import BotListQry
 from repositories.data.bot.bot_models import Bot, BotMode
-from repositories.data.publish.publish_config import PublishConfigTargetType
+from repositories.data.publish.publish_config import (
+    PublishConfig,
+    PublishConfigTargetType,
+)
 from services import workspace_service, account_service, publish_service
 from utils.errors.base_error import UnauthorizedError
 
@@ -170,7 +173,13 @@ async def save_config(
         raise UnauthorizedError("您无该机器人/智能体的权限")
 
     return await publish_service.save(
-        PublishConfigTargetType.BOT_CONFIG, bot_uid, bot_mode, bot_config
+        PublishConfigTargetType.BOT_CONFIG,
+        bot_uid,
+        {
+            "mode": bot_mode,
+            "config": bot_config,
+        },
+        current_user.uid,
     )
 
 
@@ -202,7 +211,14 @@ async def publish_config(
     # 显式使用session（存在多个写动作，保证事务一致性）
     async with database.async_session() as session:
         publish_uid = await publish_service.publish(
-            PublishConfigTargetType.BOT_CONFIG, bot_uid, bot_mode, bot_config, session
+            PublishConfigTargetType.BOT_CONFIG,
+            bot_uid,
+            {
+                "mode": bot_mode,
+                "config": bot_config,
+            },
+            current_user.uid,
+            session,
         )
 
         # 更新到 BOT
@@ -211,3 +227,76 @@ async def publish_config(
         )
 
     return publish_uid
+
+
+async def get_config_draft(
+    current_user: Account,
+    workspace_uid: str,
+    bot_uid: str,
+    publish_uid: str | None = None,
+) -> PublishConfig | None:
+    """
+    获取机器人/智能体的草稿
+    :param current_user: 当前用户
+    :param workspace_uid: 空间UID
+    :param bot_uid: 机器人/智能体UID
+    :param publish_uid: 发布UID 缺省获取草稿
+    :return: PublishConfig
+    """
+
+    bot = await detail(current_user, workspace_uid, bot_uid)
+    if not bot:
+        raise UnauthorizedError("机器人/智能体不存在")
+    if bot.creator_uid != current_user.uid:
+        raise UnauthorizedError("您无该机器人/智能体的权限")
+
+    return await _get_config_draft(bot, bot_uid, publish_uid)
+
+
+async def list_config_draft(
+    current_user: Account,
+    workspace_uid: str,
+    bot_uid: str,
+) -> list[PublishConfig]:
+    """
+    获取机器人/智能体的草稿列表
+    :param current_user: 当前用户
+    :param workspace_uid: 空间UID
+    :param bot_uid: 机器人/智能体UID
+    :return: list[PublishConfig]
+    """
+
+    bot = await detail(current_user, workspace_uid, bot_uid)
+    if not bot:
+        raise UnauthorizedError("机器人/智能体不存在")
+    if bot.creator_uid != current_user.uid:
+        raise UnauthorizedError("您无该机器人/智能体的权限")
+
+    return (
+        await publish_service.list_versions(
+            PublishConfigTargetType.BOT_CONFIG, bot_uid, 100
+        )
+        or []
+    )
+
+
+async def _get_config_draft(
+    bot: Bot, bot_uid: str, publish_uid: str | None = None
+) -> PublishConfig | None:
+    config = await publish_service.get_version(
+        PublishConfigTargetType.BOT_CONFIG,
+        bot_uid,
+        publish_uid,
+    )
+
+    if not config and bot.config:
+        config = PublishConfig(
+            target_type=PublishConfigTargetType.BOT_CONFIG,
+            target_uid=bot_uid,
+            config={
+                "mode": bot.mode,
+                "config": bot.config,
+            },
+        )
+
+    return config

@@ -56,6 +56,19 @@ class PublishConfigRepository(Repository):
         raise NotImplementedError()
 
     @abstractmethod
+    async def list_versions(
+        self, target_type: str, target_uid: str, top: int, session: AsyncSession
+    ) -> list[PublishConfig]:
+        """
+        获取版本列表
+        :param target_type: 目标类型
+        :param target_uid: 目标 UID
+        :param top: 数量
+        :param session: Session
+        """
+        raise NotImplementedError()
+
+    @abstractmethod
     async def draft_exists(
         self, target_type: str, target_uid: str, session: AsyncSession
     ) -> bool:

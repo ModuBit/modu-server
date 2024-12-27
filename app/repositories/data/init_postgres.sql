@@ -220,8 +220,8 @@ CREATE TABLE modu_publish_configs
     uid                 VARCHAR(32)                                                 NOT NULL,
     target_type         VARCHAR(32)              DEFAULT 'BOT'::CHARACTER VARYING   NOT NULL,
     target_uid          VARCHAR(32)                                                 NOT NULL,
-    config_mode         VARCHAR(32)                                                 NOT NULL,
-    config_content      JSONB                                                       NOT NULL,
+    config              JSONB                                                       NOT NULL,
+    creator_uid         VARCHAR(32)                                                 NOT NULL,
     publish_status      VARCHAR(32)              DEFAULT 'DRAFT'::CHARACTER VARYING NOT NULL,
     is_deleted          SMALLINT                 DEFAULT '0'::SMALLINT              NOT NULL
 );

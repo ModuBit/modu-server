@@ -73,6 +73,25 @@ class PublishConfigRepositoryPostgres(PublishConfigRepository):
         return PublishConfig(**bot_model.as_dict()) if bot_model else None
 
     @with_async_session
+    async def list_versions(
+        self, target_type: str, target_uid: str, top: int, session: AsyncSession
+    ) -> list[PublishConfig]:
+        stmt = (
+            select(PublishConfigPO)
+            .where(PublishConfigPO.target_type == target_type)
+            .where(PublishConfigPO.target_uid == target_uid)
+            .where(PublishConfigPO.publish_status == PublishConfigStatus.PUBLISHED)
+            .where(PublishConfigPO.is_deleted == False)
+            .order_by(PublishConfigPO.created_at.desc())
+            .limit(top)
+        )
+        select_result = await session.execute(stmt)
+        publish_models = select_result.scalars()
+        return [
+            PublishConfig(**publish_model.as_dict()) for publish_model in publish_models
+        ]
+
+    @with_async_session
     async def draft_exists(
         self, target_type: str, target_uid: str, session: AsyncSession
     ) -> str:
@@ -103,8 +122,7 @@ class PublishConfigRepositoryPostgres(PublishConfigRepository):
                 .where(PublishConfigPO.target_type == publish_config.target_type)
                 .where(PublishConfigPO.target_uid == publish_config.target_uid)
                 .values(
-                    config_mode=publish_config.config_mode,
-                    config_content=publish_config.config_content,
+                    config=publish_config.config,
                     publish_status=publish_status,
                 )
             )
@@ -148,11 +166,9 @@ class PublishConfigPO(PostgresBasePO):
     target_uid: Mapped[str] = mapped_column(
         String(32), nullable=False, comment="目标uid"
     )
-    config_mode: Mapped[str] = mapped_column(
-        String(32), nullable=False, comment="配置模式"
-    )
-    config_content: Mapped[dict] = mapped_column(
-        Dict2Json, nullable=False, comment="配置内容"
+    config: Mapped[dict] = mapped_column(Dict2Json, nullable=False, comment="配置内容")
+    creator_uid: Mapped[str] = mapped_column(
+        String(32), nullable=False, comment="创建者uid"
     )
     publish_status: Mapped[PublishConfigStatus] = mapped_column(
         Enum(PublishConfigStatus, native_enum=False),

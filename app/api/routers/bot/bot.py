@@ -14,13 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from typing import Optional, Annotated
+from typing import Optional
 
 from fastapi import APIRouter, Depends, Query, Body
 from loguru import logger
 from pydantic import BaseModel
 
 from api.dependencies.principal import current_account
+from repositories.data.publish.publish_config import PublishConfig
 from repositories.data.account.account_models import Account, AccountInfo
 from repositories.data.bot.BotRepository import BotListQry
 from repositories.data.bot.bot_models import Bot, BotMode
@@ -180,4 +181,44 @@ async def publish_config(
     """
     return await bot_service.publish_config(
         current_user, workspace_uid, bot_uid, bot_mode, bot_config
+    )
+
+
+@logger.catch()
+@router.get(path="/{bot_uid}/config/drafts", response_class=CamelCaseJSONResponse)
+async def list_config_draft(
+    workspace_uid: str,
+    bot_uid: str,
+    current_user: Account = Depends(current_account),
+) -> list[PublishConfig]:
+    """
+    查询 机器人/智能体 草稿列表
+    :param workspace_uid: 空间UID
+    :param bot_uid: 智能体UID
+    :param current_user: 当前用户
+    :return: list[PublishConfig]
+    """
+    return await bot_service.list_config_draft(current_user, workspace_uid, bot_uid)
+
+
+@logger.catch()
+@router.get(
+    path="/{bot_uid}/config/draft", response_class=CamelCaseJSONResponse
+)
+async def get_config_draft(
+    workspace_uid: str,
+    bot_uid: str,
+    publish_uid: Optional[str] = Query(None),
+    current_user: Account = Depends(current_account),
+) -> PublishConfig | None:
+    """
+    查询 机器人/智能体 草稿
+    :param workspace_uid: 空间UID
+    :param bot_uid: 智能体UID
+    :param publish_uid: 发布UID
+    :param current_user: 当前用户
+    :return: PublishConfig
+    """
+    return await bot_service.get_config_draft(
+        current_user, workspace_uid, bot_uid, publish_uid
     )

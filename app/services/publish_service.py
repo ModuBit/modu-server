@@ -24,27 +24,75 @@ from repositories.data.publish.publish_config import (
 )
 
 
+async def get_draft(
+    target_type: PublishConfigTargetType,
+    target_uid: str,
+) -> PublishConfig:
+    """
+    获取草稿
+    :param target_type: 目标类型
+    :param target_uid: 目标uid
+    :return: PublishConfig
+    """
+    return await publish_config_repository.get_draft(target_type, target_uid)
+
+
+async def get_version(
+    target_type: PublishConfigTargetType,
+    target_uid: str,
+    version_uid: str | None = None,
+) -> PublishConfig:
+    """
+    获取特定版本
+    :param target_type: 目标类型
+    :param target_uid: 目标uid
+    :param version_uid: 版本uid 缺省获取草稿
+    :return: PublishConfig
+    """
+    if version_uid:
+        return await publish_config_repository.get_version(
+            target_type, target_uid, version_uid
+        )
+    else:
+        return await publish_config_repository.get_draft(target_type, target_uid)
+
+
+async def list_versions(
+    target_type: PublishConfigTargetType,
+    target_uid: str,
+    top: int = 20,
+) -> list[PublishConfig]:
+    """
+    获取版本列表
+    :param target_type: 目标类型
+    :param target_uid: 目标uid
+    :param top: 数量 缺省 20
+    :return: list[PublishConfig]
+    """
+    return await publish_config_repository.list_versions(target_type, target_uid, top)
+
+
 async def publish(
     target_type: PublishConfigTargetType,
     target_uid: str,
-    config_mode: str,
-    config_content: dict,
+    config: dict,
+    creator_uid: str,
     session: AsyncSession | None = None,
 ) -> str:
     """
     发布
     :param target_type: 目标类型
     :param target_uid: 目标uid
-    :param config_mode:  配置模式
-    :param config_content: 配置内容
+    :param config: 配置
+    :param creator_uid: 创建者UID
     :param session: Session
     :return: 配置 UID
     """
     config = PublishConfig(
         target_type=target_type,
         target_uid=target_uid,
-        config_mode=config_mode,
-        config_content=config_content,
+        config=config,
+        creator_uid=creator_uid,
         publish_status=PublishConfigStatus.PUBLISHED,
     )
 
@@ -57,22 +105,22 @@ async def publish(
 async def save(
     target_type: PublishConfigTargetType,
     target_uid: str,
-    config_mode: str,
-    config_content: dict,
+    config: dict,
+    creator_uid: str,
 ) -> str:
     """
     保存
     :param target_type: 目标类型
     :param target_uid: 目标uid
-    :param config_mode:  配置模式
-    :param config_content: 配置内容
+    :param config: 配置
+    :param creator_uid: 创建者UID
     :return: 配置 UID
     """
     config = PublishConfig(
         target_type=target_type,
         target_uid=target_uid,
-        config_mode=config_mode,
-        config_content=config_content,
+        config=config,
+        creator_uid=creator_uid,
         publish_status=PublishConfigStatus.PUBLISHED,
     )
 
