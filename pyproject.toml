@@ -33,7 +33,7 @@ sqlalchemy = { extras = ["asyncio"], version = "^2.0.35" }
 asyncpg = "^0.30.0"
 # psycopg2-binary
 ## [数据库版本管理](https://alembic.sqlalchemy.org/en/latest/)
-# alembic
+alembic = "^1.14.0"
 
 
 # 缓存

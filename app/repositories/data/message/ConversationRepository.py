@@ -27,6 +27,8 @@ class ConversationRepository(Repository):
     会话数据存储的定义
     """
 
+    SCOPE_GLOBAL: str = "GLOBAL"
+
     def __init__(self, database: Database):
         super().__init__(database)
 
@@ -46,6 +48,7 @@ class ConversationRepository(Repository):
     @abstractmethod
     async def find_before_uid(
         self,
+        scope: str | None,
         creator_uid: str,
         before_uid: str,
         include_this: bool,
@@ -54,6 +57,7 @@ class ConversationRepository(Repository):
     ) -> list[Conversation]:
         """
         查询某会话前的会话
+        :param scope: 范围
         :param creator_uid: 用户 uid
         :param before_uid: 指定会话uid
         :param include_this: 是否包含该条

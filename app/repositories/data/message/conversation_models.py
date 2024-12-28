@@ -42,5 +42,9 @@ class Conversation(BaseModel):
     created_at: int | None = None
     """创建时间"""
 
+    scope: str | None = None
+    """范围"""
+
     # 定义配置
     model_config = default_model_config()
+

@@ -16,6 +16,7 @@ limitations under the License.
 
 from boltons.strutils import multi_replace
 
+from repositories.data.message import ConversationRepository
 from repositories.data import message_repository, conversation_repository
 from repositories.data.account.account_models import Account
 from repositories.data.message.conversation_models import Conversation
@@ -56,7 +57,11 @@ async def conversations(
     :param current_user: 当前用户
     """
     return await conversation_repository.find_before_uid(
-        current_user.uid, before_conversation_uid, False, max_count
+        ConversationRepository.SCOPE_ALL,
+        current_user.uid,
+        before_conversation_uid,
+        False,
+        max_count,
     )
 
 
@@ -66,7 +71,11 @@ async def latest_conversations(current_user: Account) -> Conversation:
     :param current_user: 当前用户
     """
     _conversations = await conversation_repository.find_before_uid(
-        current_user.uid, None, False, 1
+        ConversationRepository.SCOPE_ALL,
+        current_user.uid,
+        None,
+        False,
+        1,
     )
     return _conversations[0] if _conversations else None
 

@@ -16,7 +16,7 @@ limitations under the License.
 
 from typing import Dict
 
-from sqlalchemy import PrimaryKeyConstraint, String, update, delete
+from sqlalchemy import PrimaryKeyConstraint, String, text, update, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import Mapped, mapped_column
@@ -62,6 +62,7 @@ class ConversationRepositoryPostgres(ConversationRepository):
     @with_async_session
     async def find_before_uid(
         self,
+        scope: str | None,
         creator_uid: str,
         before_uid: str | None,
         include_this: bool,
@@ -70,6 +71,7 @@ class ConversationRepositoryPostgres(ConversationRepository):
     ) -> list[Conversation]:
         stmt = (
             select(ConversationPO)
+            .where(ConversationPO.scope == (scope or ConversationRepository.SCOPE_ALL))
             .where(ConversationPO.creator_uid == creator_uid)
             .where(ConversationPO.is_deleted == False)
         )
@@ -161,5 +163,11 @@ class ConversationPO(PostgresBasePO):
     )
     name: Mapped[str] = mapped_column(String(64), nullable=False, comment="会话名")
     reset_message_uid: Mapped[str] = mapped_column(
-        String(32), nullable=True, comment="重置/清楚记忆 时的消息UID"
+        String(32), nullable=True, comment="重置/清除记忆 时的消息UID"
+    )
+    scope: Mapped[str] = mapped_column(
+        String(32),
+        nullable=True,
+        server_default=text("'ALL'::character varying"),
+        comment="范围",
     )
