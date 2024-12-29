@@ -219,7 +219,7 @@ CREATE TABLE modu_publish_configs
     created_at          TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP(0)       NOT NULL,
     updated_at          TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP(0)       NOT NULL,
     uid                 VARCHAR(32)                                                 NOT NULL,
-    target_type         VARCHAR(32)              DEFAULT 'BOT'::CHARACTER VARYING   NOT NULL,
+    target_type         VARCHAR(32)                                                 NOT NULL,
     target_uid          VARCHAR(32)                                                 NOT NULL,
     config              JSONB                                                       NOT NULL,
     creator_uid         VARCHAR(32)                                                 NOT NULL,
@@ -231,5 +231,26 @@ CREATE INDEX idx_modu_publish_config_target ON modu_publish_configs (target_type
 CREATE TRIGGER set_modu_publish_configs_updated_at
     BEFORE UPDATE
     ON modu_publish_configs
+    FOR EACH ROW
+EXECUTE procedure update_updated_at_column();
+
+-- 收藏
+CREATE TABLE modu_favorites
+(
+    id                  UUID                     DEFAULT UUID_GENERATE_V4()         NOT NULL CONSTRAINT pk_modu_favorite_id PRIMARY KEY,
+    created_at          TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP(0)       NOT NULL,
+    updated_at          TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP(0)       NOT NULL,
+    uid                 VARCHAR(32)                                                 NOT NULL,
+    target_type         VARCHAR(32)                                                 NOT NULL,
+    target_uid          VARCHAR(32)                                                 NOT NULL,
+    creator_uid         VARCHAR(32)                                                 NOT NULL,
+    is_deleted          SMALLINT                 DEFAULT '0'::SMALLINT              NOT NULL
+);
+CREATE UNIQUE INDEX uk_modu_favorite_uid ON modu_favorites (uid);
+CREATE UNIQUE INDEX uk_modu_favorite_target ON modu_favorites (target_type, target_uid, creator_uid, is_deleted);
+CREATE INDEX idx_modu_favorite_creator ON modu_favorites (creator_uid, target_type, is_deleted);
+CREATE TRIGGER set_modu_favorites_updated_at
+    BEFORE UPDATE
+    ON modu_favorites
     FOR EACH ROW
 EXECUTE procedure update_updated_at_column();

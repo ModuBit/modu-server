@@ -14,19 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from sqlalchemy import (
-    TypeDecorator,
-    PrimaryKeyConstraint,
-    String,
-    text,
-    Enum,
-    update,
-    select,
-)
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import PrimaryKeyConstraint, String, text, Enum, update, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import mapped_column, Mapped
 
+from repositories.data.type_decorator import Dict2Json
 from repositories.data.database import with_async_session, BasePO
 from repositories.data.postgres_database import PostgresBasePO
 from repositories.data.publish.PublishConfigRepository import PublishConfigRepository
@@ -135,18 +127,6 @@ class PublishConfigRepositoryPostgres(PublishConfigRepository):
             session.add(publish_po)
             publish_config.uid = publish_po.uid
         return publish_config
-
-
-class Dict2Json(TypeDecorator):
-    impl = JSONB
-
-    cache_ok = False
-
-    def process_bind_param(self, value, dialect):
-        return value
-
-    def process_result_value(self, value, dialect):
-        return value
 
 
 class PublishConfigPO(PostgresBasePO):

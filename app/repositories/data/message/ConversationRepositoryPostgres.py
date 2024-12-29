@@ -122,7 +122,11 @@ class ConversationRepositoryPostgres(ConversationRepository):
 
     @with_async_session
     async def delete_by_uid(self, conversation_uid: str, session: AsyncSession) -> bool:
-        stmt = delete(ConversationPO).where(ConversationPO.uid == conversation_uid)
+        stmt = (
+            update(ConversationPO)
+            .where(ConversationPO.uid == conversation_uid)
+            .values(is_deleted=True)
+        )
         await session.execute(stmt)
         return True
 
@@ -130,7 +134,11 @@ class ConversationRepositoryPostgres(ConversationRepository):
     async def delete_all_by_creator(
         self, creator_uid: str, session: AsyncSession
     ) -> bool:
-        stmt = delete(ConversationPO).where(ConversationPO.creator_uid == creator_uid)
+        stmt = (
+            update(ConversationPO)
+            .where(ConversationPO.creator_uid == creator_uid)
+            .values(is_deleted=True)
+        )
         await session.execute(stmt)
         return True
 

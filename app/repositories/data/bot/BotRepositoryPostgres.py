@@ -42,7 +42,7 @@ class BotRepositoryPostgres(BotRepository):
 
     @with_async_session
     async def create(self, bot: Bot, session: AsyncSession) -> Bot:
-        bot_po = BotPO(**dict_exclude_keys(vars(bot), ["creator"]))
+        bot_po = BotPO(**dict_exclude_keys(vars(bot), ["creator", "is_favorite"]))
         bot_po.uid = BasePO.uid_generate()
         session.add(bot_po)
         bot.uid = bot_po.uid
@@ -131,7 +131,11 @@ class BotRepositoryPostgres(BotRepository):
 
     @with_async_session
     async def delete_by_uid(self, bot_uid: str, session: AsyncSession) -> bool:
-        stmt = delete(BotPO).where(BotPO.uid == bot_uid)
+        stmt = (
+            update(BotPO)
+            .where(BotPO.uid == bot_uid)
+            .values(is_deleted=True)
+        )
         await session.execute(stmt)
         return True
 

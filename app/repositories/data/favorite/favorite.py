@@ -14,63 +14,33 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from datetime import datetime
 import enum
-
 from pydantic import BaseModel
 
-from repositories.data.account.account_models import AccountInfo
 from utils.pydantic import default_model_config
 
-
-class BotMode(str, enum.Enum):
+class FavoriteTargetType(str, enum.Enum):
     """
-    BOT模式
+    收藏目标类型
     """
 
-    SINGLE_AGENT = "SINGLE_AGENT"
-    """单智能体"""
-    MULTI_AGENTS = "MULTI_AGENTS"
-    """多智能体"""
+    BOT = "BOT"
 
 
-class Bot(BaseModel):
+class Favorite(BaseModel):
     """
-    BOT
+    收藏
     """
 
     uid: str | None = None
-    """uid"""
-
-    workspace_uid: str
-    """空间UID"""
-
-    name: str
-    """名称"""
-
-    avatar: str | None = None
-    """头像"""
-
-    description: str | None = None
-    """描述"""
-
-    creator_uid: str
-    """创建人UID"""
-
-    creator: AccountInfo | None = None
-    """创建人"""
-
-    mode: BotMode | None = None
-    """模式"""
-
-    config: dict | None = None
-    """BOT配置"""
-
-    publish_uid: str | None = None
-    """发布UID"""
-
-    is_favorite: bool | None = None
-    """是否收藏"""
+    """UID"""
+    created_at: datetime | None = None
+    """创建时间"""
+    target_type: FavoriteTargetType
+    """目标类型"""
+    target_uid: str
+    """目标uid"""
 
     # 定义配置
     model_config = default_model_config()
-

@@ -42,6 +42,8 @@ class AccountRepositoryPostgres(AccountRepository):
     async def find_by_uids(
         self, uids: list[str], session: AsyncSession
     ) -> list[Account]:
+        if not uids:
+            return []
         stmt = select(AccountPO).where(AccountPO.uid.in_(uids))
         select_result = await session.execute(stmt)
         return [Account(**conv.as_dict()) for conv in select_result.scalars()]

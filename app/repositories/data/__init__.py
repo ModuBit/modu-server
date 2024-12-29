@@ -22,6 +22,7 @@ from .llm import LLMProviderConfigRepository, LLMModelConfigRepository
 from .message import ConversationRepository, MessageRepository, MessageSummaryRepository
 from .publish import PublishConfigRepository
 from .workspace import WorkspaceRepository
+from .favorite import FavoriteRepository
 
 database: Database = get_database()
 account_repository: AccountRepository = get_repository("account")
@@ -36,6 +37,7 @@ conversation_repository: ConversationRepository = get_repository("conversation")
 message_repository: MessageRepository = get_repository("message")
 message_summary_repository: MessageSummaryRepository = get_repository("message_summary")
 bot_repository: BotRepository = get_repository("bot")
+favorite_repository: FavoriteRepository = get_repository("favorite")
 publish_config_repository: PublishConfigRepository = get_repository("publish_config")
 
 __all__ = [
@@ -46,4 +48,5 @@ __all__ = [
     conversation_repository,
     message_repository,
     message_summary_repository,
+    favorite_repository,
 ]

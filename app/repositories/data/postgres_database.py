@@ -121,7 +121,7 @@ class PostgresBasePO(BasePO):
         onupdate=text("CURRENT_TIMESTAMP(0)"),
         comment="更新时间",
     )
-
+    # 是否已删除
     is_deleted: Mapped[bool] = mapped_column(
         Bool2SmallInt, nullable=False, server_default=text("0"), comment="是否已删除"
     )

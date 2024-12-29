@@ -17,6 +17,7 @@ limitations under the License.
 import base64
 
 from sqlalchemy import TypeDecorator, SmallInteger, String
+from sqlalchemy.dialects.postgresql import JSONB
 
 
 class Bool2SmallInt(TypeDecorator):
@@ -62,4 +63,20 @@ class Bytes2String(TypeDecorator):
         """
         if value is not None:
             value = base64.b64decode(value.encode("utf-8"))
+        return value
+
+
+class Dict2Json(TypeDecorator):
+    """
+    定义 dict 与 jsonb 之间的映射
+    """
+
+    impl = JSONB
+
+    cache_ok = False
+
+    def process_bind_param(self, value, dialect):
+        return value
+
+    def process_result_value(self, value, dialect):
         return value

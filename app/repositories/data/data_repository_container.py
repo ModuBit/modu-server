@@ -39,6 +39,7 @@ from .message import (
 from .postgres_database import PostgresDatabase
 from .publish import PublishConfigRepository, PublishConfigRepositoryPostgres
 from .workspace import WorkspaceRepository, WorkspaceRepositoryPostgres
+from .favorite import FavoriteRepository, FavoriteRepositoryPostgres
 
 RepositoryInstance = TypeVar("RepositoryInstance")
 
@@ -79,6 +80,9 @@ _message_repository_mapping = {
 
 _message_summary_repository: MessageSummaryRepository | None = None
 _message_summary_repository_mapping = {"postgres": MessageSummaryRepositoryPostgres}
+
+_favorite_repository: FavoriteRepository | None = None
+_favorite_repository_mapping = {"postgres": FavoriteRepositoryPostgres}
 
 _bot_repository: BotRepository | None = None
 _bot_repository_mapping = {"postgres": BotRepositoryPostgres}

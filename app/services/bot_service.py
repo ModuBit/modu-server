@@ -14,10 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from llm.model import model_provider_factory
+import asyncio
+from repositories.data.favorite.favorite import FavoriteTargetType
 from repositories.cache import cache_decorator_builder
 from repositories.cache.cache import CacheDecorator
-from repositories.data import bot_repository, database
+from repositories.data import bot_repository, favorite_repository, database
 from repositories.data.account.account_models import Account
 from repositories.data.bot.BotRepository import BotListQry
 from repositories.data.bot.bot_models import Bot, BotMode
@@ -34,6 +35,10 @@ bot_detail_cache: CacheDecorator[Bot] = cache_decorator_builder.build(
     default_expire_seconds=7 * 24 * 3600,
     allow_none_values=True,
 )
+
+################################################################################
+# 智能体
+################################################################################
 
 
 async def add(current_user: Account, workspace_uid: str, bot: Bot) -> Bot:
@@ -105,9 +110,6 @@ async def update_bot_config(
     return await bot_repository.update_bot_config(bot)
 
 
-@bot_detail_cache.async_cacheable(
-    key_generator=lambda workspace_uid, bot_uid, **kwargs: f"workspace:{workspace_uid}:bot:{bot_uid}"
-)
 async def detail(current_user: Account, workspace_uid: str, bot_uid: str) -> Bot:
     """
     查找单个机器人/智能体
@@ -120,18 +122,29 @@ async def detail(current_user: Account, workspace_uid: str, bot_uid: str) -> Bot
     if member_role is None:
         raise UnauthorizedError("您无该空间权限")
 
-    bot = await bot_repository.get_by_workspace_and_uid(workspace_uid, bot_uid)
+    bot = await get_detail(workspace_uid, bot_uid)
     if bot:
         bot.creator = await account_service.get_account_info(bot.creator_uid)
+        is_favorite = await favorite_repository.is_favorite(
+            current_user.uid, FavoriteTargetType.BOT, bot_uid
+        )
+        bot.is_favorite = is_favorite
 
     return bot
+
+
+@bot_detail_cache.async_cacheable(
+    key_generator=lambda workspace_uid, bot_uid, **kwargs: f"workspace:{workspace_uid}:bot:{bot_uid}"
+)
+async def get_detail(workspace_uid: str, bot_uid: str) -> Bot:
+    return await bot_repository.get_by_workspace_and_uid(workspace_uid, bot_uid)
 
 
 async def find(
     current_user: Account, workspace_uid: str, bot_list_query: BotListQry
 ) -> list[Bot]:
     """
-    查找某智能体前的智能体列表
+    智能体列表
     :param current_user: 当前用户
     :param workspace_uid: 空间ID
     :param bot_list_query: 查询条件
@@ -141,13 +154,55 @@ async def find(
         raise UnauthorizedError("您无该空间权限")
 
     bots = await bot_repository.find(workspace_uid, bot_list_query)
-    creators = await account_service.get_account_infos(
-        list(set([bot.creator_uid for bot in bots]))
+    creators, is_favorite = await asyncio.gather(
+        account_service.get_account_infos(list(set([bot.creator_uid for bot in bots]))),
+        favorite_repository.is_favorites(
+            current_user.uid, FavoriteTargetType.BOT, [bot.uid for bot in bots]
+        ),
     )
     for bot in bots:
         bot.creator = creators[bot.creator_uid]
-
+        bot.is_favorite = is_favorite[bot.uid] or False
     return bots
+
+
+################################################################################
+# 收藏
+################################################################################
+
+async def favorite(current_user: Account, workspace_uid: str, bot_uid: str, is_favorite: bool) -> None:
+    member_role = await workspace_service.member_role(current_user, workspace_uid)
+    if member_role is None:
+        raise UnauthorizedError("您无该空间权限")
+
+    bot = await get_detail(workspace_uid, bot_uid)
+    if not bot:
+        raise UnauthorizedError("机器人/智能体不存在")
+
+    if is_favorite:
+        return await favorite_repository.favorite(
+            current_user.uid, FavoriteTargetType.BOT, bot_uid
+        )
+    else:
+        return await favorite_repository.un_favorite(
+            current_user.uid, FavoriteTargetType.BOT, bot_uid
+        )
+
+async def find_favorite(
+    current_user: Account, workspace_uid: str, bot_list_query: BotListQry
+) -> list[Bot]:
+    """
+    智能体列表
+    :param current_user: 当前用户
+    :param workspace_uid: 空间ID
+    :param bot_list_query: 查询条件
+    """
+    pass
+
+
+################################################################################
+# 配置
+################################################################################
 
 
 async def save_config(

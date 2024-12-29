@@ -50,6 +50,8 @@ class BotDTO(BaseModel):
     """模式"""
     publish_uid: str | None = None
     """发布UID"""
+    is_favorite: bool = False
+    """是否收藏"""
 
     # 定义配置
     model_config = default_model_config()
@@ -69,6 +71,11 @@ def get_bot_list_qry(
         after_uid_limit=after_uid_limit,
         max_count=max_count,
     )
+
+
+################################################################################
+# 智能体
+################################################################################
 
 
 @logger.catch()
@@ -138,6 +145,35 @@ async def find(
     return await bot_service.find(current_user, workspace_uid, bot_list_qry)
 
 
+################################################################################
+# 收藏
+################################################################################
+
+
+@logger.catch()
+@router.post(path="/{bot_uid}/favorite", response_class=CamelCaseJSONResponse)
+async def favorite(
+    workspace_uid: str,
+    bot_uid: str,
+    is_favorite: bool,
+    current_user: Account = Depends(current_account),
+) -> bool:
+    """
+    收藏/取消收藏 机器人/智能体
+    :param workspace_uid: 空间UID
+    :param bot_uid: 机器人/智能体UID
+    :param is_favorite: 是否收藏
+    :param current_user: 当前用户
+    :return: bool
+    """
+    return await bot_service.favorite(current_user, workspace_uid, bot_uid, is_favorite)
+
+
+################################################################################
+# 配置
+################################################################################
+
+
 @logger.catch()
 @router.put(path="/{bot_uid}/config/save", response_class=CamelCaseJSONResponse)
 async def save_config(
@@ -202,9 +238,7 @@ async def list_config_draft(
 
 
 @logger.catch()
-@router.get(
-    path="/{bot_uid}/config/draft", response_class=CamelCaseJSONResponse
-)
+@router.get(path="/{bot_uid}/config/draft", response_class=CamelCaseJSONResponse)
 async def get_config_draft(
     workspace_uid: str,
     bot_uid: str,
