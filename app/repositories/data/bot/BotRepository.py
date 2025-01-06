@@ -15,11 +15,14 @@ limitations under the License.
 """
 
 from abc import abstractmethod
+from datetime import datetime
 
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from repositories.data.bot.bot_models import Bot, BotMode
+from repositories.data.account.account_models import AccountInfo
+from utils.pydantic import default_model_config
+from repositories.data.bot.bot_models import Bot, BotFavoriteDTO, BotMode
 from repositories.data.database import Repository, Database
 
 
@@ -34,6 +37,19 @@ class BotListQry(BaseModel):
     """模式"""
     is_published: bool | None = None
     """是否发布"""
+    after_uid_limit: str | None = None
+    """从该uid后查询"""
+    max_count: int = 20
+    """返回数量"""
+
+
+class BotFavoriteListQry(BaseModel):
+    """
+    智能体收藏列表查询条件
+    """
+
+    keyword: str | None = None
+    """关键词"""
     after_uid_limit: str | None = None
     """从该uid后查询"""
     max_count: int = 20
@@ -91,7 +107,19 @@ class BotRepository(Repository):
     ) -> Bot:
         """
         通过uid查询会话
-        :param workspace_uid: 空间 uid
+        :param workspace_uid: 空间uid
+        :param bot_uid: 机器人uid
+        :param session: Session
+        :return Conversation
+        """
+        raise NotImplementedError()
+
+    @abstractmethod
+    async def get_by_uid(
+        self, bot_uid: str, session: AsyncSession
+    ) -> Bot:
+        """
+        通过uid查询会话
         :param bot_uid: 机器人uid
         :param session: Session
         :return Conversation
@@ -114,6 +142,18 @@ class BotRepository(Repository):
         """
         查找某智能体前的智能体列表
         :param workspace_uid: 空间ID
+        :param qry: 查询条件
+        :param session: Session
+        """
+        raise NotImplementedError()
+
+    @abstractmethod
+    async def find_favorite(
+        self, favoriter_uid: str, qry: BotFavoriteListQry, session: AsyncSession
+    ) -> list[BotFavoriteDTO]:
+        """
+        查找收藏智能体列表
+        :param favoriter_uid: 收藏者uid
         :param qry: 查询条件
         :param session: Session
         """

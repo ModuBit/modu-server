@@ -18,8 +18,8 @@ from sqlalchemy import (
     PrimaryKeyConstraint,
     String,
     Enum,
+    and_,
     text,
-    delete,
     select,
     or_,
     update,
@@ -27,8 +27,17 @@ from sqlalchemy import (
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Mapped, mapped_column
 
-from repositories.data.bot.BotRepository import BotRepository, BotListQry
-from repositories.data.bot.bot_models import BotMode, Bot
+from repositories.data.workspace.WorkspaceRepositoryPostgres import (
+    WorkspaceMembershipPO,
+)
+from repositories.data.favorite.favorite import FavoriteTargetType
+from repositories.data.favorite.FavoriteRepositoryPostgres import FavoritePO
+from repositories.data.bot.BotRepository import (
+    BotFavoriteListQry,
+    BotRepository,
+    BotListQry,
+)
+from repositories.data.bot.bot_models import BotFavoriteDTO, BotMode, Bot
 from repositories.data.database import with_async_session, BasePO
 from repositories.data.postgres_database import PostgresBasePO
 from repositories.data.publish.PublishConfigRepositoryPostgres import Dict2Json
@@ -115,6 +124,71 @@ class BotRepositoryPostgres(BotRepository):
         return [Bot(**conv.as_dict()) for conv in select_result.scalars()]
 
     @with_async_session
+    async def find_favorite(
+        self, favoriter_uid: str, qry: BotFavoriteListQry, session: AsyncSession
+    ) -> list[BotFavoriteDTO]:
+        # BotPO 与 BotFavoritePO 关联查询
+        stmt = (
+            select(
+                BotPO.uid,
+                BotPO.workspace_uid,
+                BotPO.name,
+                BotPO.avatar,
+                BotPO.description,
+                BotPO.creator_uid,
+                BotPO.mode,
+                BotPO.publish_uid,
+                FavoritePO.uid.label("favorite_uid"),
+                FavoritePO.created_at.label("favorite_at"),
+            )
+            .select_from(BotPO)
+            # 需要: BOT已收藏
+            .join(
+                FavoritePO,
+                and_(
+                    FavoritePO.target_uid == BotPO.uid,
+                    FavoritePO.target_type == FavoriteTargetType.BOT,
+                    FavoritePO.creator_uid == favoriter_uid,
+                ),
+            )
+            # 需要: BOT所在空间有权限
+            .join(
+                WorkspaceMembershipPO,
+                and_(
+                    WorkspaceMembershipPO.workspace_uid == BotPO.workspace_uid,
+                    WorkspaceMembershipPO.member_uid == favoriter_uid,
+                ),
+            )
+            .where(BotPO.is_deleted == False)
+        )
+
+        # 搜索关键字
+        if qry.keyword:
+            stmt = stmt.where(
+                or_(
+                    BotPO.name.ilike(f"%{qry.keyword}%"),
+                    BotPO.description.ilike(f"%{qry.keyword}%"),
+                )
+            )
+
+        # 筛选时间（信息流代替翻页）
+        if qry.after_uid_limit:
+            after_uid_subquery = (
+                select(FavoritePO.created_at)
+                .where(FavoritePO.uid == qry.after_uid_limit)
+                .where(FavoritePO.is_deleted == False)
+            ).scalar_subquery()
+            stmt = stmt.where(FavoritePO.created_at < after_uid_subquery)
+
+        stmt = stmt.order_by(FavoritePO.created_at.desc()).limit(qry.max_count)
+
+        select_result = await session.execute(stmt)
+        return [
+            BotFavoriteDTO(**row._mapping, is_favorite=True)
+            for row in select_result.all()
+        ]
+
+    @with_async_session
     async def get_by_workspace_and_uid(
         self, workspace_uid: str, bot_uid: str, session: AsyncSession
     ) -> Bot:
@@ -130,12 +204,22 @@ class BotRepositoryPostgres(BotRepository):
         return Bot(**bot_model.as_dict()) if bot_model else None
 
     @with_async_session
-    async def delete_by_uid(self, bot_uid: str, session: AsyncSession) -> bool:
+    async def get_by_uid(
+        self, bot_uid: str, session: AsyncSession
+    ) -> Bot:
         stmt = (
-            update(BotPO)
+            select(BotPO)
             .where(BotPO.uid == bot_uid)
-            .values(is_deleted=True)
+            .where(BotPO.is_deleted == False)
+            .limit(1)
         )
+        select_result = await session.execute(stmt)
+        bot_model = select_result.scalars().one_or_none()
+        return Bot(**bot_model.as_dict()) if bot_model else None
+
+    @with_async_session
+    async def delete_by_uid(self, bot_uid: str, session: AsyncSession) -> bool:
+        stmt = update(BotPO).where(BotPO.uid == bot_uid).values(is_deleted=True)
         await session.execute(stmt)
         return True
 

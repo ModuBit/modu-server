@@ -63,8 +63,6 @@ class WorkspaceMemberStatus(str, enum.Enum):
     """待确认"""
     ACTIVE = "ACTIVE"
     """已激活"""
-    CLOSED = "CLOSED"
-    """已注销"""
 
 
 class WorkspaceMemberRole(str, enum.Enum):

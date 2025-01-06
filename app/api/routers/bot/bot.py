@@ -18,43 +18,16 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, Query, Body
 from loguru import logger
-from pydantic import BaseModel
 
 from api.dependencies.principal import current_account
 from repositories.data.publish.publish_config import PublishConfig
 from repositories.data.account.account_models import Account, AccountInfo
-from repositories.data.bot.BotRepository import BotListQry
-from repositories.data.bot.bot_models import Bot, BotMode
+from repositories.data.bot.BotRepository import BotFavoriteListQry, BotListQry
+from repositories.data.bot.bot_models import Bot, BotDTO, BotFavoriteDTO, BotMode
 from services import bot_service
-from utils.pydantic import CamelCaseJSONResponse, default_model_config
+from utils.pydantic import CamelCaseJSONResponse
 
 router = APIRouter()
-
-
-class BotDTO(BaseModel):
-    uid: str | None = None
-    """uid"""
-    workspace_uid: str
-    """空间UID"""
-    name: str
-    """名称"""
-    avatar: str | None = None
-    """头像"""
-    description: str | None = None
-    """描述"""
-    creator_uid: str
-    """创建人UID"""
-    creator: AccountInfo | None = None
-    """创建人"""
-    mode: BotMode | None = None
-    """模式"""
-    publish_uid: str | None = None
-    """发布UID"""
-    is_favorite: bool = False
-    """是否收藏"""
-
-    # 定义配置
-    model_config = default_model_config()
 
 
 def get_bot_list_qry(
@@ -125,7 +98,7 @@ async def detail(
     :param current_user: 当前用户
     :return: Bot
     """
-    return await bot_service.detail(current_user, workspace_uid, bot_uid)
+    return await bot_service.detail_with_workspace(current_user, workspace_uid, bot_uid)
 
 
 @logger.catch()

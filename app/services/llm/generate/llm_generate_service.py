@@ -30,6 +30,8 @@ from pydantic import BaseModel
 from starlette.responses import ContentStream
 from ulid import ULID
 
+from repositories.data.bot.bot_models import BotMode
+from services import bot_service
 from llm.model import model_provider_factory
 from llm.model.entities.model import ModelType
 from llm.model.entities.models import TextGenerationModel
@@ -41,6 +43,7 @@ from repositories.data.message.message_models import (
     MessageBlock,
     MessageEventData,
     Message,
+    SenderInfo,
 )
 from services.llm import llm_model_service, llm_provider_service
 from services.llm.generate.llm_message_checkpoint import LLMMessageCheckPointSaver
@@ -52,12 +55,14 @@ from services.llm.generate.llm_message_event_models import (
     AIMessageChunkEvent,
 )
 from services.llm.generate.llm_message_memory import ConversationSummaryBufferMemory
-from utils.dictionary import dict_merge
+from utils.dictionary import dict_get, dict_merge
 from utils.errors.base_error import UnauthorizedError
 from utils.errors.llm_error import LLMExistsError
 from utils.iterator import single_element_async_iterator, merge_async_iterators
 from utils.pydantic import default_model_config
 from cachetools import TTLCache
+
+from langgraph.prebuilt import create_react_agent
 
 # 记录正在运行的generator，用于控制是否要中断运行
 generate_runner = TTLCache(maxsize=64, ttl=10 * 60)
@@ -225,7 +230,7 @@ async def generate(
     llm_event_stream = chat_bot.astream_events(
         {
             "messages": summary_buffer_messages
-            + [HumanMessage(content=first_text_message)]
+            + [HumanMessage(content=first_text_message)],
         },
         {"configurable": {"thread_id": "1"}},
         version="v2",
@@ -253,7 +258,11 @@ async def generate(
     )
 
     return message_events_checkpoint(
-        current_user, workspace_uid, message_events, conversation, ""
+        current_user,
+        workspace_uid,
+        message_events,
+        conversation,
+        chat_generate_cmd.mentions[0] if chat_generate_cmd.mentions else "",
     )
 
 
@@ -283,38 +292,77 @@ async def _make_graph_bot(
     TODO 仅用于演示，需要重新设计
     """
 
-    system_models = await llm_model_service.get_system_config(
-        current_user, workspace_uid
-    )
-    if not system_models or ModelType.TEXT_GENERATION not in system_models:
-        raise LLMExistsError(
-            message="您还没有配置系统推理模型，请在 空间-设置-模型-系统模型设置 中添加 系统推理模型"
+    model_config = {}
+    system_prompt = ""
+    chat_model: BaseChatModel | None = None
+
+    if chat_generate_cmd.mentions:
+        bot = await bot_service.detail(current_user, chat_generate_cmd.mentions[0])
+        if not bot:
+            raise UnauthorizedError("您无该智能体权限")
+        if bot.mode != BotMode.SINGLE_AGENT:
+            raise UnauthorizedError("暂仅支持单智能体")
+        bot_config = bot.config or {}
+
+        model_config = dict_get(bot_config, "model_config", {})
+        # provider 配置
+        provider_config = await llm_provider_service.detail(
+            current_user, workspace_uid, dict_get(model_config, "provider_name")
+        )
+        provider_config.decrypt_credential()
+
+        # provider → model → chat_model
+        provider = model_provider_factory.get_provider(
+            dict_get(model_config, "provider_name")
+        )
+        model: TextGenerationModel = provider.get_model(ModelType.TEXT_GENERATION)
+        chat_model: BaseChatModel = (
+            model.chat_model(
+                provider_credential=provider_config.provider_credential,
+                model_parameters=dict_get(model_config, "model_parameters"),
+                model_name=dict_get(model_config, "model_name"),
+                streaming=True,
+                request_timeout=5,
+                max_retries=0,
+            )
+            if model
+            else None
         )
 
-    # model 配置
-    model_config = system_models[ModelType.TEXT_GENERATION]
-
-    # provider 配置
-    provider_config = await llm_provider_service.detail(
-        current_user, workspace_uid, model_config.provider_name
-    )
-    provider_config.decrypt_credential()
-
-    # provider → model → chat_model
-    provider = model_provider_factory.get_provider(model_config.provider_name)
-    model: TextGenerationModel = provider.get_model(ModelType.TEXT_GENERATION)
-    chat_model: BaseChatModel = (
-        model.chat_model(
-            provider_credential=provider_config.provider_credential,
-            model_parameters=model_config.model_parameters,
-            model_name=model_config.model_name,
-            streaming=True,
-            request_timeout=5,
-            max_retries=0,
+        system_prompt = dict_get(bot_config, "prompt_info.prompt", "")
+    else:
+        system_models = await llm_model_service.get_system_config(
+            current_user, workspace_uid
         )
-        if model
-        else None
-    )
+        if not system_models or ModelType.TEXT_GENERATION not in system_models:
+            raise LLMExistsError(
+                message="您还没有配置系统推理模型，请在 空间-设置-模型-系统模型设置 中添加 系统推理模型"
+            )
+
+        # model 配置
+        model_config = system_models[ModelType.TEXT_GENERATION]
+
+        # provider 配置
+        provider_config = await llm_provider_service.detail(
+            current_user, workspace_uid, model_config.provider_name
+        )
+        provider_config.decrypt_credential()
+
+        # provider → model → chat_model
+        provider = model_provider_factory.get_provider(model_config.provider_name)
+        model: TextGenerationModel = provider.get_model(ModelType.TEXT_GENERATION)
+        chat_model: BaseChatModel = (
+            model.chat_model(
+                provider_credential=provider_config.provider_credential,
+                model_parameters=model_config.model_parameters,
+                model_name=model_config.model_name,
+                streaming=True,
+                request_timeout=5,
+                max_retries=0,
+            )
+            if model
+            else None
+        )
 
     if not chat_model:
         raise LLMExistsError(
@@ -322,7 +370,7 @@ async def _make_graph_bot(
         )
 
     async def chat(state: MessagesState, config: RunnableConfig):
-        system_message = SystemMessage(content="")
+        system_message = SystemMessage(content=system_prompt or "")
         messages = state["messages"] or []
         if messages and isinstance(messages[0], SystemMessage):
             system_message = SystemMessage(
@@ -430,6 +478,10 @@ async def message_events_checkpoint(
 
     message_uid = BasePO.uid_generate()
 
+    bot = (
+        await bot_service.detail(current_user, assistant_uid) if assistant_uid else None
+    )
+
     generate_runner[conversation.conversation_uid] = True
     async for event in event_iter:
         if not generate_runner.get(conversation.conversation_uid, True):
@@ -463,6 +515,12 @@ async def message_events_checkpoint(
                 conversation_uid=conversation.conversation_uid,
                 sender_uid=assistant_uid,
                 sender_role="assistant",
+                sender_info=SenderInfo(
+                    uid=assistant_uid,
+                    name=bot.name,
+                    avatar=bot.avatar,
+                    role="assistant",
+                ) if bot else None,
                 message_uid=message_uid,
                 message_time=int(datetime.now().timestamp()) * 1000,
                 message=MessageBlock(

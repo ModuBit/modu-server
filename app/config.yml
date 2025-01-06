@@ -80,7 +80,7 @@ loguru:
   # 日志文件
   sink: "logs/app.log"
   # 输出格式
-  format: "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{line}</cyan> | <cyan>{extra[ot_trace_id]}</cyan>:<cyan>{extra[ot_span_id]}</cyan>:<cyan>{extra[ot_service_name]}</cyan> | <level>{message}</level> <red>{exception}</red>"
+  format: "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | {process} | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{line}</cyan> | <cyan>{extra[ot_trace_id]}</cyan>:<cyan>{extra[ot_span_id]}</cyan>:<cyan>{extra[ot_service_name]}</cyan> | <level>{message}</level> <red>{exception}</red>"
   # 输出级别
   level: INFO
   # 日志分割

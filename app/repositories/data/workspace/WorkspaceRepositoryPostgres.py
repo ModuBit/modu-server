@@ -102,6 +102,16 @@ class WorkspaceRepositoryPostgres(WorkspaceRepository):
         return Workspace(**workspace_model.as_dict()) if workspace_model else None
 
     @with_async_session
+    async def find_by_uids(
+        self, uids: list[str], session: AsyncSession
+    ) -> list[Workspace]:
+        if not uids:
+            return []
+        stmt = select(WorkspacePO).where(WorkspacePO.uid.in_(uids))
+        select_result = await session.execute(stmt)
+        return [Workspace(**conv.as_dict()) for conv in select_result.scalars()]
+
+    @with_async_session
     async def get_member_by_uid(
         self, workspace_uid: str, member_uid: str, session: AsyncSession
     ) -> WorkspaceMembership:

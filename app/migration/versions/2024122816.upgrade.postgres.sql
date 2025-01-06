@@ -123,16 +123,16 @@ EXECUTE procedure update_updated_at_column();
 -- 会话
 CREATE TABLE modu_conversations
 (
-    id                  UUID                     DEFAULT UUID_GENERATE_V4()         NOT NULL CONSTRAINT pk_modu_conversations_id PRIMARY KEY,
-    created_at          TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP(0)       NOT NULL,
-    updated_at          TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP(0)       NOT NULL,
-    uid                 VARCHAR(32)                                                 NOT NULL,
-    creator_uid         VARCHAR(32)                                                 NOT NULL,
-    workspace_uid       VARCHAR(32)                                                 NOT NULL,
-    name                VARCHAR(64)                                                 NOT NULL,
-    reset_message_uid   VARCHAR(64)                                                 ,
-    scope               VARCHAR(32)              DEFAULT 'ALL'::CHARACTER VARYING   NOT NULL,
-    is_deleted          SMALLINT                 DEFAULT '0'::SMALLINT              NOT NULL
+    id                  UUID                     DEFAULT UUID_GENERATE_V4()             NOT NULL CONSTRAINT pk_modu_conversations_id PRIMARY KEY,
+    created_at          TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP(0)           NOT NULL,
+    updated_at          TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP(0)           NOT NULL,
+    uid                 VARCHAR(32)                                                     NOT NULL,
+    creator_uid         VARCHAR(32)                                                     NOT NULL,
+    workspace_uid       VARCHAR(32)                                                     NOT NULL,
+    name                VARCHAR(64)                                                     NOT NULL,
+    reset_message_uid   VARCHAR(64)                                                     ,
+    scope               VARCHAR(32)              DEFAULT 'GLOBAL'::CHARACTER VARYING    NOT NULL,
+    is_deleted          SMALLINT                 DEFAULT '0'::SMALLINT                  NOT NULL
 );
 CREATE UNIQUE INDEX uk_modu_conversations_uid ON modu_conversations (uid);
 CREATE INDEX idx_modu_conversations_creator ON modu_conversations (scope, creator_uid, uid);

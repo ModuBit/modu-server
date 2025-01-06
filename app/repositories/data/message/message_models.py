@@ -49,6 +49,25 @@ class MessageBlock(BaseModel):
     # 定义配置
     model_config = default_model_config()
 
+class SenderInfo(BaseModel):
+    """
+    发送者信息
+    """
+
+    uid: str
+    """发送者UID"""
+
+    name: str
+    """发送者名称"""
+
+    avatar: str | None = None
+    """发送者头像"""
+
+    role: str
+    """发送者角色"""
+
+    model_config = default_model_config()
+
 
 class MessageEventData(BaseModel):
     """
@@ -66,6 +85,9 @@ class MessageEventData(BaseModel):
 
     sender_uid: str
     """发送者UID"""
+
+    sender_info: SenderInfo | None = None
+    """发送者信息"""
 
     sender_role: Literal["user", "assistant", "system"]
     """发送者角色"""
@@ -99,6 +121,9 @@ class Message(BaseModel):
 
     sender_role: Literal["user", "assistant", "system"]
     """发送者角色"""
+
+    sender_info: SenderInfo | None = None
+    """发送者信息"""
 
     messages: list[MessageBlock]
     """消息内容"""

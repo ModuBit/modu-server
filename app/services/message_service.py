@@ -57,7 +57,7 @@ async def conversations(
     :param current_user: 当前用户
     """
     return await conversation_repository.find_before_uid(
-        ConversationRepository.SCOPE_ALL,
+        ConversationRepository.SCOPE_GLOBAL,
         current_user.uid,
         before_conversation_uid,
         False,
@@ -71,7 +71,7 @@ async def latest_conversations(current_user: Account) -> Conversation:
     :param current_user: 当前用户
     """
     _conversations = await conversation_repository.find_before_uid(
-        ConversationRepository.SCOPE_ALL,
+        ConversationRepository.SCOPE_GLOBAL,
         current_user.uid,
         None,
         False,

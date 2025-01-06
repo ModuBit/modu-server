@@ -20,8 +20,8 @@ from repositories.cache import cache_decorator_builder
 from repositories.cache.cache import CacheDecorator
 from repositories.data import bot_repository, favorite_repository, database
 from repositories.data.account.account_models import Account
-from repositories.data.bot.BotRepository import BotListQry
-from repositories.data.bot.bot_models import Bot, BotMode
+from repositories.data.bot.BotRepository import BotFavoriteListQry, BotListQry
+from repositories.data.bot.bot_models import Bot, BotFavoriteDTO, BotMode
 from repositories.data.publish.publish_config import (
     PublishConfig,
     PublishConfigTargetType,
@@ -65,6 +65,9 @@ async def add(current_user: Account, workspace_uid: str, bot: Bot) -> Bot:
 @bot_detail_cache.async_cache_evict(
     key_generator=lambda workspace_uid, bot_uid, **kwargs: f"workspace:{workspace_uid}:bot:{bot_uid}"
 )
+@bot_detail_cache.async_cache_evict(
+    key_generator=lambda bot_uid, **kwargs: f"bot:{bot_uid}"
+)
 async def update_base_info(
     current_user: Account, workspace_uid: str, bot_uid: str, bot: Bot
 ) -> Bot:
@@ -76,7 +79,7 @@ async def update_base_info(
     :param bot: 机器人/智能体
     :return: Bot
     """
-    bot_detail = await detail(current_user, workspace_uid, bot_uid)
+    bot_detail = await detail_with_workspace(current_user, workspace_uid, bot_uid)
     if not bot_detail:
         raise UnauthorizedError("机器人/智能体不存在")
     if bot_detail.creator_uid != current_user.uid:
@@ -89,6 +92,9 @@ async def update_base_info(
 @bot_detail_cache.async_cache_evict(
     key_generator=lambda workspace_uid, bot_uid, **kwargs: f"workspace:{workspace_uid}:bot:{bot_uid}"
 )
+@bot_detail_cache.async_cache_evict(
+    key_generator=lambda bot_uid, **kwargs: f"bot:{bot_uid}"
+)
 async def update_bot_config(
     current_user: Account, workspace_uid: str, bot_uid: str, bot: Bot
 ) -> Bot:
@@ -100,7 +106,7 @@ async def update_bot_config(
     :param bot: 机器人/智能体
     :return: Bot
     """
-    bot_detail = await detail(current_user, workspace_uid, bot_uid)
+    bot_detail = await detail_with_workspace(current_user, workspace_uid, bot_uid)
     if not bot_detail:
         raise UnauthorizedError("机器人/智能体不存在")
     if bot_detail.creator_uid != current_user.uid:
@@ -110,7 +116,7 @@ async def update_bot_config(
     return await bot_repository.update_bot_config(bot)
 
 
-async def detail(current_user: Account, workspace_uid: str, bot_uid: str) -> Bot:
+async def detail_with_workspace(current_user: Account, workspace_uid: str, bot_uid: str) -> Bot:
     """
     查找单个机器人/智能体
     :param current_user: 当前用户
@@ -122,7 +128,7 @@ async def detail(current_user: Account, workspace_uid: str, bot_uid: str) -> Bot
     if member_role is None:
         raise UnauthorizedError("您无该空间权限")
 
-    bot = await get_detail(workspace_uid, bot_uid)
+    bot = await get_detail_with_workspace(workspace_uid, bot_uid)
     if bot:
         bot.creator = await account_service.get_account_info(bot.creator_uid)
         is_favorite = await favorite_repository.is_favorite(
@@ -132,12 +138,38 @@ async def detail(current_user: Account, workspace_uid: str, bot_uid: str) -> Bot
 
     return bot
 
+async def detail(current_user: Account, bot_uid: str) -> Bot:
+    """
+    查找单个机器人/智能体
+    :param current_user: 当前用户
+    :param bot_uid: 机器人/智能体UID
+    :return: Bot
+    """
+    bot = await get_detail(bot_uid)
+    if bot:
+        member_role = await workspace_service.member_role(current_user, bot.workspace_uid)
+        if member_role is None:
+            raise UnauthorizedError("您无智能体所属空间权限")
+        
+        bot.creator = await account_service.get_account_info(bot.creator_uid)
+        is_favorite = await favorite_repository.is_favorite(
+            current_user.uid, FavoriteTargetType.BOT, bot_uid
+        )
+        bot.is_favorite = is_favorite
+
+    return bot
 
 @bot_detail_cache.async_cacheable(
     key_generator=lambda workspace_uid, bot_uid, **kwargs: f"workspace:{workspace_uid}:bot:{bot_uid}"
 )
-async def get_detail(workspace_uid: str, bot_uid: str) -> Bot:
+async def get_detail_with_workspace(workspace_uid: str, bot_uid: str) -> Bot:
     return await bot_repository.get_by_workspace_and_uid(workspace_uid, bot_uid)
+
+@bot_detail_cache.async_cacheable(
+    key_generator=lambda bot_uid, **kwargs: f"bot:{bot_uid}"
+)
+async def get_detail(bot_uid: str) -> Bot:
+    return await bot_repository.get_by_uid(bot_uid)
 
 
 async def find(
@@ -170,12 +202,15 @@ async def find(
 # 收藏
 ################################################################################
 
-async def favorite(current_user: Account, workspace_uid: str, bot_uid: str, is_favorite: bool) -> None:
+
+async def favorite(
+    current_user: Account, workspace_uid: str, bot_uid: str, is_favorite: bool
+) -> None:
     member_role = await workspace_service.member_role(current_user, workspace_uid)
     if member_role is None:
         raise UnauthorizedError("您无该空间权限")
 
-    bot = await get_detail(workspace_uid, bot_uid)
+    bot = await get_detail_with_workspace(workspace_uid, bot_uid)
     if not bot:
         raise UnauthorizedError("机器人/智能体不存在")
 
@@ -188,16 +223,30 @@ async def favorite(current_user: Account, workspace_uid: str, bot_uid: str, is_f
             current_user.uid, FavoriteTargetType.BOT, bot_uid
         )
 
+
 async def find_favorite(
-    current_user: Account, workspace_uid: str, bot_list_query: BotListQry
-) -> list[Bot]:
+    current_user: Account,
+    bot_favorite_list_query: BotFavoriteListQry,
+) -> list[BotFavoriteDTO]:
     """
-    智能体列表
+    智能体收藏列表
     :param current_user: 当前用户
-    :param workspace_uid: 空间ID
-    :param bot_list_query: 查询条件
+    :param bot_favorite_list_query: 查询条件
     """
-    pass
+    bots = await bot_repository.find_favorite(current_user.uid, bot_favorite_list_query)
+
+    creators, workspaces = await asyncio.gather(
+        account_service.get_account_infos(list(set([bot.creator_uid for bot in bots]))),
+        workspace_service.get_workspace_infos(
+            list(set([bot.workspace_uid for bot in bots]))
+        ),
+    )
+
+    for bot in bots:
+        bot.creator = creators[bot.creator_uid]
+        bot.workspace = workspaces[bot.workspace_uid]
+
+    return bots
 
 
 ################################################################################
@@ -221,7 +270,7 @@ async def save_config(
     :param bot_config: 机器人/智能体的配置
     :return: str
     """
-    bot = await detail(current_user, workspace_uid, bot_uid)
+    bot = await detail_with_workspace(current_user, workspace_uid, bot_uid)
     if not bot:
         raise UnauthorizedError("机器人/智能体不存在")
     if bot.creator_uid != current_user.uid:
@@ -241,6 +290,9 @@ async def save_config(
 @bot_detail_cache.async_cache_evict(
     key_generator=lambda workspace_uid, bot_uid, **kwargs: f"workspace:{workspace_uid}:bot:{bot_uid}"
 )
+@bot_detail_cache.async_cache_evict(
+    key_generator=lambda bot_uid, **kwargs: f"bot:{bot_uid}"
+)
 async def publish_config(
     current_user: Account,
     workspace_uid: str,
@@ -257,7 +309,7 @@ async def publish_config(
     :param bot_config: 机器人/智能体的配置
     :return: str
     """
-    bot = await detail(current_user, workspace_uid, bot_uid)
+    bot = await detail_with_workspace(current_user, workspace_uid, bot_uid)
     if not bot:
         raise UnauthorizedError("机器人/智能体不存在")
     if bot.creator_uid != current_user.uid:
@@ -299,7 +351,7 @@ async def get_config_draft(
     :return: PublishConfig
     """
 
-    bot = await detail(current_user, workspace_uid, bot_uid)
+    bot = await detail_with_workspace(current_user, workspace_uid, bot_uid)
     if not bot:
         raise UnauthorizedError("机器人/智能体不存在")
     if bot.creator_uid != current_user.uid:
@@ -321,7 +373,7 @@ async def list_config_draft(
     :return: list[PublishConfig]
     """
 
-    bot = await detail(current_user, workspace_uid, bot_uid)
+    bot = await detail_with_workspace(current_user, workspace_uid, bot_uid)
     if not bot:
         raise UnauthorizedError("机器人/智能体不存在")
     if bot.creator_uid != current_user.uid:

@@ -78,6 +78,18 @@ class WorkspaceRepository(Repository):
         raise NotImplementedError()
 
     @abstractmethod
+    async def find_by_uids(
+        self, uids: list[str], session: AsyncSession
+    ) -> list[Workspace]:
+        """
+        通过uid查找空间
+        :param uids: UID
+        :param session: Session
+        :return: 空间
+        """
+        raise NotImplementedError()
+
+    @abstractmethod
     async def get_member_by_uid(
         self, workspace_uid: str, member_uid: str, session: AsyncSession
     ) -> WorkspaceMembership:

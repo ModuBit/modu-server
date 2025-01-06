@@ -71,7 +71,7 @@ class ConversationRepositoryPostgres(ConversationRepository):
     ) -> list[Conversation]:
         stmt = (
             select(ConversationPO)
-            .where(ConversationPO.scope == (scope or ConversationRepository.SCOPE_ALL))
+            .where(ConversationPO.scope == (scope or ConversationRepository.SCOPE_GLOBAL))
             .where(ConversationPO.creator_uid == creator_uid)
             .where(ConversationPO.is_deleted == False)
         )
@@ -176,6 +176,6 @@ class ConversationPO(PostgresBasePO):
     scope: Mapped[str] = mapped_column(
         String(32),
         nullable=True,
-        server_default=text("'ALL'::character varying"),
+        server_default=text("'GLOBAL'::character varying"),
         comment="范围",
     )

@@ -72,6 +72,21 @@ async def list_related(
 
 @logger.catch()
 @router.get(
+    path="/mine",
+    response_model=WorkspaceDTO,
+    response_class=CamelCaseJSONResponse,
+)
+async def mine(current_user: Account = Depends(current_account)) -> Workspace:
+    """
+    我的空间详情
+    :param current_user: 当前用户
+    :return: Workspace
+    """
+    return await workspace_service.mine(current_user)
+
+
+@logger.catch()
+@router.get(
     path="/{workspace_uid}",
     response_model=WorkspaceDTO,
     response_class=CamelCaseJSONResponse,

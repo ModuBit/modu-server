@@ -20,9 +20,10 @@ from loguru import logger
 from sqlalchemy.exc import DBAPIError
 from fastapi.responses import JSONResponse
 
+from .user import users, user_favorite
 from utils.errors.base_error import BaseServiceError
 from .bot import bot
-from .auth import login, users
+from .auth import login
 from .llm import llm_schema, llm_provider, llm_model
 from .message import message
 from .system import setup, system
@@ -36,20 +37,41 @@ def register(app: FastAPI):
     :param app:  FastAPI
     """
 
-    app.include_router(setup.router, prefix="/api/system", tags=["init | 初始化"])
-
-    app.include_router(system.router, prefix="/api/system", tags=["system | 系统信息"])
     app.include_router(
-        llm_schema.router, prefix="/api/system/llm", tags=["system | 系统信息"]
+        setup.router,
+        prefix="/api/system",
+        tags=["init | 初始化"],
     )
 
-    app.include_router(login.router, prefix="/api", tags=["auth | 认证"])
+    app.include_router(
+        system.router,
+        prefix="/api/system",
+        tags=["system | 系统信息"],
+    )
+    app.include_router(
+        llm_schema.router,
+        prefix="/api/system/llm",
+        tags=["system | 系统信息"],
+    )
+
+    app.include_router(
+        login.router,
+        prefix="/api",
+        tags=["auth | 认证"],
+    )
 
     app.include_router(
         users.router,
         prefix="/api/user",
         dependencies=[Depends(token_verify)],
         tags=["user | 用户"],
+    )
+
+    app.include_router(
+        user_favorite.router,
+        prefix="/api/user/favorite",
+        dependencies=[Depends(token_verify)],
+        tags=["user favorite | 用户收藏"],
     )
 
     app.include_router(

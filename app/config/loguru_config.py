@@ -28,11 +28,12 @@ def loguru_config(config: dict):
     """
 
     # 按进程号存储，避免使用 gunicorn 时多个进程输出到同一个文件
-    base, ext = os.path.splitext(dict_get(config, "sink", "logs/app.log"))
-    sink = f"{base}.{os.getpid()}{ext}"
+    # base, ext = os.path.splitext(dict_get(config, "sink", "logs/app.log"))
+    # sink = f"{base}.{os.getpid()}{ext}"
 
     # 先移除自动生成的配置
     logger.remove()
     # 再添加新配置
-    logger.add(**{**config, "sink": sink})
+    # logger.add(**{**config, "sink": sink})
+    logger.add(**config)
     logger.add(sys.stdout, format=config["format"])

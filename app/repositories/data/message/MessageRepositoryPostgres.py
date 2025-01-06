@@ -46,7 +46,7 @@ class MessageRepositoryPostgres(MessageRepository):
 
     @staticmethod
     def _convert(message: Message):
-        message_po = MessagePO(**dict_exclude_keys(vars(message), ["message_uid"]))
+        message_po = MessagePO(**dict_exclude_keys(vars(message), ["message_uid", "sender_info"]))
         if message.message_uid:
             message_po.uid = message.message_uid
         else:

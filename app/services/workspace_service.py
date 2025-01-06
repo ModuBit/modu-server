@@ -14,8 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from typing import Mapping
 from repositories.cache import cache_decorator_builder
-from repositories.cache.cache import CacheDecorator
+from repositories.cache.cache import CacheDecorator, none_content
 from repositories.data import workspace_repository
 from repositories.data.account.account_models import Account
 from repositories.data.workspace.workspace_models import Workspace, WorkspaceMemberRole
@@ -126,3 +127,49 @@ async def member_role(
     """
     workspace = await detail(current_user, workspace_uid)
     return workspace.member_role if workspace else None
+
+
+async def get_workspace_infos(uids: list[str]) -> Mapping[str, Workspace]:
+    """
+    获取空间信息列表
+    :param uids: 空间UID列表
+    :return: Workspace
+    """
+    # TODO 是否将列表缓存做成通用工具
+
+    workspace_infos = {}
+    uncached_uids = []
+
+    workspace_caches = await workspace_detail_cache.cache.mget(
+        [f"workspace:{uid}:workspace_detail" for uid in uids]
+    )
+
+    # 先查询已经缓存的
+    for i in range(len(workspace_caches)):
+        cached_content = workspace_caches[i]
+        if not cached_content:
+            uncached_uids.append(uids[i])
+            continue
+
+        if isinstance(cached_content, bytes):
+            cached_content = cached_content.decode("utf-8")
+        if none_content == cached_content:
+            uncached_uids.append(uids[i])
+            continue
+
+        workspace_info = workspace_detail_cache.deserialize(cached_content)
+        workspace_infos[uids[i]] = workspace_info
+
+    # 再查询未缓存的
+    if uncached_uids:
+        workspaces = await workspace_repository.find_by_uids(uncached_uids)
+        for workspace in workspaces:
+            workspace_info = Workspace.model_validate(workspace)
+            workspace_infos[workspace_info.uid] = workspace_info
+            await workspace_detail_cache.cache.set(
+                f"workspace:{workspace_info.uid}:workspace_detail",
+                workspace_detail_cache.serialize(workspace_info),
+                workspace_detail_cache.default_expire_time,
+            )
+
+    return workspace_infos
