@@ -19,7 +19,7 @@ import time
 
 from fastapi import FastAPI, Request
 from loguru import logger
-from fastapi.responses import JSONResponse, Response
+from fastapi.responses import JSONResponse, RedirectResponse, Response, StreamingResponse
 
 
 def _log(request: Request, response: Response, process_time: float):
@@ -46,6 +46,15 @@ def register(app: FastAPI):
         response = await call_next(request)
         process_time = (time.time() - start_time) * 1000
         response.headers["X-Process-Time"] = f"{process_time:.2f}"
+
+        if isinstance(response, RedirectResponse):
+            # 重定向
+            _log(request=request, response=response, process_time=process_time)
+            return response
+
+        if isinstance(response, StreamingResponse):
+            # 流式输出
+            return response
 
         if "text/event-stream" in (response.headers.get("content-type") or []):
             # 流式输出

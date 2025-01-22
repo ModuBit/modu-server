@@ -14,12 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from .storage import Storage
-from .storage_repository_container import get_storage
-
-storage: Storage = get_storage()
+from repositories.data.file.FileRepository import FileRepository
+from repositories.data.file.FileRepositoryPostgres import FileRepositoryPostgres
 
 __all__ = [
-    storage,
-    get_storage,
+    "file_models",
+    "FileRepository",
+    "FileRepositoryPostgres",
 ]

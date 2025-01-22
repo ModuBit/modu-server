@@ -18,7 +18,7 @@ from .FavoriteRepository import FavoriteRepository
 from .FavoriteRepositoryPostgres import FavoriteRepositoryPostgres
 
 __all__ = [
-    "favorite",
+    "favorite_models",
     "FavoriteRepository",
     "FavoriteRepositoryPostgres",
 ]

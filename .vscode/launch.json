@@ -9,8 +9,30 @@
             "type": "debugpy",
             "request": "launch",
             "cwd": "${workspaceFolder}/app",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/app"
+            },
+            "envFile": "${workspaceFolder}/.env",
             "program": "start.py",
-            "console": "integratedTerminal"
+            "console": "integratedTerminal",
+            "justMyCode": false
+        },
+        {
+            "name": "Python: Run Tests",
+            "type": "debugpy",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/app",
+            "module": "pytest",
+            "args": [
+                "${file}",
+                "-v"
+            ],
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/app:${workspaceFolder}/test"
+            },
+            "envFile": "${workspaceFolder}/.env",
+            "console": "integratedTerminal",
+            "justMyCode": false
         }
     ]
 }

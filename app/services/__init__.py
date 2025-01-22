@@ -25,4 +25,5 @@ __all__ = [
     "llm_generate_service",
     "bot_service",
     "publish_service",
+    "file_service",
 ]

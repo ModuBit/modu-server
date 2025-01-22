@@ -14,8 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from repositories.data.account.AccountRepositoryPostgres import AccountPO
-
-
-def test_create_statement_account_po():
-    print(AccountPO().create_statement())
+__all__ = [
+    "file",
+]

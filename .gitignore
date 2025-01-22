@@ -170,3 +170,5 @@ volumes/
 # Mac OS
 .DS_Store
 /.VSCodeCounter
+
+.data/

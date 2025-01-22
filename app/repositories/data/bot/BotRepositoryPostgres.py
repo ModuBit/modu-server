@@ -30,7 +30,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from repositories.data.workspace.WorkspaceRepositoryPostgres import (
     WorkspaceMembershipPO,
 )
-from repositories.data.favorite.favorite import FavoriteTargetType
+from repositories.data.favorite.favorite_models import FavoriteTargetType
 from repositories.data.favorite.FavoriteRepositoryPostgres import FavoritePO
 from repositories.data.bot.BotRepository import (
     BotFavoriteListQry,

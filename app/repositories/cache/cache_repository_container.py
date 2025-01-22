@@ -22,15 +22,13 @@ from utils.lifespan import register_pre_destroy_executor
 from .cache import Cache
 from .redis_cache import RedisCache
 
-CacheInstance = TypeVar("CacheInstance")
-
-_cache: Cache | None = None
+_cache: dict[str, Cache] = {}
 _cache_mapping = {
     "redis": RedisCache,
 }
 
 
-def get_cache() -> CacheInstance:
+def get_cache(type: str | None = None) -> Cache:
     """
     根据配置中的缓存类型创建并返回一个缓存实例。
 
@@ -41,16 +39,18 @@ def get_cache() -> CacheInstance:
     global _cache
     global _cache_mapping
 
-    if _cache:
-        return _cache
-
-    cache_type = app_config.repository.cache.type
+    cache_type = type or app_config.repository.cache.type
     if cache_type not in _cache_mapping:
         raise ValueError(f"Unsupported cache type: {cache_type}")
 
+    cache = _cache.get(cache_type)
+    if cache:
+        return cache
+
     config = dict_get(app_config, f"repository.cache.{cache_type}")
-    _cache = _cache_mapping[cache_type](**config)
+    cache = _cache_mapping[cache_type](**config)
+    _cache[cache_type] = cache
 
-    register_pre_destroy_executor(_cache.close)
+    register_pre_destroy_executor(cache.close)
 
-    return _cache
+    return cache

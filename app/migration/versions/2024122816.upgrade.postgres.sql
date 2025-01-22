@@ -254,3 +254,29 @@ CREATE TRIGGER set_modu_favorites_updated_at
     ON modu_favorites
     FOR EACH ROW
 EXECUTE procedure update_updated_at_column();
+
+-- 文件
+CREATE TABLE modu_files
+(
+    id                  UUID                     DEFAULT UUID_GENERATE_V4()     NOT NULL CONSTRAINT pk_modu_file_id PRIMARY KEY,
+    created_at          TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP(0)   NOT NULL,
+    updated_at          TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP(0)   NOT NULL,
+    uid                 VARCHAR(64)                                             NOT NULL,
+    file_key            VARCHAR(32)                                             NOT NULL,
+    filename            VARCHAR(256)                                            NOT NULL,
+    file_mime_type      VARCHAR(128)                                            NOT NULL,
+    file_category       VARCHAR(64)                                             NOT NULL,
+    file_size           BIGINT                                                  NOT NULL,
+    file_hash           VARCHAR(256)                                            NOT NULL,
+    storage_type        VARCHAR(256)                                            NOT NULL,
+    creator_uid         VARCHAR(32)                                             NOT NULL,
+    is_deleted          SMALLINT                 DEFAULT '0'::SMALLINT          NOT NULL
+);
+CREATE UNIQUE INDEX uk_modu_file_uid ON modu_files (uid);
+CREATE UNIQUE INDEX uk_modu_file_key ON modu_files (file_key);
+CREATE INDEX idx_modu_file_storage ON modu_files (file_key, storage_type, is_deleted);
+CREATE TRIGGER set_modu_files_updated_at
+    BEFORE UPDATE
+    ON modu_files
+    FOR EACH ROW
+EXECUTE procedure update_updated_at_column();

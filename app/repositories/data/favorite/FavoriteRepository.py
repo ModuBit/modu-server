@@ -17,7 +17,7 @@ limitations under the License.
 from abc import abstractmethod
 from typing import List
 from sqlalchemy.ext.asyncio import AsyncSession
-from repositories.data.favorite.favorite import Favorite, FavoriteTargetType
+from repositories.data.favorite.favorite_models import FavoriteTargetType
 from repositories.data.database import Database, Repository
 
 

@@ -14,21 +14,22 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from fastapi import FastAPI, Depends
+from fastapi import Depends, FastAPI
 from fastapi.exceptions import ValidationException
+from fastapi.responses import JSONResponse
 from loguru import logger
 from sqlalchemy.exc import DBAPIError
-from fastapi.responses import JSONResponse
-
-from .user import users, user_favorite
 from utils.errors.base_error import BaseServiceError
-from .bot import bot
+
+from ..dependencies.principal import token_verify
 from .auth import login
-from .llm import llm_schema, llm_provider, llm_model
+from .bot import bot
+from .file import file
+from .llm import llm_model, llm_provider, llm_schema
 from .message import message
 from .system import setup, system
+from .user import user_favorite, users
 from .workspace import workspace
-from ..dependencies.principal import token_verify
 
 
 def register(app: FastAPI):
@@ -108,6 +109,12 @@ def register(app: FastAPI):
         tags=["message | 消息"],
     )
 
+    app.include_router(
+        file.router,
+        prefix="/api/file",
+        tags=["file | 文件"],
+    )
+
 
 def exception_handler(app: FastAPI):
     """
@@ -122,6 +129,14 @@ def exception_handler(app: FastAPI):
         """
         logger.warning("RequestValidationError {}, {}", exc.__class__, str(exc))
         return JSONResponse(exc.errors(), status_code=422)
+    
+    @app.exception_handler(ValueError)
+    async def value_error_handler(request, exc: ValueError):
+        """
+        参数验证异常
+        """
+        logger.warning("RequestValidationError {}, {}", exc.__class__, str(exc))
+        return JSONResponse(str(exc), status_code=422)
 
     @app.exception_handler(BaseServiceError)
     async def service_exception_handler(request, exc: BaseServiceError):

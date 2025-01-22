@@ -4,21 +4,34 @@
 
 ### 包管理
 
-- [Configure a conda virtual environment in PyCharm](https://www.jetbrains.com/help/pycharm/conda-support-creating-conda-virtual-environment.html)
 - [Configure a Poetry environment in PyCharm](https://www.jetbrains.com/help/pycharm/poetry.html)
 
-### 依赖
+### 创建环境
 ```shell
-conda deactivate
-conda env remove -n modu-server
-conda create -n modu-server python=3.11
-conda activate modu-server
-pip install poetry
+python3 -m venv venv
+source venv/bin/activate
+```
+
+### 安装依赖
+```shell
+pip3 install poetry
 poetry install
 ```
 
-### 组件
+### 启动服务    
 ```shell
 cd deploy/docker
 docker-compose -f docker-compose-dev.yml -p modu-dev up
+```
+
+### 初始化数据库
+```shell
+cd app
+alembic upgrade head
+```
+
+### 启动服务
+```shell
+cd app
+python3 start.py
 ```

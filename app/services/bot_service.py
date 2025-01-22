@@ -15,7 +15,7 @@ limitations under the License.
 """
 
 import asyncio
-from repositories.data.favorite.favorite import FavoriteTargetType
+from repositories.data.favorite.favorite_models import FavoriteTargetType
 from repositories.cache import cache_decorator_builder
 from repositories.cache.cache import CacheDecorator
 from repositories.data import bot_repository, favorite_repository, database

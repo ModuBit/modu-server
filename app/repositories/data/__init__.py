@@ -23,6 +23,7 @@ from .message import ConversationRepository, MessageRepository, MessageSummaryRe
 from .publish import PublishConfigRepository
 from .workspace import WorkspaceRepository
 from .favorite import FavoriteRepository
+from .file import FileRepository
 
 database: Database = get_database()
 account_repository: AccountRepository = get_repository("account")
@@ -39,6 +40,7 @@ message_summary_repository: MessageSummaryRepository = get_repository("message_s
 bot_repository: BotRepository = get_repository("bot")
 favorite_repository: FavoriteRepository = get_repository("favorite")
 publish_config_repository: PublishConfigRepository = get_repository("publish_config")
+file_repository: FileRepository = get_repository("file")
 
 __all__ = [
     account_repository,
@@ -49,4 +51,5 @@ __all__ = [
     message_repository,
     message_summary_repository,
     favorite_repository,
+    file_repository,
 ]

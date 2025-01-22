@@ -1,8 +1,8 @@
 [tool.poetry]
 name = "modu-server"
 version = "0.0.1"
-description = "Empower Your Ideas, Expand Your Reach. | 想你所想及你所及"
-authors = ["ManerFan <manerfan@163.com>", "ShyZhang <shyzhang777@gmail.com>"]
+description = "MODU Beyond Boundaries. | 墨读无界"
+authors = ["ManerFan <manerfan@163.com>"]
 license = "Apache 2.0"
 readme = "README.md"
 package-mode = false
@@ -47,8 +47,10 @@ redis = "^5.2.0"
 # 存储
 [tool.poetry.group.storage.dependencies]
 ## [Aliyun Oss](https://help.aliyun.com/zh/oss/developer-reference/installation-14)
+## https://gosspublic.alicdn.com/sdks/python/apidocs/latest/zh-cn/index.html
 ## sudo yum install python-devel
-# oss2
+## sudo apt-get install python-dev
+oss2 = "^2.19.1"
 ## [Minio](https://github.com/minio/minio)
 # minio
 
@@ -75,8 +77,11 @@ boltons = "^24.1.0"
 blinker = "^1.9.0"
 ## [Local Cache](https://cachetools.readthedocs.io)
 cachetools = "^5.5.0"
+## [异步文件操作](https://pypi.org/project/aiofiles)
+aiofiles = "^24.1.0"
 
 # 链路
+
 [tool.poetry.group.trace.dependencies]
 ## [opentelemetry](https://opentelemetry.io/docs/languages/python/getting-started/)
 ## [ot-fastapi](https://github.com/open-telemetry/opentelemetry-python-contrib/tree/main/instrumentation/opentelemetry-instrumentation-fastapi)
@@ -110,6 +115,7 @@ zhipuai = "^2.1.5.20241204"
 [tool.poetry.group.dev.dependencies]
 ## [pytest](https://docs.pytest.org/en/latest/)
 pytest = "^8.3.4"
+pytest-asyncio = "^0.25.2"
 ## [pytest-html](https://pytest-html.readthedocs.io/en/latest/)
 ## add arguments: --html=/some-dir/some-file.html
 pytest-html = "^4.1.1"

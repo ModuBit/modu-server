@@ -14,8 +14,8 @@
 
 # 应用信息
 app:
-  title: MODU | Speak FREELY with Me!
-  description: Empower Your Ideas, Expand Your Reach. | 想你所想及你所及
+  title: MODU | 墨读
+  description: MODU Beyond Boundaries. | 墨读无界
   summary:
   version: "0.0.1"
   terms_of_service:
@@ -53,10 +53,23 @@ repository:
       password: ${POSTGRES_PASSWORD:modu_chat}
   # storage
   storage:
-    type: ${STORAGE_TYPE:local}
+    type: ${STORAGE_TYPE:local_fs}
+    local_fs:
+      root_path: ${STORAGE_LOCAL_FS_ROOT_PATH:.data/modu}
+    aliyun_oss:
+      access_key_id: ${ALIYUN_OSS_ACCESS_KEY_ID}
+      access_key_secret: ${ALIYUN_OSS_ACCESS_KEY_SECRET}
+      endpoint: ${ALIYUN_OSS_ENDPOINT}
+      region: ${ALIYUN_OSS_REGION}
+      bucket_name: ${ALIYUN_OSS_BUCKET_NAME}
+    # 支持的文件类型及限制
+    support_file_types:
+      - type: image
+        accept: image/*
+        max_size: 2MB
   # vector
   vector:
-    type: ${VECTOR_TYPE:faiss}
+    type: ${VECTOR_TYPE:postgres}
   # cache
   cache:
     type: ${CACHE_TYPE:redis}

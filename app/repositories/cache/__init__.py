@@ -23,4 +23,5 @@ cache_decorator_builder: CacheDecoratorBuilder = CacheDecoratorBuilder(cache)
 __all__ = [
     cache,
     cache_decorator_builder,
+    get_cache,
 ]

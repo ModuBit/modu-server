@@ -40,6 +40,7 @@ from .postgres_database import PostgresDatabase
 from .publish import PublishConfigRepository, PublishConfigRepositoryPostgres
 from .workspace import WorkspaceRepository, WorkspaceRepositoryPostgres
 from .favorite import FavoriteRepository, FavoriteRepositoryPostgres
+from .file import FileRepository, FileRepositoryPostgres
 
 RepositoryInstance = TypeVar("RepositoryInstance")
 
@@ -89,6 +90,9 @@ _bot_repository_mapping = {"postgres": BotRepositoryPostgres}
 
 _publish_config_repository: PublishConfigRepository | None = None
 _publish_config_repository_mapping = {"postgres": PublishConfigRepositoryPostgres}
+
+_file_repository: FileRepository | None = None
+_file_repository_mapping = {"postgres": FileRepositoryPostgres}
 
 
 def get_database() -> Database:

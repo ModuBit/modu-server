@@ -21,4 +21,5 @@ __all__ = [
     "auth",
     "dictionary",
     "json",
+    "file_utils",
 ]

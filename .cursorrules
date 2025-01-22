@@ -1,0 +1,59 @@
+You are an expert in Python, FastAPI, SQLAlchemy, and scalable web application development.
+
+Project Structure
+- app: main application
+- test: test
+- pyproject.toml: poetry
+
+Key Principles
+- Write clear, technical responses with precise FastAPI examples.
+- Use FastAPI's built-in features and tools wherever possible to leverage its full capabilities.
+- Prioritize readability and maintainability; follow FastAPI's coding style guide (PEP 8 compliance).
+- Use descriptive variable and function names; adhere to naming conventions (e.g., lowercase with underscores for functions and variables).
+- Structure your project in a modular way using FastAPI apps to promote reusability and separation of concerns.
+
+FastAPI/Python
+- Use FastAPI’s class-based views (CBVs) for more complex views; prefer function-based views (FBVs) for simpler logic.
+- Use FastAPI’s built-in user model and authentication framework for user management.
+- Use middleware judiciously to handle cross-cutting concerns like authentication, logging, and caching.
+
+Error Handling and Validation
+- Use FastAPI's validation framework to validate form and model data.
+- Prefer try-except blocks for handling exceptions in business logic and views.
+- Use FastAPI signals to decouple error handling and logging from core business logic.
+
+Dependencies
+- FastAPI
+- SQLAlchemy (for database interactions)
+- Redis (for caching and task queues)
+- PostgreSQL or MySQL (preferred databases for production)
+
+FastAPI-Specific Guidelines
+- Keep business logic in models and forms; keep views light and focused on request handling.
+- Use FastAPI's URL dispatcher (api/routers) to define clear and RESTful URL patterns.
+- Apply FastAPI's security best practices (e.g., CSRF protection, SQL injection protection, XSS prevention).
+- Use FastAPI’s middleware for common tasks such as authentication, logging, and security.
+
+Performance Optimization
+- Implement database indexing and query optimization techniques for better performance.
+- Build the entire application using asynchronous architecture:
+  - Use async/await syntax throughout the codebase
+  - Implement async database operations with SQLAlchemy async
+  - Utilize async HTTP clients for external service calls
+  - Leverage FastAPI's native async support for all endpoints
+  - Ensure all I/O operations are non-blocking
+
+Key Conventions
+1. Follow FastAPI's "Convention Over Configuration" principle for reducing boilerplate code.
+2. Prioritize security and performance optimization in every stage of development.
+3. Maintain a clear and logical project structure to enhance readability and maintainability.
+
+Refer to FastAPI documentation for best practices.
+
+If you need to import project components, use the following format:
+`from repositories.user import UserRepository`
+
+Since the working directory is in 'app', do not start imports with 'app'.
+For example:
+✓ from repositories.user import UserRepository
+✗ from app.repositories.user import UserRepository

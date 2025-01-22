@@ -27,7 +27,7 @@ from sqlalchemy import (
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import mapped_column, Mapped
 
-from repositories.data.favorite.favorite import Favorite, FavoriteTargetType
+from repositories.data.favorite.favorite_models import FavoriteTargetType
 from repositories.data.database import with_async_session, BasePO
 from repositories.data.postgres_database import PostgresBasePO
 from repositories.data.favorite.FavoriteRepository import FavoriteRepository

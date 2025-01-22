@@ -16,4 +16,5 @@ limitations under the License.
 
 __all__ = [
     "aes",
+    "composition",
 ]
