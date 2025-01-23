@@ -14,16 +14,26 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from typing import AsyncGenerator, Tuple
+from typing import AsyncGenerator, Mapping, Tuple
 from urllib.parse import unquote_plus
+
 from config import app_config
 from fastapi import UploadFile
+from repositories.cache import cache_decorator_builder
+from repositories.cache.cache import CacheDecorator, none_content
 from repositories.data import file_repository
 from repositories.data.account.account_models import Account
 from repositories.data.file.file_models import File
 from repositories.storage import get_storage, storage
 from ulid import ULID
 from utils import file_utils
+
+file_url_cache: CacheDecorator[str] = cache_decorator_builder.build(
+    serialize=lambda url: url,
+    deserialize=lambda url: url,
+    default_expire_seconds=5 * 24 * 3600,
+    allow_none_values=True,
+)
 
 
 async def file_upload(current_user: Account, file: UploadFile) -> File:
@@ -82,6 +92,9 @@ async def file_upload(current_user: Account, file: UploadFile) -> File:
     return file_info
 
 
+@file_url_cache.async_cacheable(
+    key_generator=lambda file_uid, **kwargs: f"file:uid:{file_uid}:url"
+)
 async def get_file_url_by_uid(file_uid: str) -> str:
     """
     文件URL
@@ -92,6 +105,9 @@ async def get_file_url_by_uid(file_uid: str) -> str:
     return await get_file_url(file)
 
 
+@file_url_cache.async_cacheable(
+    key_generator=lambda file_key, **kwargs: f"file:key:{file_key}:url"
+)
 async def get_file_url_by_key(file_key: str) -> str | None:
     """
     文件URL
@@ -100,6 +116,50 @@ async def get_file_url_by_key(file_key: str) -> str | None:
     """
     file = await file_repository.get_file_by_key(file_key)
     return await get_file_url(file)
+
+async def get_file_url_by_keys(file_keys: list[str]) -> Mapping[str, str]:
+    """
+    文件URL
+    :param file_keys: 文件key
+    :return: 文件URL
+    """
+    # TODO 是否将列表缓存做成通用工具
+    file_urls = {}
+    uncached_keys = []
+    file_url_caches = await file_url_cache.cache.mget(
+        [f"file:key:{file_key}:url" for file_key in file_keys]
+    )
+
+    # 先查询已经缓存的
+    for i in range(len(file_url_caches)):
+        cached_content = file_url_caches[i]
+        if not cached_content:
+            uncached_keys.append(file_keys[i])
+            continue
+
+        if isinstance(cached_content, bytes):
+            cached_content = cached_content.decode("utf-8")
+        if none_content == cached_content:
+            uncached_keys.append(file_keys[i])
+            continue
+
+        file_url = file_url_cache.deserialize(cached_content)
+        file_urls[file_keys[i]] = file_url
+    
+    # 再查询未缓存的
+    if uncached_keys:
+        files = await file_repository.get_file_by_keys(uncached_keys)
+        for file in files:
+            file_key = file.file_key
+            file_url = await get_file_url(file)
+            file_urls[file_key] = file_url
+            await file_url_cache.cache.set(
+                f"file:key:{file_key}:url",
+                file_url_cache.serialize(file_url),
+                file_url_cache.default_expire_time,
+            )
+
+    return file_urls
 
 
 async def get_file_url(file: File | None) -> str | None:
@@ -115,7 +175,9 @@ async def get_file_url(file: File | None) -> str | None:
     return await _storage.sign_url(file.file_key, 7 * 24 * 3600) if _storage else None
 
 
-async def file_content(file_key: str, expires: int, signature: str) -> Tuple[AsyncGenerator[bytes, None], File]:
+async def file_content(
+    file_key: str, expires: int, signature: str
+) -> Tuple[AsyncGenerator[bytes, None], File]:
     """
     文件内容
     :param file_key: 文件KEY

@@ -44,7 +44,7 @@ class AccountRepositoryPostgres(AccountRepository):
     ) -> list[Account]:
         if not uids:
             return []
-        stmt = select(AccountPO).where(AccountPO.uid.in_(uids))
+        stmt = select(AccountPO).where(AccountPO.uid.in_(uids)).where(AccountPO.is_deleted == False)
         select_result = await session.execute(stmt)
         return [Account(**conv.as_dict()) for conv in select_result.scalars()]
 

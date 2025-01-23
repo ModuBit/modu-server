@@ -50,6 +50,16 @@ class FileRepository(Repository):
         raise NotImplementedError()
     
     @abstractmethod
+    async def get_file_by_keys(self, file_keys: list[str], session: AsyncSession) -> list[File]:
+        """
+        获取文件
+        :param file_keys: 文件KEY
+        :param session: 数据库会话
+        :return: 文件
+        """
+        raise NotImplementedError()
+    
+    @abstractmethod
     async def get_file_by_uid(self, file_uid: str, session: AsyncSession) -> File:
         """
         获取文件

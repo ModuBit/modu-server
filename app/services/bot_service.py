@@ -15,6 +15,7 @@ limitations under the License.
 """
 
 import asyncio
+from services import file_service
 from repositories.data.favorite.favorite_models import FavoriteTargetType
 from repositories.cache import cache_decorator_builder
 from repositories.cache.cache import CacheDecorator
@@ -163,13 +164,19 @@ async def detail(current_user: Account, bot_uid: str) -> Bot:
     key_generator=lambda workspace_uid, bot_uid, **kwargs: f"workspace:{workspace_uid}:bot:{bot_uid}"
 )
 async def get_detail_with_workspace(workspace_uid: str, bot_uid: str) -> Bot:
-    return await bot_repository.get_by_workspace_and_uid(workspace_uid, bot_uid)
+    bot = await bot_repository.get_by_workspace_and_uid(workspace_uid, bot_uid)
+    if bot:
+        bot.avatar = await file_service.get_file_url_by_key(bot.avatar)
+    return bot
 
 @bot_detail_cache.async_cacheable(
     key_generator=lambda bot_uid, **kwargs: f"bot:{bot_uid}"
 )
 async def get_detail(bot_uid: str) -> Bot:
-    return await bot_repository.get_by_uid(bot_uid)
+    bot = await bot_repository.get_by_uid(bot_uid)
+    if bot:
+        bot.avatar = await file_service.get_file_url_by_key(bot.avatar)
+    return bot
 
 
 async def find(
@@ -186,15 +193,18 @@ async def find(
         raise UnauthorizedError("您无该空间权限")
 
     bots = await bot_repository.find(workspace_uid, bot_list_query)
-    creators, is_favorite = await asyncio.gather(
+    creators, is_favorite, avatars = await asyncio.gather(
         account_service.get_account_infos(list(set([bot.creator_uid for bot in bots]))),
         favorite_repository.is_favorites(
             current_user.uid, FavoriteTargetType.BOT, [bot.uid for bot in bots]
         ),
+        file_service.get_file_url_by_keys([bot.avatar for bot in bots])
     )
     for bot in bots:
         bot.creator = creators[bot.creator_uid]
         bot.is_favorite = is_favorite[bot.uid] or False
+        if bot.avatar and bot.avatar in avatars:
+            bot.avatar = avatars[bot.avatar]
     return bots
 
 
@@ -235,16 +245,19 @@ async def find_favorite(
     """
     bots = await bot_repository.find_favorite(current_user.uid, bot_favorite_list_query)
 
-    creators, workspaces = await asyncio.gather(
+    creators, workspaces, avatars = await asyncio.gather(
         account_service.get_account_infos(list(set([bot.creator_uid for bot in bots]))),
         workspace_service.get_workspace_infos(
             list(set([bot.workspace_uid for bot in bots]))
         ),
+        file_service.get_file_url_by_keys([bot.avatar for bot in bots])
     )
 
     for bot in bots:
         bot.creator = creators[bot.creator_uid]
         bot.workspace = workspaces[bot.workspace_uid]
+        if bot.avatar and bot.avatar in avatars:
+            bot.avatar = avatars[bot.avatar]
 
     return bots
 

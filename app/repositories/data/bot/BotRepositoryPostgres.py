@@ -62,7 +62,7 @@ class BotRepositoryPostgres(BotRepository):
         stmt = (
             update(BotPO)
             .where(BotPO.uid == bot.uid)
-            .values(name=bot.name, description=bot.description)
+            .values(name=bot.name, description=bot.description, avatar=bot.avatar)
         )
         await session.execute(stmt)
         return bot

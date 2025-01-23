@@ -51,6 +51,15 @@ class FileRepositoryPostgres(FileRepository):
         return File(**file_po.as_dict()) if file_po else None
     
     @with_async_session
+    async def get_file_by_keys(self, file_keys: list[str], session: AsyncSession) -> list[File]:
+        if not file_keys:
+            return []
+        
+        stmt = select(FilePO).where(FilePO.file_key.in_(file_keys)).where(FilePO.is_deleted == False)
+        select_result = await session.execute(stmt)
+        return [File(**conv.as_dict()) for conv in select_result.scalars()]
+    
+    @with_async_session
     async def get_file_by_uid(self, file_uid: str, session: AsyncSession) -> File:
         stmt = select(FilePO).where(FilePO.file_uid == file_uid).where(FilePO.is_deleted == False)
         result = await session.execute(stmt)

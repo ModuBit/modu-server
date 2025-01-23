@@ -19,7 +19,7 @@ from fastapi.exceptions import ValidationException
 from fastapi.responses import JSONResponse
 from loguru import logger
 from sqlalchemy.exc import DBAPIError
-from utils.errors.base_error import BaseServiceError
+from utils.errors.base_error import BaseServiceError, ErrorShowType
 
 from ..dependencies.principal import token_verify
 from .auth import login
@@ -128,15 +128,31 @@ def exception_handler(app: FastAPI):
         参数验证异常
         """
         logger.warning("RequestValidationError {}, {}", exc.__class__, str(exc))
-        return JSONResponse(exc.errors(), status_code=422)
-    
+        return JSONResponse(
+            {
+                "success": False,
+                "code": 422,
+                "message": str(exc),
+                "showType": ErrorShowType.ERROR_MESSAGE,
+            },
+            status_code=422,
+        )
+
     @app.exception_handler(ValueError)
     async def value_error_handler(request, exc: ValueError):
         """
         参数验证异常
         """
         logger.warning("RequestValidationError {}, {}", exc.__class__, str(exc))
-        return JSONResponse(str(exc), status_code=422)
+        return JSONResponse(
+            {
+                "success": False,
+                "code": 422,
+                "message": str(exc),
+                "showType": ErrorShowType.ERROR_MESSAGE,
+            },
+            status_code=422,
+        )
 
     @app.exception_handler(BaseServiceError)
     async def service_exception_handler(request, exc: BaseServiceError):
