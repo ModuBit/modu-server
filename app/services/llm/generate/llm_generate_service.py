@@ -479,7 +479,7 @@ async def message_events_checkpoint(
     message_uid = BasePO.uid_generate()
 
     bot = (
-        await bot_service.detail(current_user, assistant_uid) if assistant_uid else None
+        await bot_service.get_detail(assistant_uid) if assistant_uid else None
     )
 
     generate_runner[conversation.conversation_uid] = True
@@ -518,7 +518,7 @@ async def message_events_checkpoint(
                 sender_info=SenderInfo(
                     uid=assistant_uid,
                     name=bot.name,
-                    avatar=bot.avatar,
+                    avatar=getattr(bot, "avatar_url", None),
                     role="assistant",
                 ) if bot else None,
                 message_uid=message_uid,

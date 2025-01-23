@@ -53,7 +53,7 @@ class AccountInfo(BaseModel):
     """账号状态"""
 
     # 定义配置
-    model_config = default_model_config()
+    model_config = default_model_config({"extra": "allow"})
 
 
 class Account(AccountInfo):

@@ -127,6 +127,16 @@ class BotRepository(Repository):
         raise NotImplementedError()
 
     @abstractmethod
+    async def find_by_uids(self, uids: list[str], session: AsyncSession) -> list[Bot]:
+        """
+        通过uid列表查询会话
+        :param uids: 机器人uid列表
+        :param session: Session
+        :return list[Bot]
+        """
+        raise NotImplementedError()
+
+    @abstractmethod
     async def delete_by_uid(self, bot_uid: str, session: AsyncSession) -> bool:
         """
         通过uid查询会话

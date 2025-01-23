@@ -74,7 +74,7 @@ class Bot(BaseModel):
     """是否收藏"""
 
     # 定义配置
-    model_config = default_model_config()
+    model_config = default_model_config({"extra": "allow"})
 
 
 class BotDTO(BaseModel):
@@ -87,6 +87,8 @@ class BotDTO(BaseModel):
     """名称"""
     avatar: str | None = None
     """头像"""
+    avatar_url: str | None = None
+    """头像URL"""
     description: str | None = None
     """描述"""
     creator_uid: str

@@ -14,13 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from boltons.strutils import multi_replace
+import asyncio
 
-from repositories.data.message import ConversationRepository
-from repositories.data import message_repository, conversation_repository
+from boltons.strutils import multi_replace
+from repositories.data import conversation_repository, message_repository
 from repositories.data.account.account_models import Account
+from repositories.data.message import ConversationRepository
 from repositories.data.message.conversation_models import Conversation
-from repositories.data.message.message_models import Message
+from repositories.data.message.message_models import Message, SenderInfo
+from services import account_service, bot_service
 from utils.errors.base_error import UnauthorizedError
 
 
@@ -42,9 +44,49 @@ async def messages(
     )
     if not conversation:
         raise UnauthorizedError("找不到该会话")
-    return await message_repository.find_before_uid(
+    messages = await message_repository.find_before_uid(
         conversation_uid, before_message_uid, False, max_count, None
     )
+
+    # 按照 sender_role 对消息进行分组
+    messages_by_role = {}
+    for message in messages:
+        if message.sender_role not in messages_by_role:
+            messages_by_role[message.sender_role] = []
+        messages_by_role[message.sender_role].append(message)
+
+    accounts, bots = await asyncio.gather(
+        account_service.get_account_infos(
+            [message.sender_uid for message in messages_by_role.get("user", [])]
+        ),
+        bot_service.get_bots_by_uids(
+            [message.sender_uid for message in messages_by_role.get("assistant", [])]
+        ),
+    )
+
+    # 为用户类型的消息填充发送者信息
+    for message in messages_by_role.get("user", []):
+        if message.sender_uid in accounts:
+            account = accounts[message.sender_uid]
+            message.sender_info = SenderInfo(
+                uid=account.uid,
+                name=account.name,
+                avatar=account.avatar,
+                role="user",
+            )
+
+    # 为机器人类型的消息填充发送者信息
+    for message in messages_by_role.get("assistant", []):
+        if message.sender_uid in bots:
+            bot = bots[message.sender_uid]
+            message.sender_info = SenderInfo(
+                uid=bot.uid,
+                name=bot.name,
+                avatar=getattr(bot, "avatar_url", None),
+                role="assistant",
+            )
+
+    return messages
 
 
 async def conversations(

@@ -216,6 +216,16 @@ class BotRepositoryPostgres(BotRepository):
         select_result = await session.execute(stmt)
         bot_model = select_result.scalars().one_or_none()
         return Bot(**bot_model.as_dict()) if bot_model else None
+    
+    @with_async_session
+    async def find_by_uids(self, uids: list[str], session: AsyncSession) -> list[Bot]:
+        stmt = (
+            select(BotPO)
+            .where(BotPO.uid.in_(uids))
+            .where(BotPO.is_deleted == False)
+        )
+        select_result = await session.execute(stmt)
+        return [Bot(**conv.as_dict()) for conv in select_result.scalars()]
 
     @with_async_session
     async def delete_by_uid(self, bot_uid: str, session: AsyncSession) -> bool:

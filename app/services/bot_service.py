@@ -15,10 +15,11 @@ limitations under the License.
 """
 
 import asyncio
+from typing import Mapping
 from services import file_service
 from repositories.data.favorite.favorite_models import FavoriteTargetType
 from repositories.cache import cache_decorator_builder
-from repositories.cache.cache import CacheDecorator
+from repositories.cache.cache import CacheDecorator, none_content
 from repositories.data import bot_repository, favorite_repository, database
 from repositories.data.account.account_models import Account
 from repositories.data.bot.BotRepository import BotFavoriteListQry, BotListQry
@@ -60,7 +61,10 @@ async def add(current_user: Account, workspace_uid: str, bot: Bot) -> Bot:
     if not bot.mode:
         bot.mode = BotMode.SINGLE_AGENT
 
-    return await bot_repository.create(bot)
+    bot_then = await bot_repository.create(bot)
+    if bot_then.avatar:
+        bot_then.avatar_url = await file_service.get_file_url_by_key(bot_then.avatar)
+    return bot_then
 
 
 @bot_detail_cache.async_cache_evict(
@@ -87,7 +91,10 @@ async def update_base_info(
         raise UnauthorizedError("您无该机器人/智能体的权限")
 
     bot.uid = bot_uid
-    return await bot_repository.update_base_info(bot)
+    bot_then = await bot_repository.update_base_info(bot)
+    if bot_then.avatar:
+        bot_then.avatar_url = await file_service.get_file_url_by_key(bot_then.avatar)
+    return bot_then
 
 
 @bot_detail_cache.async_cache_evict(
@@ -117,7 +124,9 @@ async def update_bot_config(
     return await bot_repository.update_bot_config(bot)
 
 
-async def detail_with_workspace(current_user: Account, workspace_uid: str, bot_uid: str) -> Bot:
+async def detail_with_workspace(
+    current_user: Account, workspace_uid: str, bot_uid: str
+) -> Bot:
     """
     查找单个机器人/智能体
     :param current_user: 当前用户
@@ -139,6 +148,7 @@ async def detail_with_workspace(current_user: Account, workspace_uid: str, bot_u
 
     return bot
 
+
 async def detail(current_user: Account, bot_uid: str) -> Bot:
     """
     查找单个机器人/智能体
@@ -148,10 +158,12 @@ async def detail(current_user: Account, bot_uid: str) -> Bot:
     """
     bot = await get_detail(bot_uid)
     if bot:
-        member_role = await workspace_service.member_role(current_user, bot.workspace_uid)
+        member_role = await workspace_service.member_role(
+            current_user, bot.workspace_uid
+        )
         if member_role is None:
             raise UnauthorizedError("您无智能体所属空间权限")
-        
+
         bot.creator = await account_service.get_account_info(bot.creator_uid)
         is_favorite = await favorite_repository.is_favorite(
             current_user.uid, FavoriteTargetType.BOT, bot_uid
@@ -160,22 +172,24 @@ async def detail(current_user: Account, bot_uid: str) -> Bot:
 
     return bot
 
+
 @bot_detail_cache.async_cacheable(
     key_generator=lambda workspace_uid, bot_uid, **kwargs: f"workspace:{workspace_uid}:bot:{bot_uid}"
 )
 async def get_detail_with_workspace(workspace_uid: str, bot_uid: str) -> Bot:
     bot = await bot_repository.get_by_workspace_and_uid(workspace_uid, bot_uid)
-    if bot:
-        bot.avatar = await file_service.get_file_url_by_key(bot.avatar)
+    if bot and bot.avatar:
+        bot.avatar_url = await file_service.get_file_url_by_key(bot.avatar)
     return bot
+
 
 @bot_detail_cache.async_cacheable(
     key_generator=lambda bot_uid, **kwargs: f"bot:{bot_uid}"
 )
 async def get_detail(bot_uid: str) -> Bot:
     bot = await bot_repository.get_by_uid(bot_uid)
-    if bot:
-        bot.avatar = await file_service.get_file_url_by_key(bot.avatar)
+    if bot and bot.avatar:
+        bot.avatar_url = await file_service.get_file_url_by_key(bot.avatar)
     return bot
 
 
@@ -198,13 +212,13 @@ async def find(
         favorite_repository.is_favorites(
             current_user.uid, FavoriteTargetType.BOT, [bot.uid for bot in bots]
         ),
-        file_service.get_file_url_by_keys([bot.avatar for bot in bots])
+        file_service.get_file_url_by_keys([bot.avatar for bot in bots]),
     )
     for bot in bots:
         bot.creator = creators[bot.creator_uid]
         bot.is_favorite = is_favorite[bot.uid] or False
         if bot.avatar and bot.avatar in avatars:
-            bot.avatar = avatars[bot.avatar]
+            bot.avatar_url = avatars[bot.avatar]
     return bots
 
 
@@ -250,14 +264,14 @@ async def find_favorite(
         workspace_service.get_workspace_infos(
             list(set([bot.workspace_uid for bot in bots]))
         ),
-        file_service.get_file_url_by_keys([bot.avatar for bot in bots])
+        file_service.get_file_url_by_keys([bot.avatar for bot in bots]),
     )
 
     for bot in bots:
         bot.creator = creators[bot.creator_uid]
         bot.workspace = workspaces[bot.workspace_uid]
         if bot.avatar and bot.avatar in avatars:
-            bot.avatar = avatars[bot.avatar]
+            bot.avatar_url = avatars[bot.avatar]
 
     return bots
 
@@ -420,3 +434,47 @@ async def _get_config_draft(
         )
 
     return config
+
+async def get_bots_by_uids(uids: list[str]) -> Mapping[str, Bot]:
+    """
+    根据UID列表批量获取机器人信息
+    :param uids: 机器人 UIDs
+    :return: Mapping[str, Bot]
+    """
+    # TODO 是否将列表缓存做成通用工具
+    bots = {}
+    uncached_uids = []
+    bot_caches = await bot_detail_cache.cache.mget(
+        [f"bot:{uid}" for uid in uids]
+    )
+
+    # 先查询已经缓存的
+    for i in range(len(bot_caches)):
+        cached_content = bot_caches[i]
+        if not cached_content:
+            uncached_uids.append(uids[i])
+            continue
+
+        if isinstance(cached_content, bytes):
+            cached_content = cached_content.decode("utf-8")
+        if none_content == cached_content:
+            uncached_uids.append(uids[i])
+            continue
+
+        bot = bot_detail_cache.deserialize(cached_content)
+        bots[uids[i]] = bot
+
+    # 再查询未缓存的
+    if uncached_uids:
+        uncached_bots = await bot_repository.find_by_uids(uncached_uids)
+        for bot in uncached_bots:
+            if bot.avatar:
+                bot.avatar_url = await file_service.get_file_url_by_key(bot.avatar)
+            bots[bot.uid] = bot
+            await bot_detail_cache.cache.set(
+                f"bot:{bot.uid}",
+                bot_detail_cache.serialize(bot),
+                bot_detail_cache.default_expire_time,
+            )
+
+    return bots
