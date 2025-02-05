@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from sqlalchemy import PrimaryKeyConstraint, String, Enum, text, func
+from sqlalchemy import PrimaryKeyConstraint, String, Enum, text, func, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import Mapped, mapped_column
@@ -22,7 +22,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from repositories.data.postgres_database import PostgresBasePO
 from utils.errors.account_error import AccountLoginError
 from .AccountRepository import AccountRepository
-from .account_models import Account, AccountStatus
+from .account_models import Account, AccountBaseInfo, AccountStatus
 from ..database import with_async_session, BasePO
 
 
@@ -44,7 +44,11 @@ class AccountRepositoryPostgres(AccountRepository):
     ) -> list[Account]:
         if not uids:
             return []
-        stmt = select(AccountPO).where(AccountPO.uid.in_(uids)).where(AccountPO.is_deleted == False)
+        stmt = (
+            select(AccountPO)
+            .where(AccountPO.uid.in_(uids))
+            .where(AccountPO.is_deleted == False)
+        )
         select_result = await session.execute(stmt)
         return [Account(**conv.as_dict()) for conv in select_result.scalars()]
 
@@ -84,6 +88,22 @@ class AccountRepositoryPostgres(AccountRepository):
         count_result = await session.execute(stmt)
         return count_result.scalar()
 
+    @with_async_session
+    async def update_base_info(
+        self, user_info: AccountBaseInfo, session: AsyncSession
+    ) -> AccountBaseInfo:
+        stmt = (
+            update(AccountPO)
+            .where(AccountPO.uid == user_info.uid)
+            .values(
+                name=user_info.name,
+                avatar=user_info.avatar,
+                description=user_info.description,
+            )
+        )
+        await session.execute(stmt)
+        return user_info
+
 
 class AccountPO(PostgresBasePO):
     """
@@ -97,6 +117,7 @@ class AccountPO(PostgresBasePO):
     email: Mapped[str] = mapped_column(String(128), nullable=False, comment="邮箱")
     password: Mapped[str] = mapped_column(String(128), nullable=False, comment="密码")
     avatar: Mapped[str] = mapped_column(String(256), nullable=True, comment="头像")
+    description: Mapped[str] = mapped_column(String(512), nullable=True, comment="描述")
     status: Mapped[AccountStatus] = mapped_column(
         Enum(AccountStatus, native_enum=False),
         nullable=False,

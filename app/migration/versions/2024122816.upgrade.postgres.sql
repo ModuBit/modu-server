@@ -20,16 +20,17 @@ $$;
 -- 用户
 CREATE TABLE modu_accounts
 (
-    id         UUID                     DEFAULT UUID_GENERATE_V4()          NOT NULL CONSTRAINT pk_modu_account_id PRIMARY KEY,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP(0)        NOT NULL,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP(0)        NOT NULL,
-    uid        VARCHAR(32)                                                  NOT NULL,
-    name       VARCHAR(128)                                                 NOT NULL,
-    email      VARCHAR(128)                                                 NOT NULL,
-    password   VARCHAR(128)                                                 NOT NULL,
-    avatar     VARCHAR(256),
-    status     VARCHAR(32)              DEFAULT 'active'::CHARACTER VARYING NOT NULL,
-    is_deleted  SMALLINT                DEFAULT '0'::SMALLINT        NOT NULL
+    id          UUID                     DEFAULT UUID_GENERATE_V4()          NOT NULL CONSTRAINT pk_modu_account_id PRIMARY KEY,
+    created_at  TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP(0)        NOT NULL,
+    updated_at  TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP(0)        NOT NULL,
+    uid         VARCHAR(32)                                                  NOT NULL,
+    name        VARCHAR(128)                                                 NOT NULL,
+    email       VARCHAR(128)                                                 NOT NULL,
+    password    VARCHAR(128)                                                 NOT NULL,
+    avatar      VARCHAR(256),
+    description VARCHAR(512),
+    status      VARCHAR(32)              DEFAULT 'active'::CHARACTER VARYING NOT NULL,
+    is_deleted  SMALLINT                 DEFAULT '0'::SMALLINT               NOT NULL
 );
 CREATE UNIQUE INDEX uk_modu_account_uid ON modu_accounts (uid);
 CREATE UNIQUE INDEX uk_modu_account_email ON modu_accounts (email);

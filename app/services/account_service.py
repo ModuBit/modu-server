@@ -16,11 +16,16 @@ limitations under the License.
 
 from typing import Mapping
 
+from services import file_service
 from config import app_config
 from repositories.cache import cache_decorator_builder
 from repositories.cache.cache import CacheDecorator, none_content
 from repositories.data import account_repository
-from repositories.data.account.account_models import Account, AccountInfo
+from repositories.data.account.account_models import (
+    Account,
+    AccountBaseInfo,
+    AccountInfo,
+)
 from utils import auth
 from utils.errors.account_error import AccountLoginError
 from utils.json import default_excluded_fields
@@ -91,6 +96,20 @@ def account_token_verify(token: str):
     account_token_decode(token)
 
 
+@account_info_cache.async_cache_evict(
+    key_generator=lambda current_user, **kwargs: f"account:{current_user.uid}:info"
+)
+async def update_base_info(
+    current_user: Account, user_info: AccountBaseInfo
+) -> Account:
+    """
+    更新账号信息
+    """
+    user_info.uid = current_user.uid
+    await account_repository.update_base_info(user_info)
+    return await get_account_info(current_user.uid)
+
+
 @account_info_cache.async_cacheable(
     key_generator=lambda uid, **kwargs: f"account:{uid}:info"
 )
@@ -101,7 +120,10 @@ async def get_account_info(uid: str) -> AccountInfo:
     :return: AccountInfo
     """
     account = await account_repository.find_one_by_uid(uid)
-    return AccountInfo.model_validate(account) if account else None
+    account_info = AccountInfo.model_validate(account) if account else None
+    if account_info.avatar:
+        account_info.avatar_url = await file_service.get_file_url_by_key(account_info.avatar)
+    return account_info
 
 
 async def get_account_infos(uids: list[str]) -> Mapping[str, AccountInfo]:

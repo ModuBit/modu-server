@@ -18,7 +18,8 @@ from fastapi import APIRouter, Depends
 from loguru import logger
 
 from api.dependencies.principal import current_account
-from repositories.data.account.account_models import Account
+from services import account_service
+from repositories.data.account.account_models import Account, AccountBaseInfo
 from services.account_service import AccountInfo
 from utils.pydantic import CamelCaseJSONResponse
 
@@ -33,4 +34,16 @@ async def me(current_user: Account = Depends(current_account)) -> Account:
     """
     当前登录人信息
     """
-    return current_user
+    return await account_service.get_account_info(current_user.uid)
+
+
+@logger.catch()
+@router.put("/me", response_model=AccountInfo, response_class=CamelCaseJSONResponse)
+async def update_base_info(
+    base_info: AccountBaseInfo,
+    current_user: Account = Depends(current_account),
+) -> Account:
+    """
+    更新当前登录人信息
+    """
+    return await account_service.update_base_info(current_user, base_info)

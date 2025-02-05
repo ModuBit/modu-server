@@ -36,6 +36,20 @@ class AccountStatus(str, enum.Enum):
     """已注销"""
 
 
+class AccountBaseInfo(BaseModel):
+    uid: str | None = None
+    """账号ID"""
+
+    name: str
+    """账号名称"""
+
+    avatar: str | None = None
+    """账号头像"""
+
+    description: str | None = None
+    """账号描述"""
+
+
 class AccountInfo(BaseModel):
     uid: str
     """账号ID"""
@@ -46,8 +60,11 @@ class AccountInfo(BaseModel):
     email: str
     """账号邮箱"""
 
-    avatar: str | None
+    avatar: str | None = None
     """账号头像"""
+
+    description: str | None = None
+    """账号描述"""
 
     status: AccountStatus
     """账号状态"""

@@ -18,7 +18,7 @@ from abc import abstractmethod
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .account_models import Account
+from .account_models import Account, AccountBaseInfo
 from ..database import Repository, Database
 
 
@@ -82,5 +82,14 @@ class AccountRepository(Repository):
         统计所有账号
         :param session: Session
         :return: 账号数量
+        """
+        raise NotImplementedError()
+    
+    @abstractmethod
+    async def update_base_info(self, user_info: AccountBaseInfo) -> AccountBaseInfo:
+        """
+        更新账号基本信息
+        :param user_info: 用户信息
+        :return: 账号
         """
         raise NotImplementedError()
