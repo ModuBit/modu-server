@@ -91,6 +91,17 @@ class Query(BaseModel):
     model_config = default_model_config()
 
 
+class Mention(BaseModel):
+    uid: str
+    """uid"""
+    
+    name: str
+    """名称"""
+
+    avatar: str | None = None
+    """头像"""
+
+
 class GenerateCmd(BaseModel):
     conversation_uid: str | None = None
     """会话ID"""
@@ -98,7 +109,7 @@ class GenerateCmd(BaseModel):
     query: Query
     """会话内容"""
 
-    mentions: list[str] = []
+    mentions: list[Mention] = []
     """@的机器人"""
 
     # 定义配置
@@ -197,7 +208,19 @@ async def generate(
     )
 
     # 存储 user message
-    question_messages = [
+    question_messages = [ # @BOT
+        MessageBlock(
+            type="question",
+            content_type="mention",
+            content={
+                "uid": mention.uid,
+                "name": mention.name,
+                "avatar": mention.avatar,
+            },
+            section_uid=BasePO.uid_generate(),
+        )
+        for mention in chat_generate_cmd.mentions
+    ] +[  # 引用
         MessageBlock(
             type="question",
             content_type=f"refer:{_refer.type}",
@@ -205,7 +228,7 @@ async def generate(
             section_uid=BasePO.uid_generate(),
         )
         for _refer in chat_generate_cmd.query.refers
-    ] + [
+    ] +[  # 消息
         MessageBlock(
             type="question",
             content_type=_input.type,
@@ -262,7 +285,7 @@ async def generate(
         workspace_uid,
         message_events,
         conversation,
-        chat_generate_cmd.mentions[0] if chat_generate_cmd.mentions else "",
+        chat_generate_cmd.mentions[0].uid if chat_generate_cmd.mentions else "",
     )
 
 
@@ -297,7 +320,7 @@ async def _make_graph_bot(
     chat_model: BaseChatModel | None = None
 
     if chat_generate_cmd.mentions:
-        bot = await bot_service.detail(current_user, chat_generate_cmd.mentions[0])
+        bot = await bot_service.get_detail(chat_generate_cmd.mentions[0].uid)
         if not bot:
             raise UnauthorizedError("您无该智能体权限")
         if bot.mode != BotMode.SINGLE_AGENT:
@@ -392,7 +415,7 @@ async def _make_graph_bot(
 
 async def _init_generate_records(
     conversation: Conversation, user_message: Message
-) -> (str, str):
+) -> tuple[str, str]:
     """
     初始化会话消息
     :param conversation: 当前用户
@@ -478,9 +501,7 @@ async def message_events_checkpoint(
 
     message_uid = BasePO.uid_generate()
 
-    bot = (
-        await bot_service.get_detail(assistant_uid) if assistant_uid else None
-    )
+    bot = await bot_service.get_detail(assistant_uid) if assistant_uid else None
 
     generate_runner[conversation.conversation_uid] = True
     async for event in event_iter:
@@ -515,12 +536,16 @@ async def message_events_checkpoint(
                 conversation_uid=conversation.conversation_uid,
                 sender_uid=assistant_uid,
                 sender_role="assistant",
-                sender_info=SenderInfo(
-                    uid=assistant_uid,
-                    name=bot.name,
-                    avatar=getattr(bot, "avatar_url", None),
-                    role="assistant",
-                ) if bot else None,
+                sender_info=(
+                    SenderInfo(
+                        uid=assistant_uid,
+                        name=bot.name,
+                        avatar=getattr(bot, "avatar_url", None),
+                        role="assistant",
+                    )
+                    if bot
+                    else None
+                ),
                 message_uid=message_uid,
                 message_time=int(datetime.now().timestamp()) * 1000,
                 message=MessageBlock(
